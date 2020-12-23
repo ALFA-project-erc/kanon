@@ -1,0 +1,17 @@
+include README.rst
+include CHANGES.rst
+include setup.cfg
+include LICENSE.rst
+include pyproject.toml
+
+recursive-include histropy *.pyx *.c *.pxd
+recursive-include docs *
+recursive-include licenses *
+recursive-include scripts *
+recursive-include **/tests/data/ *
+
+prune build
+prune docs/_build
+prune docs/api
+
+global-exclude *.pyc *.o
