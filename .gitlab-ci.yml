@@ -1,0 +1,21 @@
+stages:
+  - lint
+  - test
+
+lint:
+  stage: lint
+  image: python:3.7.6-slim
+  tags:
+    - docker_dio
+  script:
+    - pip install tox
+    - tox -e codestyle
+
+test:
+  stage: test
+  image: python:3.7.6-slim
+  tags:
+    - docker_dio
+  script:
+    - pip install tox
+    - tox -e test
