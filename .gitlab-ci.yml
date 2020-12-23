@@ -1,10 +1,11 @@
 stages:
   - lint
   - test
+  - coverage
 
 lint:
   stage: lint
-  image: python:3.7.6-slim
+  image: python:3.8.7-slim
   tags:
     - docker_dio
   script:
@@ -13,9 +14,37 @@ lint:
 
 test:
   stage: test
-  image: python:3.7.6-slim
+  image: python:3.8.7
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    paths:
+      - .cache/pip
   tags:
     - docker_dio
   script:
-    - pip install tox
-    - tox -e test
+    - pip install .
+    - pip install .[test]
+    - pytest --junitxml=report.xml
+  artifacts:
+    reports:
+      junit: report.xml
+
+coverage:
+  stage: coverage
+  image: python:3.8.7
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    paths:
+      - .cache/pip
+  tags:
+    - docker_dio
+  script:
+    - pip install .
+    - pip install .[test]
+    - pytest --pyargs histropy docs --cov histropy --cov-config=setup.cfg
+    - coverage xml
+  artifacts:
+    reports:
+      cobertura: coverage.xml
