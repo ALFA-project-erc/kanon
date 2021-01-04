@@ -22,3 +22,10 @@ class TestHTable:
         assert table.loc[Sexagesimal(1)] == table[0]
 
         assert table.loc[3][1] is Sexagesimal(6, 27, sign=-1)
+
+    def test_interpolation(self):
+        table = HTable([[1, 2, 3, 5, 9], [5, 62, 1, -6, -2]], names=("Arg 1", "Entries"), index=("Arg 1"))
+
+        assert table.get(1.5) == 33.5
+        assert table.get(4) == -2.5
+        assert table.get(6) == -5

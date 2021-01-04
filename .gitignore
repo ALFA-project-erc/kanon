@@ -65,3 +65,5 @@ pip-wheel-metadata/
 .DS_Store
 
 .devcontainer
+
+coverage.xml

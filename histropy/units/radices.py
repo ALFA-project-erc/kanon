@@ -1,19 +1,17 @@
-import copy
-import math
 import sys
 from fractions import Fraction
 from numbers import Number, Real
 from typing import (ClassVar, Dict, Iterable, List, Literal, Optional, Tuple,
                     Type, Union)
 
-import gmpy
+# import gmpy
 import numpy as np
 from memoization import cached
 
 from histropy.utils.looping_list import LoopingList
 
 from .errors import (EmptyStringException, IllegalBaseValueError,
-                     IllegalFloatValueError, TooManySeparators, TypeMismatch)
+                     IllegalFloatValueError, TooManySeparators)
 
 """
 When performing tests on very precise numbers (For example sexagesimal with more than 7
@@ -60,6 +58,10 @@ class RadixBase:
         :param integer_separators: List of string separators, used
         for displaying the integer part of the number
         """
+        assert len(left) > 0 < len(right)
+        assert all(isinstance(x, int) for x in left)
+        assert all(isinstance(x, int) for x in right)
+
         self.left: LoopingList[int] = LoopingList(left)
         self.right: LoopingList[int] = LoopingList(right)
         self.name = name
@@ -70,6 +72,9 @@ class RadixBase:
             self.integer_separators: LoopingList[str] = LoopingList([
                 "," if x != 10 else "" for x in left
             ])
+
+        self.mixed = any(x != left[0] for x in left)
+        self.mixed = any(x != right[0] for x in right)
 
         # Record the new RadixBase
         RadixBase.name_to_base[self.name] = self
@@ -228,8 +233,8 @@ class BasedReal(Real):
         if cls is BasedReal:
             raise TypeError("Can't instanciate abstract class BasedReal")
         self = super().__new__(cls)
-        self.__left: Tuple[int] = ()
-        self.__right: Tuple[int] = ()
+        self.__left = ()
+        self.__right = ()
         self.__remainder = remainder
         self.__sign = sign
         if np.all([isinstance(x, int) for x in args]):
@@ -492,20 +497,31 @@ class BasedReal(Real):
         """
         if n > len(self.right):
             return self
-        return type(self)(self.left, self.right[:n], sign=self.sign)
+        left = self.left if n >= 0 else self.left[:-n]
+        right = self.right[:n] if n >= 0 else ()
+        return type(self)(left, right, sign=self.sign)
 
     def shift(self, i: int) -> "BasedReal":
         if i == 0:
             return self
 
-        left_right = (0,) * i + self[:] + (0,) * -i
+        if self.base.mixed:
 
-        offset = len(self.left) if i > 0 else len(self.left) - i
+            raise NotImplementedError
 
-        left = left_right[:offset]
-        right = left_right[offset:-i if -i > offset else None]
+        else:
+
+            left_right = (0,) * i + self[:] + (0,) * -i
+
+            offset = len(self.left) if i > 0 else len(self.left) - i
+
+            left = left_right[:offset]
+            right = left_right[offset:-i if -i > offset else None]
 
         return type(self)(left, right, remainder=self.remainder, sign=self.sign)
+
+    def subunit_quantity(self, i: int) -> int:
+        return round(self.shift(i))
 
     def __round__(self, significant: Optional[int] = None):
         """
@@ -664,31 +680,31 @@ class BasedReal(Real):
         value += factor * self.remainder
         return float(value * self.sign)
 
-    @staticmethod
-    def __fractionnal_position_base_to_base(
-        value: int, pos: int, base1: RadixBase, base2: RadixBase, significant: int
-    ) -> "BasedReal":
-        left = [0]
-        right = [0] * significant
+    # @staticmethod
+    # def __fractionnal_position_base_to_base(
+    #     value: int, pos: int, base1: RadixBase, base2: RadixBase, significant: int
+    # ) -> "BasedReal":
+    #     left = [0]
+    #     right = [0] * significant
 
-        denom = gmpy.mpz(1)
-        for i in range(pos + 1):
-            denom *= gmpy.mpz(base1.right[i])
+    #     denom = gmpy.mpz(1)
+    #     for i in range(pos + 1):
+    #         denom *= gmpy.mpz(base1.right[i])
 
-        num = gmpy.mpz(value)
-        rem = 0
-        for i in range(significant):
-            num *= gmpy.mpz(base2.right[i])
-            quo = num // denom
-            rem = num % denom
-            right[i] = int(quo)
-            num = rem
+    #     num = gmpy.mpz(value)
+    #     rem = 0
+    #     for i in range(significant):
+    #         num *= gmpy.mpz(base2.right[i])
+    #         quo = num // denom
+    #         rem = num % denom
+    #         right[i] = int(quo)
+    #         num = rem
 
-        # remainder = 0.0
-        gros_rem = (gmpy.mpz(1000000000) * rem) // denom
-        remainder = int(gros_rem) / 1000000000
+    #     # remainder = 0.0
+    #     gros_rem = (gmpy.mpz(1000000000) * rem) // denom
+    #     remainder = int(gros_rem) / 1000000000
 
-        return base2.type(left, right, remainder=remainder, sign=1)
+    #     return base2.type(left, right, remainder=remainder, sign=1)
 
     def to_base(self, base: RadixBase, significant: int) -> "BasedReal":
         """
@@ -704,85 +720,66 @@ class BasedReal(Real):
         """
         return base.type.from_float(float(self), significant)
 
-    def __int_imul(self, n: int) -> "BasedReal":
-        for i in range(-len(self.left) + 1, len(self.right) + 1):
-            self[i] *= n
-        self.remainder *= n
-        return self
-
-    def __float_imul(self, f: float) -> "BasedReal":
-        for i in range(-len(self.left) + 1, len(self.right) + 1):
-            self[i] *= f
-        self.remainder *= f
-        for i in range(-len(self.left) + 1, len(self.right) + 1):
-            frac, whole = math.modf(self[i])
-            self[i] = int(whole)
-            if i != len(self.right):
-                self[i + 1] += frac * self.base[i + 1]
-            else:
-                self.remainder += frac
-        return self
-
-    def __int_idiv(self, n: int, significant: Optional[int] = None) -> "BasedReal":
-        if significant:
-            self.resize(significant)
-        self.remainder /= n
-        for i in range(-len(self.left) + 1, len(self.right) + 1):
-            q = self[i] // n
-            r = self[i] % n
-            self[i] = q
-            if i != len(self.right):
-                self[i + 1] += r * self.base[i + 1]
-            else:
-                self.remainder += r * self.base[i + 1] / (self.base[i] * n)
-        return self
+    # def __int_idiv(self, n: int, significant: Optional[int] = None) -> "BasedReal":
+    #     if significant:
+    #         self.resize(significant)
+    #     self.remainder /= n
+    #     for i in range(-len(self.left) + 1, len(self.right) + 1):
+    #         q = self[i] // n
+    #         r = self[i] % n
+    #         self[i] = q
+    #         if i != len(self.right):
+    #             self[i + 1] += r * self.base[i + 1]
+    #         else:
+    #             self.remainder += r * self.base[i + 1] / (self.base[i] * n)
+    #     return self
 
     def __div__(self, other) -> Union[float, "BasedReal"]:
         if isinstance(other, type(self)):
-            return self.division(other, 255)
+            raise NotImplementedError
         else:
             return float(self) / float(other)
 
-    def division(self, other: "BasedReal", significant: int) -> "BasedReal":
-        """
-        Divide this BasedReal object with another
+    # def division(self, other: "BasedReal", significant: int) -> "BasedReal":
+    #     """
+    #     Divide this BasedReal object with another
 
-        :param other: the other BasedReal object
-        :param significant: the number of desired significant positions
-        :return: the division of the two BasedReal objects
-        """
-        if not isinstance(self, type(other)) or not isinstance(other, type(self)):
-            raise TypeMismatch(
-                "Conversion needed for operation between %s and %s"
-                % (str(type(self)), str(type(other)))
-            )
+    #     :param other: the other BasedReal object
+    #     :param significant: the number of desired significant positions
+    #     :return: the division of the two BasedReal objects
+    #     """
+    #     if not isinstance(self, type(other)) or not isinstance(other, type(self)):
+    #         raise TypeMismatch(
+    #             "Conversion needed for operation between %s and %s"
+    #             % (str(type(self)), str(type(other)))
+    #         )
 
-        final_sign = self.sign * other.sign
+    #     final_sign = self.sign * other.sign
 
-        num_nv = copy.deepcopy(self)
-        denom_nv = copy.deepcopy(other)
-        num_nv.sign = 1
-        denom_nv.sign = 1
+    #     num_nv = copy.deepcopy(self)
+    #     denom_nv = copy.deepcopy(other)
+    #     num_nv.sign = 1
+    #     denom_nv.sign = 1
 
-        q_res = self.zero(significant)
+    #     q_res = self.zero(significant)
 
-        multiplier = 1
+    #     multiplier = 1
 
-        for i in range(significant + 1):
-            q, r = num_nv.euclidian_div(denom_nv)
-            q.__int_idiv(multiplier, significant=significant)
-            q_res += q
+    #     for i in range(significant + 1):
+    #         q, r = num_nv.euclidian_div(denom_nv)
+    #         q.__int_idiv(multiplier, significant=significant)
+    #         q_res += q
 
-            r.__int_imul(self.base.right[i])
-            multiplier *= self.base.right[i]
+    #         r.__int_imul(self.base.right[i])
+    #         multiplier *= self.base.right[i]
 
-            num_nv = r
+    #         num_nv = r
 
-        q_res.remainder += (float(num_nv) / float(denom_nv)
-                            ) / self.base.right[i]
-        q_res.sign = final_sign
+    #     q_res.remainder += (float(num_nv) / float(denom_nv)
+    #                         ) / self.base.right[i]
+    #     q_res.sign = final_sign
 
-        return q_res
+    #     return q_res
 
     def __add__(self, other: "BasedReal") -> "BasedReal":
         """
@@ -864,9 +861,11 @@ class BasedReal(Real):
             for _ in range(0, -exponent):
                 res /= self
 
+        return res
+
     def __rpow__(self, base):
         """base ** self"""
-        raise NotImplementedError
+        return base ** float(self)
 
     def conjugate(self):
         """(x+y*i).conjugate() returns (x-y*i)."""
@@ -966,8 +965,8 @@ class BasedReal(Real):
         """other * self"""
         raise self * other
 
-    def euclidian_div(self, other):
-        raise NotImplementedError()
+    # def euclidian_div(self, other):
+    #     raise NotImplementedError()
 
     def __floordiv__(self, other: "BasedReal") -> "BasedReal":
         """
@@ -976,7 +975,8 @@ class BasedReal(Real):
         :param other: the other BasedReal object
         :return: the quotient in the euclidian division of self with other
         """
-        return self.euclidian_div(other)[0]
+        raise NotImplementedError
+        # return self.euclidian_div(other)[0]
 
     def __mod__(self, other: "BasedReal") -> "BasedReal":
         """
@@ -985,7 +985,8 @@ class BasedReal(Real):
         :param other: the other BasedReal object
         :return: the remainder in the euclidian division of self with other
         """
-        return self.euclidian_div(other)[1]
+        raise NotImplementedError
+        # return self.euclidian_div(other)[1]
 
     def __truediv__(self, other: "BasedReal") -> "BasedReal":
         """
@@ -996,7 +997,8 @@ class BasedReal(Real):
         :param other: the other BasedReal object
         :return: the division of self with other
         """
-        return self.division(other, max(len(self.right), len(other.right)) + 5)
+        raise NotImplementedError
+        # return self.division(other, max(len(self.right), len(other.right)) + 5)
 
     def __gt__(self, other: Number) -> bool:
         """
@@ -1070,11 +1072,11 @@ class BasedReal(Real):
 
     def __floor__(self):
         """Finds the greatest Integral <= self."""
-        return self.__trunc__() + 1 if self.sign < 0 else 0
+        return self.__trunc__() + (1 if self.sign < 0 else 0)
 
     def __ceil__(self):
         """Finds the least Integral >= self."""
-        return self.__trunc__() + 1 if self.sign > 0 else 0
+        return self.__trunc__() + (1 if self.sign > 0 else 0)
 
 
 # here we define standard bases and automatically generate the corresponding BasedReal classes
