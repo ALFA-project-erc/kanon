@@ -1,4 +1,5 @@
 import math as m
+from decimal import Decimal
 
 import pytest
 
@@ -12,7 +13,11 @@ Historical: BasedReal
 class TestRadix:
 
     def test_bases(self):
-        assert Historical('2r 7s 29; 45, 2')
+        assert Historical('2r 7s 29; 45') == 339.75
+        with pytest.raises(IllegalBaseValueError):
+            Historical((-6, 3), ())
+        with pytest.raises(IllegalBaseValueError):
+            Historical((11, 10, 10), ())
 
     def test_init(self):
         s = Sexagesimal((1, 2), (30,))
@@ -24,8 +29,9 @@ class TestRadix:
         assert s == Sexagesimal((1, 2), (30,))
         s = Sexagesimal((0, 0), (36,))
         assert s == 0.6
+        assert s.decimal == Decimal('0.6')
         assert s.left == (0,)
-        s = Sexagesimal((0, 0), (3,), remainder=0.5)
+        s = Sexagesimal((0, 0), (3,), remainder=Decimal('0.5'))
         assert s == 3.5 * 1 / 60
 
         assert Sexagesimal((), (0, 0, 0, 0)).right == (0, 0, 0, 0)
@@ -34,15 +40,19 @@ class TestRadix:
 
         assert Sexagesimal("-1,2,3;30") == -3723.5
 
-        assert Sexagesimal((1, 2, 3, 4, 5), (6, 7, 8))[
-            :] == (1, 2, 3, 4, 5, 6, 7, 8)
+        assert Sexagesimal((1, 2, 3, 4, 5), (6, 7, 8))[:] == (1, 2, 3, 4, 5, 6, 7, 8)
 
-        assert Sexagesimal((1, 2, 31), (6, 7, 8), sign=- 1).__repr__() == "-01,02,31 ; 06,07,08"
+        assert Sexagesimal((1, 2, 31), (6, 7, 8), sign=-1).__repr__() == "-01,02,31 ; 06,07,08"
+        assert Sexagesimal((1, 2, 31), (6,), sign=-1, remainder=Decimal('0.3')).__repr__() == "-01,02,31 ; 06 |r0.3"
 
         with pytest.raises(IllegalBaseValueError):
             Sexagesimal((-6, 3), ())
         with pytest.raises(IllegalFloatValueError):
             Sexagesimal((0.3, 5), (6, 8))
+        with pytest.raises(ValueError):
+            Sexagesimal(3, 5, remainder=Decimal(-5))
+        with pytest.raises(ValueError):
+            Sexagesimal(3, 5, remainder=0.6)
 
         with pytest.raises(TypeError):
             BasedReal()
@@ -84,16 +94,16 @@ class TestRadix:
         assert len(s.resize(4).right) == 4
         assert len(s.resize(4).resize(0).right) == 0
 
-        s = Sexagesimal((1,), (30,), remainder=0.5)
+        s = Sexagesimal((1,), (30,), remainder=Decimal('0.5'))
         assert s.resize(2).remainder == 0
         assert s.resize(2).resize(1).remainder == 0.5
 
-        s = Sexagesimal((1,), (30, 36), remainder=0.5)
-        assert s.resize(1).remainder == float(36.5 / 60)
+        s = Sexagesimal((1,), (30, 36), remainder=Decimal('0.5'))
+        assert s.resize(1).remainder == Decimal('36.5') / 60
         assert s.resize(1).right == (30,)
         s = Sexagesimal('02,02 ; 07,23,55,11,51,21,36')
         assert s.resize(4).right == (7, 23, 55, 11)
-        assert s.resize(4).remainder == 51 / 60 + 21 / 60**2 + 36 / 60**3
+        assert s.resize(4).remainder == Decimal(51) / 60 + Decimal(21) / 60**2 + Decimal(36) / 60**3
 
         assert round(s, 4) == Sexagesimal((2, 2), (7, 23, 55, 12))
 
@@ -119,8 +129,8 @@ class TestRadix:
 
         assert s is Sexagesimal((1, 2), (30,))
         assert s == Sexagesimal((1, 2), (30,))
-        assert s is not Sexagesimal(1, 2, remainder=0.5)
-        assert s == Sexagesimal(1, 2, remainder=0.5)
+        assert s is not Sexagesimal(1, 2, remainder=Decimal('0.5'))
+        assert s == Sexagesimal(1, 2, remainder=Decimal('0.5'))
         assert s is not Sexagesimal((1, 2), (30, 0, 0, 0))
         assert s == Sexagesimal((1, 2), (30, 0, 0, 0))
 
@@ -159,8 +169,8 @@ class TestRadix:
         assert s.left == (1, 3)
         assert s.right == (0,)
 
-        s = Sexagesimal((1, 2), (30,), remainder=0.31) + \
-            Sexagesimal((), (29,), remainder=0.70)
+        s = Sexagesimal((1, 2), (30,), remainder=Decimal('0.31')) + \
+            Sexagesimal((), (29,), remainder=Decimal('0.70'))
         assert m.isclose(s.remainder, 0.01, abs_tol=0.0001)
         assert s.left == (1, 3)
         assert s.right == (0,)
@@ -172,10 +182,31 @@ class TestRadix:
         s = Sexagesimal(20, 1, 2, 10)
 
         assert s * Sexagesimal(2) == Sexagesimal(40, 2, 4, 20)
-        assert s * Sexagesimal(3) == Sexagesimal(1, 0, 3, 6, 30)
+        assert s * -Sexagesimal(3) == -Sexagesimal(1, 0, 3, 6, 30)
 
         check_mul(s, Sexagesimal(38, 3))
         check_mul(s, Sexagesimal((3,), (30,)))
-        check_mul(s, Sexagesimal((3,), (), remainder=0.5))
-        check_mul(Sexagesimal((12, 3), (5, 38, 4), remainder=0.26),
-                  Sexagesimal((2,), (53, 0, 1, 0, 0), remainder=0.84, sign=-1))
+        check_mul(s, Sexagesimal((3,), (), remainder=Decimal('0.5')))
+        check_mul(Sexagesimal((12, 3), (5, 38, 4), remainder=Decimal('0.26')),
+                  -Sexagesimal((2,), (53, 0, 1, 0, 0), remainder=Decimal('0.84')))
+
+        assert Sexagesimal(40, 2) // Sexagesimal(2) == Sexagesimal(20, 1)
+        assert Sexagesimal((40, 2), (30,)) // Sexagesimal(2) == Sexagesimal(20, 1)
+        assert Sexagesimal((40, 2), ()) // Sexagesimal(2) == Sexagesimal(20, 1)
+
+        assert 10.5 // -2 == Sexagesimal((10,), (30,)) // -Sexagesimal(2)
+        assert 1 // 23 == Sexagesimal(1) // Sexagesimal(23)
+
+        assert Sexagesimal(8) % Sexagesimal(3) == Sexagesimal(2)
+        assert Sexagesimal((8,), (30,)) % Sexagesimal(2) == Sexagesimal((0,), (30,))
+        assert Sexagesimal((8,), ()) % Sexagesimal(2) == Sexagesimal()
+
+        assert 10.5 % -2 == Sexagesimal((10,), (30,)) % -Sexagesimal(2)
+        assert 1 % 23 == Sexagesimal(1) % Sexagesimal(23)
+
+        assert Sexagesimal(8) / Sexagesimal(4) == Sexagesimal(2)
+        assert Sexagesimal(8) / Sexagesimal(3) == Sexagesimal((2,), (40,))
+        assert Sexagesimal(1) / Sexagesimal(1, 0) == Sexagesimal((), (1,))
+
+        assert 10.5 / -2 == Sexagesimal((10,), (30,)) / -Sexagesimal(2)
+        assert 1 / 23 == float(Sexagesimal(1) / Sexagesimal(23))
