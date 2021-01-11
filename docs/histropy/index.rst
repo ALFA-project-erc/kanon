@@ -7,4 +7,8 @@ This is the documentation for histropy.
 Reference/API
 =============
 
-.. automodapi:: histropy
+.. toctree::
+  :maxdepth: 2
+
+  tables.rst
+  units.rst

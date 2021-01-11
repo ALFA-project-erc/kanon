@@ -1,12 +1,13 @@
 import json
 from pathlib import Path
+from typing import Type
 
 import requests_mock
 
 from histropy.tables.htable import DISHAS_REQUEST_URL, HTable
-from histropy.units.radices import BasedReal, RadixBase
+from histropy.units import BasedReal, Sexagesimal
 
-Sexagesimal: BasedReal = RadixBase.name_to_base["sexagesimal"].type
+Sexagesimal: Type[BasedReal]
 
 
 class TestHTable:

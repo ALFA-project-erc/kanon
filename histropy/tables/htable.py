@@ -1,18 +1,21 @@
-from typing import Generic, List
+from typing import Generic, List, Type
 
 import pandas as pd
 from astropy.io import registry
 from astropy.table import Table
 
-import histropy.units.radices as rad
+from histropy.units import Sexagesimal
+from histropy.units.radices import BasedReal
 from histropy.utils.types_helper import NT
 
-from .interpolations import Interpolator, linear_interpolation
+from .interpolations import linear_interpolation
+
+Sexagesimal: Type[BasedReal]
 
 
 class HTable(Table, Generic[NT]):
 
-    interpolate: Interpolator = staticmethod(linear_interpolation)
+    interpolate = staticmethod(linear_interpolation)
 
     def __init__(self, *args, **kwargs):
         index = kwargs.get("index")
@@ -51,6 +54,7 @@ DISHAS_REQUEST_URL = "https://dishas.obspm.fr?index=table_content&hits=true&id={
 
 
 def read_table_dishas(requested_id: str) -> HTable:
+
     import requests
 
     res = requests.get(
@@ -61,14 +65,14 @@ def read_table_dishas(requested_id: str) -> HTable:
             f'{requested_id} ID not found in DISHAS database')
     values = res["value_original"]
 
-    def read_sexag_array(array: List[str]) -> rad.Sexagesimal:
+    def read_sexag_array(array: List[str]) -> Sexagesimal:
         negative = array[0][0] == "-"
-        return rad.Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
+        return Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
 
     args = [read_sexag_array(v["value"]) for v in values["args"]["argument1"]]
     entries = [read_sexag_array(v["value"]) for v in values["entry"]]
 
-    return HTable[rad.Sexagesimal]([args, entries], names=("Arg 1", "Entries"), index=("Arg 1"), dtype=[object, object])
+    return HTable[int]([args, entries], names=("Arg 1", "Entries"), index=("Arg 1"), dtype=[object, object])
 
 
 registry.register_reader("dishas", HTable, read_table_dishas)

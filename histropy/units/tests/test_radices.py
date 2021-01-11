@@ -1,13 +1,14 @@
 import math as m
 from decimal import Decimal
+from typing import Type
 
 import pytest
 
+from histropy.units import BasedReal, Historical, Sexagesimal
 from histropy.units.errors import IllegalBaseValueError, IllegalFloatValueError
-from histropy.units.radices import BasedReal, Historical, Sexagesimal
 
-Sexagesimal: BasedReal
-Historical: BasedReal
+Sexagesimal: Type[BasedReal]
+Historical: Type[BasedReal]
 
 
 class TestRadix:
@@ -61,8 +62,7 @@ class TestRadix:
         assert Sexagesimal.from_float(0.5, 4) == Sexagesimal((), (30,))
         assert Sexagesimal.from_float(0.5, 4).right == (30, 0, 0, 0)
         assert Sexagesimal.from_int(5, 2) == Sexagesimal(5)
-        assert Sexagesimal.from_string(
-            "21,1,6,3;34") == Sexagesimal((21, 1, 6, 3), (34,))
+        assert Sexagesimal("21,1,6,3;34") == Sexagesimal((21, 1, 6, 3), (34,))
 
     def test_get(self):
         s = Sexagesimal((1, 2, 30), (18,))
@@ -79,9 +79,10 @@ class TestRadix:
 
     def test_shift(self):
         s = Sexagesimal((20, 1, 2, 30), (0,))
-        assert s.shift(1) == Sexagesimal((20, 1, 2), (30,))
-        assert s.shift(-1) == Sexagesimal((20, 1, 2, 30, 0), ())
-        assert s.shift(7) == Sexagesimal((), (0, 0, 0, 20, 1, 2, 30))
+        assert s >> 1 == Sexagesimal((20, 1, 2), (30,))
+        assert s << 1 == Sexagesimal((20, 1, 2, 30, 0), ())
+        assert s >> -1 == Sexagesimal((20, 1, 2, 30, 0), ())
+        assert s >> 7 == Sexagesimal((), (0, 0, 0, 20, 1, 2, 30))
 
     def test_resize(self):
         s = Sexagesimal(1, 2, 3)

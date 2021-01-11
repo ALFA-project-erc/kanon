@@ -1,5 +1,4 @@
 import math
-import sys
 from decimal import Decimal
 from fractions import Fraction
 from numbers import Number, Real
@@ -20,7 +19,13 @@ RadixBase is the basis of the way we work with different radices.
 BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
 """
 
-current_module = sys.modules[__name__]
+__all__ = ["RadixBase", "BasedReal", "radix_registry"]
+
+
+radix_registry: ClassVar[Dict[str, Type["BasedReal"]]] = {}
+"""
+Registry containing all instanciated BasedReal classes.
+"""
 
 
 class RadixBase:
@@ -29,9 +34,6 @@ class RadixBase:
     by specifying an integer list for the integer positions, and an integer list for the
     fractional positions.
     """
-
-    # This dictionary records all the instantiated RadixBase objects
-    name_to_base: ClassVar[Dict[str, "RadixBase"]] = {}
 
     def __init__(
         self,
@@ -49,8 +51,7 @@ class RadixBase:
         :param left: Radix list for the integer part
         :param right: Radix list for the fractional part
         :param name: Name of this numeral system
-        :param integer_separators: List of string separators, used
-        for displaying the integer part of the number
+        :param integer_separators: List of string separators, used for displaying the integer part of the number
         """
         assert len(left) > 0 < len(right)
         assert all(isinstance(x, int) for x in left)
@@ -70,14 +71,14 @@ class RadixBase:
         self.mixed = any(x != left[0] for x in left)
         self.mixed = any(x != right[0] for x in right)
 
-        # Record the new RadixBase
-        RadixBase.name_to_base[self.name] = self
-
         # Build a class inheriting from BasedReal, that will use this RadixBase as
         # its numeral system.
         type_name = "".join(map(str.capitalize, self.name.split("_")))
+        if type_name in radix_registry:
+            raise ValueError(f"Name {type_name} already exists in registry")
+
         new_type = type(type_name, (BasedReal,), {"base": self})
-        setattr(current_module, type_name, new_type)
+        radix_registry[type_name] = new_type
 
         # Store the newly created BasedReal class
         self.type: Type[BasedReal] = new_type
@@ -89,8 +90,7 @@ class RadixBase:
         notation, or just before the '.' in decimal notation). Positive positions represent
         the fractional positions, negative positions represent the integer positions.
 
-        :param pos: Position. <= 0 for integer part (with 0 being the right-most integer position),
-                    > 0 for fractional part
+        :param pos: Position. <= 0 for integer part (with 0 being the right-most integer position), > 0 for fractional part
         :return: Radix at the specified position
         """
         if pos <= 0:
@@ -109,7 +109,6 @@ class RadixBase:
         3600
         >>> Sexagesimal.base.factor_at_pos(0)
         1
-
 
         :param pos: Position of the digit
         :type pos: int
@@ -139,7 +138,7 @@ class RadixBase:
 
 def ndigit_for_radix(radix: int) -> int:
     """
-    Compute how many ten-radix digits are needed to represent a position of
+    Compute how many digits are needed to represent a position of
     the specified radix.
 
     >>> ndigit_for_radix(10)
@@ -153,42 +152,21 @@ def ndigit_for_radix(radix: int) -> int:
     return int(np.ceil(np.log10(radix)))
 
 
-def trim_zeros(left, right):
-    for i, n in enumerate(left):
-        if n != 0:
-            break
-        left = left[1:]
-
-    offset = 0
-
-    for i in right[::-1]:
-        if i != 0:
-            break
-        right = right[:-1]
-        offset -= 1
-
-    return left, right, offset
-
-
 class BasedReal(Real):
     """
     Abstract class allowing to represent a value in a specific RadixBase.
     Each time a new RadixBase object is recorded, a new class inheriting from BasedReal
-    is created and recorded in the module namespace.
+    is created and recorded in radix_registry.
     The RadixBase to be used will be placed in the class attribute 'base'
 
-    Attributes:
-        left        The typle of values at integer positions (from right to left)
-        right       The tuple of values at fractional positions
-        remainder       When a computation requires more precision than the precision
-                            of this number, we store a floating remainder to keep track of it
-        sign            The sign of this number
-
     Class attributes:
-        base            A RadixBase object (will be attributed dynamically to the children inheriting this class)
+       - base :        A RadixBase object (will be attributed dynamically to the children inheriting this class)
     """
 
     base: RadixBase
+    """
+    RadixBase of this BasedReal
+    """
     __left: Tuple[int]
     __right: Tuple[int]
     __remainder: Decimal
@@ -212,25 +190,54 @@ class BasedReal(Real):
             if s < 0. or s >= self.base[i - len(self.left) + 1]:
                 raise IllegalBaseValueError(self.base, self.base[i - len(self.left) + 1], s)
 
-    @ cached
-    def __new__(cls, *args, remainder=Decimal(0.0), sign=1):
+    def __simplify_integer_part(self) -> int:
+        """
+        Remove the useless trailing zeros in the integer part and return how many were removed
+        """
+        count = 0
+        for i in self.left:
+            if i != 0:
+                break
+            count += 1
+        if count > 0:
+            self.__left = self.left[count:]
+
+        return count != 0
+
+    @cached
+    def __new__(cls, *args, remainder=Decimal(0.0), sign=1) -> "BasedReal":
         """Constructs a number with a given radix.
 
-        Takes :
-        - a string,
-        - 2 iterables representing integral part and fractional part
+        Arguments:
+
+        - a String
+
+        >>> Sexagesimal("-2,31;12,30")
+        -02,31 ; 12,30
+
+        - 2 Sequences representing integral part and fractional part
+
+        >>> Sexagesimal((2,31), (12,30), sign=-1)
+        -02,31 ; 12,30
+        >>> Sexagesimal([2,31], [12,30])
+        02,31 ; 12,30
+
         - a BasedReal with a significant number of digits,
+
+        >>> Sexagesimal(Sexagesimal("-2,31;12,30"), 1)
+        -02,31 ; 12 |r0.5
+
         - multiple integers representing an integral number in current base
 
-        :param remainder: When a computation requires more precision than the precision
-                            of this number, we store a floating remainder to keep track of it, defaults to 0.0
-        :type remainder: float, optional
+        >>> Sexagesimal(21, 1, 3)
+        21,01,03 ;
+
+        :param remainder: When a computation requires more precision than the precision \
+        of this number, we store a Decimal remainder to keep track of it, defaults to 0.0
+        :type remainder: Decimal, optional
         :param sign: The sign of this number, defaults to 1
         :type sign: int, optional
-        :raises ValueError: Unexpected arguments
-        :raises IllegalFloatValueError: Values in arguments contain illegal float values
-        :raises IllegalBaseValueError: Values in arguments contain out of range values
-        :return: new based number
+        :raises ValueError: Unexpected or illegal arguments
         :rtype: BasedReal
         """
         if cls is BasedReal:
@@ -254,7 +261,7 @@ class BasedReal(Real):
                 raise ValueError("Incorrect parameters at BasedReal creation")
         elif len(args) == 1:
             if isinstance(args[0], str):
-                return cls.from_string(args[0])
+                return cls._from_string(args[0])
             raise ValueError(
                 "Please specify a number of significant positions" if isinstance(args[0], Number)
                 else "Incorrect parameters at BasedReal creation"
@@ -273,29 +280,79 @@ class BasedReal(Real):
 
         return self
 
-    @ property
-    def left(self):
+    @property
+    def left(self) -> Tuple[int]:
+        """
+        Tuple of values at integer positions
+
+        >>> Sexagesimal(1,2,3).left
+        (1, 2, 3)
+
+        :rtype: Tuple[int]
+        """
         return self.__left
 
-    @ property
-    def right(self):
+    @property
+    def right(self) -> Tuple[int]:
+        """
+        Tuple of values at fractional positions
+
+        >>> Sexagesimal((1,2,3), (4,5)).right
+        (4, 5)
+
+        :rtype: Tuple[int]
+        """
         return self.__right
 
-    @ property
-    def remainder(self):
+    @property
+    def remainder(self) -> Decimal:
+        """
+        When a computation requires more significant figures than the precision of this number,
+        we store a Decimal remainder to keep track of it
+
+        >>> Sexagesimal(1,2,3, remainder=Decimal("0.2")).remainder
+        Decimal('0.2')
+
+        :return: Remainder of this BasedReal
+        :rtype: Decimal
+        """
         return self.__remainder
 
-    @ property
-    def sign(self):
+    @property
+    def sign(self) -> Union[Literal[-1], Literal[1]]:
+        """
+        Sign of this BasedReal
+
+        >>> Sexagesimal(1,2,3, sign=-1).sign
+        -1
+
+        :rtype: Union[Literal[-1], Literal[1]]
+        """
         return self.__sign
 
-    @ property
-    def significant(self):
+    @property
+    def significant(self) -> int:
+        """
+        Precision of this BasedReal (equals to length of fractional part)
+
+        >>> Sexagesimal((1,2,3), (4,5)).significant
+        2
+
+        :rtype: int
+        """
         return len(self.right)
 
-    @ property
-    @ cached
-    def decimal(self):
+    @property
+    @cached
+    def decimal(self) -> Decimal:
+        """
+        This BasedNumber converted as a Decimal
+
+        >>> Sexagesimal((1,2,3), (15,36)).decimal
+        Decimal('3723.26')
+
+        :rtype: Decimal
+        """
         value = Decimal()
         factor = Decimal(1)
         for i in range(len(self.left)):
@@ -319,31 +376,22 @@ class BasedReal(Real):
     def from_fraction(
         cls,
         fraction: Fraction,
-        remainder=Decimal(0.0),
         significant: Optional[int] = None,
     ) -> "BasedReal":
         """
         :param fraction: a Fraction object
-        :param remainder: remainder to be added
         :param significant: signifcant precision desired
         :return: a BasedReal object computed from a Fraction
         """
+        num, den = fraction.as_integer_ratio()
+        res: BasedReal = cls.from_decimal(Decimal(num) / Decimal(den), significant or 100)
 
-        res: BasedReal = cls.from_float(
-            float(fraction), significant or 100)
-
-        return cls(res.left,
-                   res.right if significant else trim_zeros(
-                       res.left, res.right)[1],
-                   remainder=remainder,
-                   sign=res.sign
-                   )
+        return res if significant else res.minimize_precision()
 
     def __repr__(self) -> str:
         """
         Convert to string representation.
-        Note that this representation is rounded (with respect to the
-         remainder attribute) not truncated
+        Note that this representation is rounded (with respect to the remainder attribute) not truncated
 
         :return: String representation of this number
         """
@@ -380,9 +428,9 @@ class BasedReal(Real):
         return f'{self.__class__.__name__}({str(self.left)}, {str(self.right)}, remainder={self.remainder}, sign={self.sign})'
 
     @classmethod
-    def from_string(cls, string: str) -> "BasedReal":
+    def _from_string(cls, string: str) -> "BasedReal":
         """
-        Class method to instantiate a BasedReal object from a string
+        Instantiate a BasedReal object from a string
 
         >>> Sexagesimal('1, 12; 4, 25')
         01,12 ; 04,25
@@ -394,10 +442,6 @@ class BasedReal(Real):
         :param string: String representation of the number
         :return: a new instance of BasedReal
         """
-        base = cls.base
-
-        if base.name == "decimal":
-            return cls.from_float(float(string), len(string))
 
         string = string.strip().lower()
         if len(string) == 0:
@@ -428,7 +472,7 @@ class BasedReal(Real):
         if len(left) > 0:
             rleft = left[::-1]
             for i in range(len(left)):
-                separator = base.integer_separators[-i - 1].strip().lower()
+                separator = cls.base.integer_separators[-i - 1].strip().lower()
                 if separator != "":
                     split = rleft.split(separator, 1)
                     if len(split) == 1:
@@ -464,7 +508,7 @@ class BasedReal(Real):
         02,02 ; 07,23,55,11,51,21,36
 
         :param significant: Number of desired significant positions
-        :return: self
+        :return: Resized BasedReal
         """
         if significant == len(self.right):
             return self
@@ -478,21 +522,6 @@ class BasedReal(Real):
             return type(self)(self.left, self.right[:significant], remainder=remainder.decimal, sign=self.sign)
         else:
             raise NotImplementedError
-
-    def __simplify_integer_part(self):
-        """
-        Remove the useless trailing zeros in the integer part
-        :return: self
-        """
-        count = 0
-        for i in self.left:
-            if i != 0:
-                break
-            count += 1
-        if count > 0:
-            self.__left = self.left[count:]
-
-        return count != 0
 
     def __trunc__(self):
         return int(float(self.truncate(0)))
@@ -509,8 +538,8 @@ class BasedReal(Real):
         >>> n = n.resize(7); n
         02,02 ; 07,23,55,00,00,00,00
 
-        :param n: Number of desired significant positions
-        :return:
+        :param n: Desired significant positions
+        :return: Truncated BasedReal
         """
         if n > len(self.right):
             return self
@@ -518,15 +547,52 @@ class BasedReal(Real):
         right = self.right[:n] if n >= 0 else ()
         return type(self)(left, right, sign=self.sign)
 
+    def minimize_precision(self) -> "BasedReal":
+        """
+        Removes unnecessary zeros from fractional part if this BasedReal.
+
+        :return: Minimized BasedReal
+        """
+        if self.remainder > 0 or self.right[-1] > 0:
+            return self
+
+        right = self.right
+        for x in self.right[::-1]:
+            if x != 0:
+                return right
+            right = right[:-1]
+
+    def __lshift__(self, other: Real):
+        """self << other
+
+        :param other: Amount to shift this BasedReal
+        :type other: Real
+        :return: Shifted number
+        :rtype: BasedReal
+        """
+        return self.shift(-other)
+
+    def __rshift__(self, other: Real):
+        """self >> other
+
+        :param other: Amount to shift this BasedReal
+        :type other: Real
+        :return: Shifted number
+        :rtype: BasedReal
+        """
+        return self.shift(other)
+
     def shift(self, i: int) -> "BasedReal":
         """
-        Shifts number to the right (-) or the left (+)
+        Shifts number to the left (-) or the right (+).
+        Prefer using >> and << operators (right-shift and left-shift).
 
         >>> Sexagesimal(3).shift(-1)
         03,00 ;
         >>> Sexagesimal(3).shift(2)
         00 ; 00,03
 
+        :param i: Amount to shift this BasedReal
         :return: Shifted number
         :rtype: BasedReal
         """
@@ -550,7 +616,7 @@ class BasedReal(Real):
         return type(self)(left, right, remainder=self.remainder, sign=self.sign)
 
     def subunit_quantity(self, i: int) -> int:
-        return round(self.shift(i))
+        return round(self >> i)
 
     def __round__(self, significant: Optional[int] = None):
         """
@@ -571,7 +637,7 @@ class BasedReal(Real):
             significant = len(self.right)
         n = self.resize(significant)
         if n.remainder >= 0.5:
-            n += type(self)(1, sign=self.sign).shift(significant)
+            n += type(self)(1, sign=self.sign) >> significant
         return n.truncate(significant)
 
     def __getitem__(self, key):
@@ -939,7 +1005,7 @@ class BasedReal(Real):
             count.append(n // factor)
 
         res = type(self)(*tuple(count[::-1]))
-        res = res.shift(2 * max_right)
+        res = res >> 2 * max_right
 
         factor = self.base.factor_at_pos(max_right)
         vb_rem = vb.remainder / factor
@@ -966,9 +1032,9 @@ class BasedReal(Real):
         :return: the quotient in the euclidian division of self with other
         """
         if type(self) is type(other):
-            significant_diff = abs(self.significant - other.significant)
-            floordiv = int(self.shift(-self.significant)) // int(other.shift(-other.significant))
-            res = self.from_int(floordiv).shift(significant_diff)
+            significant_diff: int = abs(self.significant - other.significant)
+            floordiv = int(self << self.significant) // int(other << other.significant)
+            res = self.from_int(floordiv) >> significant_diff
             return res.truncate(0) - (1 if res.sign < 0 else 0)
         elif isinstance(other, Number):
             return self // self.from_float(float(other))
@@ -993,11 +1059,11 @@ class BasedReal(Real):
 
         if type(self) is type(other):
             max_sig = max(self.significant, other.significant)
-            s_self, s_other = (x.shift(-max_sig) for x in (self, other))
+            s_self, s_other = (x << max_sig for x in (self, other))
             intmod = _correct_mod(int(s_self), s_other.decimal)
             remmod = _correct_mod(s_self.remainder, s_other.decimal)
             mod = _correct_mod(intmod + remmod, s_other.decimal)
-            res = self.from_decimal(mod, 0).shift(max_sig)
+            res = self.from_decimal(mod, 0) >> max_sig
             return res
         elif isinstance(other, Number):
             return self % self.from_float(float(other))
@@ -1101,6 +1167,8 @@ RadixBase([60], [60], "floating_sexagesimal")
 RadixBase([10, 12, 30], [60], "historical", ["", "r ", "s "])
 RadixBase([10], [100], "historical_decimal")
 RadixBase([10], [60], "integer_and_sexagesimal")
-RadixBase([10], [60], "integer and sexagesimal")
 RadixBase([10], [24, 60], "temporal")
 # add new definitions here, corresponding BasedReal inherited classes will be automatically generated
+
+Sexagesimal = radix_registry["Sexagesimal"]
+Historical = radix_registry["Historical"]
