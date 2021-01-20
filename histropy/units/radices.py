@@ -1,13 +1,15 @@
 import math
+import warnings
 from decimal import Decimal
 from fractions import Fraction
+from functools import cached_property, lru_cache
 from numbers import Number, Real
 from typing import (Any, ClassVar, Dict, Iterable, List, Literal, Optional,
-                    Tuple, Type, Union)
+                    Tuple, Type)
 
 import numpy as np
-from memoization import cached
 
+from histropy.utils.list_to_tuple import list_to_tuple
 from histropy.utils.looping_list import LoopingList
 
 from .errors import (EmptyStringException, IllegalBaseValueError,
@@ -98,7 +100,7 @@ class RadixBase:
         else:
             return self.right[pos - 1]
 
-    @cached
+    @lru_cache(maxsize=None)
     def factor_at_pos(self, pos: int) -> int:
         """
         Returns an int factor corresponding to a digit at position pos.
@@ -120,7 +122,7 @@ class RadixBase:
             factor *= self[i if pos > 0 else -i]
         return factor
 
-    @cached
+    @lru_cache(maxsize=None)
     def mul_factor(self, i, j):
         numerator = 1
         for k in range(1, i + j + 1):
@@ -170,7 +172,7 @@ class BasedReal(Real):
     __left: Tuple[int]
     __right: Tuple[int]
     __remainder: Decimal
-    __sign: Union[Literal[-1], Literal[1]]
+    __sign: Literal[-1, 1]
     __slots__ = ('base', '__left', '__right', '__remainder', '__sign')
 
     def __check_range(self):
@@ -180,7 +182,15 @@ class BasedReal(Real):
         if self.sign not in (-1, 1):
             raise ValueError("Sign should be -1 or 1")
         if not (isinstance(self.remainder, Decimal) and 0 <= self.remainder < 1):
-            raise ValueError(f"Illegal remainder value ({self.remainder}), should be a Decimal between [0.,1.[")
+            if self.remainder == 1:
+                self += (self.one() * self.sign) >> self.significant
+            else:
+                raise ValueError(f"Illegal remainder value ({self.remainder}), should be a Decimal between [0.,1.[")
+        if self.base.factor_at_pos(len(self.left) - 1) > 1e+15:
+            warnings.warn("""
+                        Integer part of this number exceeds floating point precision.
+                        Calculations made with this number might return incorrect results
+                        """)
         for x in self[:]:
             if isinstance(x, float):
                 raise IllegalFloatValueError(x)
@@ -204,7 +214,8 @@ class BasedReal(Real):
 
         return count != 0
 
-    @cached
+    @list_to_tuple
+    @lru_cache(maxsize=None)
     def __new__(cls, *args, remainder=Decimal(0.0), sign=1) -> "BasedReal":
         """Constructs a number with a given radix.
 
@@ -319,14 +330,14 @@ class BasedReal(Real):
         return self.__remainder
 
     @property
-    def sign(self) -> Union[Literal[-1], Literal[1]]:
+    def sign(self) -> Literal[-1, 1]:
         """
         Sign of this BasedReal
 
         >>> Sexagesimal(1,2,3, sign=-1).sign
         -1
 
-        :rtype: Union[Literal[-1], Literal[1]]
+        :rtype: Literal[-1, 1]
         """
         return self.__sign
 
@@ -342,8 +353,7 @@ class BasedReal(Real):
         """
         return len(self.right)
 
-    @property
-    @cached
+    @cached_property
     def decimal(self) -> Decimal:
         """
         This BasedNumber converted as a Decimal
@@ -359,7 +369,7 @@ class BasedReal(Real):
             value += factor * self.left[-i - 1]
             factor *= self.base.left[i]
         factor = Decimal(1)
-        for i in range(len(self.right)):
+        for i in range(self.significant):
             factor *= self.base.right[i]
             value += self.right[i] / factor
 
@@ -370,7 +380,7 @@ class BasedReal(Real):
         """
         :return: this BasedReal as a Fraction object.
         """
-        return Fraction(float(self))
+        return Fraction(self.decimal.as_integer_ratio())
 
     @classmethod
     def from_fraction(
@@ -383,6 +393,10 @@ class BasedReal(Real):
         :param significant: signifcant precision desired
         :return: a BasedReal object computed from a Fraction
         """
+
+        if not isinstance(fraction, Fraction):
+            raise ValueError(f"Argument {fraction} is not a Fraction")
+
         num, den = fraction.as_integer_ratio()
         res: BasedReal = cls.from_decimal(Decimal(num) / Decimal(den), significant or 100)
 
@@ -395,28 +409,25 @@ class BasedReal(Real):
 
         :return: String representation of this number
         """
-        nv: BasedReal = self
-        if nv.base.name == "decimal":
-            return "".join(str(v) for v in nv.left) + "." + "".join(str(v) for v in nv.right)
         res = ""
-        if nv.sign < 0:
+        if self.sign < 0:
             res += "-"
 
-        for i in range(len(nv.left)):
+        for i in range(len(self.left)):
             if i > 0:
-                res += nv.base.integer_separators[i]
-            num = str(nv.left[i])
-            digit = ndigit_for_radix(nv.base.left[i])
+                res += self.base.integer_separators[i]
+            num = str(self.left[i])
+            digit = ndigit_for_radix(self.base.left[i])
             res += "0" * (digit - len(num)) + num
 
         res += " ; "
 
-        for i in range(len(nv.right)):
-            num = str(nv.right[i])
-            digit = ndigit_for_radix(nv.base.right[i])
+        for i in range(len(self.right)):
+            num = str(self.right[i])
+            digit = ndigit_for_radix(self.base.right[i])
             res += "0" * (digit - len(num)) + num
 
-            if i < len(nv.right) - 1:
+            if i < len(self.right) - 1:
                 res += ","
 
         if self.remainder:
@@ -424,8 +435,7 @@ class BasedReal(Real):
 
         return res
 
-    def __str__(self):
-        return f'{self.__class__.__name__}({str(self.left)}, {str(self.right)}, remainder={self.remainder}, sign={self.sign})'
+    __str__ = __repr__
 
     @classmethod
     def _from_string(cls, string: str) -> "BasedReal":
@@ -442,6 +452,9 @@ class BasedReal(Real):
         :param string: String representation of the number
         :return: a new instance of BasedReal
         """
+
+        if not isinstance(string, str):
+            raise ValueError(f"Argument {string} is not a str")
 
         string = string.strip().lower()
         if len(string) == 0:
@@ -510,10 +523,10 @@ class BasedReal(Real):
         :param significant: Number of desired significant positions
         :return: Resized BasedReal
         """
-        if significant == len(self.right):
+        if significant == self.significant:
             return self
-        if significant > len(self.right):
-            rem = type(self).from_decimal(self.sign * self.remainder, significant - len(self.right))
+        if significant > self.significant:
+            rem = type(self).from_decimal(self.sign * self.remainder, significant - self.significant)
             return type(self)(self.left, self.right + rem.right, remainder=rem.remainder, sign=self.sign)
         elif significant >= 0:
             remainder = type(self)(
@@ -526,7 +539,7 @@ class BasedReal(Real):
     def __trunc__(self):
         return int(float(self.truncate(0)))
 
-    def truncate(self, n: int) -> "BasedReal":
+    def truncate(self, n: Optional[int] = None) -> "BasedReal":
         """
         Truncate this BasedReal object to the specified precision
 
@@ -541,7 +554,9 @@ class BasedReal(Real):
         :param n: Desired significant positions
         :return: Truncated BasedReal
         """
-        if n > len(self.right):
+        if n is None:
+            n = self.significant
+        if n > self.significant:
             return self
         left = self.left if n >= 0 else self.left[:-n]
         right = self.right[:n] if n >= 0 else ()
@@ -562,21 +577,21 @@ class BasedReal(Real):
                 return right
             right = right[:-1]
 
-    def __lshift__(self, other: Real):
+    def __lshift__(self, other: int) -> "BasedReal":
         """self << other
 
         :param other: Amount to shift this BasedReal
-        :type other: Real
+        :type other: int
         :return: Shifted number
         :rtype: BasedReal
         """
         return self.shift(-other)
 
-    def __rshift__(self, other: Real):
+    def __rshift__(self, other: int) -> "BasedReal":
         """self >> other
 
         :param other: Amount to shift this BasedReal
-        :type other: Real
+        :type other: int
         :return: Shifted number
         :rtype: BasedReal
         """
@@ -606,14 +621,15 @@ class BasedReal(Real):
 
         else:
 
-            left_right = (0,) * i + self[:] + (0,) * -i
-
             offset = len(self.left) if i > 0 else len(self.left) - i
+            remainder = self.from_decimal(self.remainder, max(0, offset - len(self[:])))
+
+            left_right = (0,) * i + self[:] + remainder.right
 
             left = left_right[:offset]
             right = left_right[offset:-i if -i > offset else None]
 
-        return type(self)(left, right, remainder=self.remainder, sign=self.sign)
+        return type(self)(left, right, remainder=remainder.remainder, sign=self.sign)
 
     def subunit_quantity(self, i: int) -> int:
         return round(self >> i)
@@ -634,7 +650,7 @@ class BasedReal(Real):
         :return: self
         """
         if significant is None:
-            significant = len(self.right)
+            significant = self.significant
         n = self.resize(significant)
         if n.remainder >= 0.5:
             n += type(self)(1, sign=self.sign) >> significant
@@ -658,7 +674,7 @@ class BasedReal(Real):
         elif isinstance(key, int):
             if -len(self.left) < key <= 0:
                 return self.left[key - 1]
-            elif len(self.right) >= key > 0:
+            elif self.significant >= key > 0:
                 return self.right[key - 1]
             else:
                 raise IndexError
@@ -678,6 +694,9 @@ class BasedReal(Real):
         :return: a new BasedReal object
         """
 
+        if not isinstance(floa, (int, float)):
+            raise ValueError(f"Argument {floa} is not a float")
+
         integer_part = cls.from_int(int(floa), significant=significant)
         value = abs(floa - int(integer_part))
 
@@ -685,13 +704,13 @@ class BasedReal(Real):
 
         factor = 1.0
         for i in range(significant):
-            factor /= cls.base.right[i]
-            position_value = int(value / factor)
-            value -= position_value * factor
+            factor = cls.base.right[i]
+            value *= factor
+            position_value = int(value)
+            value -= position_value
             right[i] = position_value
 
-        remainder = value / factor
-        return cls(integer_part.left, tuple(right), remainder=Decimal(remainder), sign=integer_part.sign)
+        return cls(integer_part.left, tuple(right), remainder=Decimal(value), sign=-1 if floa < 0 else 1)
 
     @classmethod
     def from_decimal(cls, dec: Decimal, significant: int) -> "BasedReal":
@@ -705,6 +724,10 @@ class BasedReal(Real):
         :param significant: precision of the number
         :return: a new BasedReal object
         """
+
+        if not isinstance(dec, Decimal):
+            raise ValueError(f"Argument {dec} is not a Decimal")
+
         integer_part = cls.from_int(int(dec), significant=significant)
         value = abs(dec - int(integer_part))
 
@@ -718,7 +741,7 @@ class BasedReal(Real):
             value -= position_value
             right[i] = position_value
 
-        return cls(integer_part.left, tuple(right), remainder=value, sign=integer_part.sign)
+        return cls(integer_part.left, tuple(right), remainder=value, sign=-1 if dec < 0 else 1)
 
     @classmethod
     def zero(cls, significant=0) -> "BasedReal":
@@ -758,8 +781,12 @@ class BasedReal(Real):
         :param significant: precision of the number
         :return: a new BasedReal object
         """
+
+        if not isinstance(value, int):
+            raise ValueError(f"Argument {value} is not an int")
+
         base = cls.base
-        sign = int(np.sign(value)) or 1
+        sign = -1 if value < 0 else 1
         value *= sign
 
         pos = 0
@@ -792,18 +819,26 @@ class BasedReal(Real):
 
         :return: float representation of this BasedReal object
         """
-        value = 0.0
+        value = abs(int(self))
         factor = 1.0
-        for i in range(len(self.left)):
-            value += factor * self.left[-i - 1]
-            factor *= self.base.left[i]
-        factor = 1.0
-        for i in range(len(self.right)):
+        for i in range(self.significant):
             factor /= self.base.right[i]
             value += factor * self.right[i]
 
         value += factor * float(self.remainder)
         return float(value * self.sign)
+
+    def __int__(self) -> int:
+        """
+        Compute the int value of this BasedReal object
+        """
+        value = 0
+        factor = 1
+        for i in range(len(self.left)):
+            value += factor * self.left[-i - 1]
+            factor *= self.base.left[i]
+
+        return value * self.sign
 
     def division(self, other: "BasedReal", significant: int) -> "BasedReal":
         """
@@ -813,6 +848,13 @@ class BasedReal(Real):
         :param significant: the number of desired significant positions
         :return: the division of the two BasedReal objects
         """
+
+        if self == 0:
+            return self.zero(significant=significant)
+        if other == 1:
+            return self
+        if other == -1:
+            return -self
 
         sign = self.sign * other.sign
 
@@ -829,24 +871,31 @@ class BasedReal(Real):
         for i in range(0, significant):
             numerator = r * self.base.right[i]
             q, r = divmod(numerator, denominator)
+            if q == self.base.right[i]:
+                q_res += 1
+                r = self.zero()
+                break
             right[i] = int(q)
 
-        return type(self)(q_res.left, tuple(right), remainder=r.decimal / denominator.decimal, sign=sign)
+        return type(self)(q_res.left, right, remainder=r.decimal / denominator.decimal, sign=sign)
 
     def __add__(self, other: "BasedReal") -> "BasedReal":
         """
-        Implementation of the add + operator
+        self + other
 
         >>> Sexagesimal('01, 21; 47, 25') + Sexagesimal('45; 32, 14, 22')
-        02,07 ; 19,39,22
+        02,07 ; 19,39 |r0.4
 
         :param other:
         :return: the sum of the two BasedReal objects
         """
-        if not isinstance(self, type(other)) or not isinstance(other, type(self)):
-            return self + self.from_float(float(other), significant=len(self.right))
+        if type(self) is not type(other):
+            return self + self.from_float(float(other), significant=self.significant)
 
-        maxright = max(len(self.right), len(other.right))
+        if self.decimal == -other.decimal:
+            return self.zero(min(self.significant, other.significant))
+
+        maxright = max(self.significant, other.significant)
         maxleft = max(len(self.left), len(other.left))
         va = self.resize(maxright)
         vb = other.resize(maxright)
@@ -856,43 +905,36 @@ class BasedReal(Real):
             va = -va
             vb = -vb
 
+        maxlen = max(len(va[:]), len(vb[:]))
+        values = ([v.sign * x for x in v[::-1]] + [0] * (maxlen - len(v[:])) for v in (va, vb))
+        numbers: List[int] = [a + b for a, b in zip(*values)] + [0]
+
         remainder = va.remainder * va.sign + vb.remainder * vb.sign
+        fn = remainder if remainder >= 0 else remainder - 1
+        remainder -= int(fn)
+        numbers[0] += int(fn)
 
-        numbers = [int(remainder)] + [0] * max(len(va[:]), len(vb[:]))
-        remainder -= int(remainder)
-
-        def add(array: List[int], values: "BasedReal"):
-            to_add = tuple(
-                values.sign * x for x in values[::-1]) + (0,) * (len(numbers) - len(values[:]) - 1)
-            for i, r in enumerate(to_add):
-                array[i] += r
-                factor = self.base[maxright - i]
-                n = array[i]
-                if n < 0 or n >= factor:
-                    array[i] = n % factor
-                    array[i + 1] += 1 if n > 0 else -1
-
-        add(numbers, va)
-        add(numbers, vb)
+        for i, r in enumerate(numbers):
+            factor = self.base[maxright - i]
+            if r < 0 or r >= factor:
+                numbers[i] = r % factor
+                numbers[i + 1] += 1 if r > 0 else -1
 
         numbers = tuple(abs(x) for x in numbers[::-1])
         left = numbers[:maxleft + 1]
         right = numbers[maxleft + 1:]
 
-        return type(self)(left, right, remainder=remainder, sign=sign)
+        return type(self)(left, right, remainder=abs(remainder), sign=sign).resize(min(self.significant, other.significant))
 
-    def __radd__(self, other):
+    def __radd__(self, other) -> "BasedReal":
         """other + self"""
         return self + other
 
     def __sub__(self, other: "BasedReal") -> "BasedReal":
-        """
-        :param other: other BasedReal Object
-        :return: self
-        """
+        """self - other"""
         return self + -other
 
-    def __rsub__(self, other):
+    def __rsub__(self, other) -> "BasedReal":
         """other - self"""
         return other + -self
 
@@ -902,47 +944,45 @@ class BasedReal(Real):
 
     def __pow__(self, exponent):
         """self**exponent; should promote to float or complex when necessary."""
+        res = self.one(self.significant)
+
         if exponent == 0:
-            return self.one(0)
-        elif exponent > 0:
-            res = self
-            for _ in range(1, exponent):
+            return res
+        if self == 0:
+            return self
+
+        int_exp = int(exponent)
+        f_exp = float(exponent - int_exp)
+
+        if int_exp > 0:
+            for _ in range(0, int_exp):
                 res *= self
         else:
-            res = 1
-            for _ in range(0, -exponent):
+            for _ in range(0, -int_exp):
                 res /= self
+        res *= (float(self) ** f_exp).real
 
         return res
 
     def __rpow__(self, base):
         """base ** self"""
-        return base ** float(self)
+        return self.from_float(float(base), self.significant) ** self
 
     def conjugate(self):
         """(x+y*i).conjugate() returns (x-y*i)."""
         return self
 
     def __neg__(self) -> "BasedReal":
-        """
-        Implementation of the neg operator
-
-        >>> -Sexagesimal('-12; 14, 15')
-        12 ; 14,15
-
-        :return: the opposite of self
-        """
+        """-self"""
         return type(self)(self.left, self.right, remainder=self.remainder, sign=-self.sign)
 
     def __pos__(self) -> "BasedReal":
-        """
-        :return: self
-        """
+        """+self"""
         return self
 
     def __abs__(self) -> "BasedReal":
         """
-        Implementation of the abs operator.
+        abs(self)
 
         >>> abs(Sexagesimal('-12; 14, 15'))
         12 ; 14,15
@@ -955,15 +995,15 @@ class BasedReal(Real):
 
     def __mul__(self, other: "BasedReal") -> "BasedReal":
         """
-        Implementation of the multiplication operator
+        self * other
 
         >>> Sexagesimal('01, 12; 04, 17') * Sexagesimal('7; 45, 55')
-        09,19 ; 39,15,40,35
+        09,19 ; 39,15 |r0.7
 
         :param other: The other BasedReal to multiply
         :return: The product of the 2 BasedReal object
         """
-        if not isinstance(self, type(other)) or not isinstance(other, type(self)):
+        if type(self) is not type(other):
             return self * self.from_float(other, self.significant)
 
         if self == 1:
@@ -1004,71 +1044,63 @@ class BasedReal(Real):
             count[-1] = n % factor
             count.append(n // factor)
 
-        res = type(self)(*tuple(count[::-1]))
+        res = type(self)(*tuple(count[::-1]), sign=sign)
         res = res >> 2 * max_right
 
         factor = self.base.factor_at_pos(max_right)
-        vb_rem = vb.remainder / factor
-        va_rem = va.remainder / factor
-        res += float(va) * float(vb_rem) + float(vb) * float(va_rem) + float(va_rem * vb_rem)
+        vb_rem = vb.sign * vb.remainder / factor
+        va_rem = va.sign * va.remainder / factor
+        res += float(va.truncate().decimal * vb_rem
+                     + vb.truncate().decimal * va_rem
+                     + va_rem * vb_rem
+                     )
 
-        if sign < 0:
-            res = -res
-
-        return res
+        return res.resize(min(self.significant, other.significant))
 
     def __rmul__(self, other):
         """other * self"""
-        raise self * other
+        return self * other
 
-    def __divmod__(self, other: Any) -> Any:
-        return self // other, self % other
+    def __divmod__(self, other: Any) -> Tuple["BasedReal", "BasedReal"]:
+        """divmod(self, other)"""
 
-    def __floordiv__(self, other: Number) -> "BasedReal":
-        """
-        self // other
-
-        :param other: the other BasedReal object
-        :return: the quotient in the euclidian division of self with other
-        """
         if type(self) is type(other):
-            significant_diff: int = abs(self.significant - other.significant)
-            floordiv = int(self << self.significant) // int(other << other.significant)
-            res = self.from_int(floordiv) >> significant_diff
-            return res.truncate(0) - (1 if res.sign < 0 else 0)
+
+            min_significant = min(self.significant, other.significant)
+            if self == 0:
+                return (self.zero(min_significant),) * 2
+
+            max_significant = max(self.significant, other.significant)
+            s_self = self << max_significant
+            s_other = other << max_significant
+            if s_self.remainder == s_other.remainder == 0:
+                fdiv, mod = divmod(int(s_self), int(s_other))
+                return self.from_int(fdiv, min_significant), self.from_int(mod, min_significant) >> max_significant
+            else:
+                fdiv = math.floor(self.decimal / other.decimal)
+                if fdiv == self.decimal / other.decimal:
+                    mod = Decimal(0)
+                else:
+                    mod = self.decimal % other.decimal + 0 if self.sign == other.sign else other.decimal
+                return self.from_int(
+                    fdiv, min_significant
+                ), self.from_decimal(mod, min_significant)
         elif isinstance(other, Number):
-            return self // self.from_float(float(other))
+            return divmod(self, self.from_float(float(other), self.significant))
         else:
             raise TypeError
+
+    def __floordiv__(self, other: Number) -> "BasedReal":
+        """self // other"""
+        return divmod(self, other)[0]
 
     def __rfloordiv__(self, other):
         """other // self: The floor() of other/self."""
         return other // float(self)
 
     def __mod__(self, other: "BasedReal") -> "BasedReal":
-        """
-        self % other
-
-        :param other: the other BasedReal object
-        :return: the remainder in the euclidian division of self with other
-        """
-
-        def _correct_mod(a: Decimal, b: Decimal) -> Decimal:
-            r = 0 if math.copysign(1, a) == math.copysign(1, b) else b
-            return a % b + r
-
-        if type(self) is type(other):
-            max_sig = max(self.significant, other.significant)
-            s_self, s_other = (x << max_sig for x in (self, other))
-            intmod = _correct_mod(int(s_self), s_other.decimal)
-            remmod = _correct_mod(s_self.remainder, s_other.decimal)
-            mod = _correct_mod(intmod + remmod, s_other.decimal)
-            res = self.from_decimal(mod, 0) >> max_sig
-            return res
-        elif isinstance(other, Number):
-            return self % self.from_float(float(other))
-        else:
-            raise TypeError
+        """self % other"""
+        return divmod(self, other)[1]
 
     def __rmod__(self, other):
         """other % self"""
@@ -1084,68 +1116,38 @@ class BasedReal(Real):
         :return: the division of self with other
         """
         if type(self) is type(other):
-            return self.division(other, max(self.significant, other.significant) + 1)
+            return self.division(other, min(self.significant, other.significant) + 1)
         elif isinstance(other, Number):
-            return self / self.from_float(float(other))
+            return self / self.from_float(float(other), significant=self.significant)
         else:
             raise TypeError
 
     def __gt__(self, other: Number) -> bool:
-        """
-        self > other
-
-        :param other: other  object
-        :return: True if self is greater than other, False if not
-        """
+        """self > other"""
+        if type(self) is type(other):
+            return self.decimal > other.decimal
         return float(self) > float(other)
 
     def __eq__(self, other: Number) -> bool:
-        """
-        self == other
-
-        :param other: other BasedReal object
-        :return: True if both BasedReal objects are equal, False if not
-        """
-
-        if not isinstance(self, type(other)) or len(self.right) != len(other.right):
-            return float(self) == float(other)
-
-        return self.sign == other.sign and self.right == other.right and self.left == other.left and self.remainder == other.remainder
+        """self == other"""
+        if type(self) is type(other):
+            return self.decimal == other.decimal
+        return float(self) == float(other)
 
     def __ne__(self, other: object) -> bool:
-        """
-        self != other
-
-        :param other: other BasedReal object
-        :return: True if self and other are different, False if not
-        """
+        """self != other"""
         return not self == other
 
     def __ge__(self, other: "BasedReal") -> bool:
-        """
-        self >= other
-
-        :param other: other BasedReal object
-        :return: True if self is greater or equal to other, False if not
-        """
+        """self >= other"""
         return self == other or self > other
 
     def __lt__(self, other: "BasedReal") -> bool:
-        """
-        self < other
-
-        :param other: other BasedReal object
-        :return: True if self is greater than other, False if not
-        """
+        """self < other"""
         return not self >= other
 
     def __le__(self, other: "BasedReal") -> bool:
-        """
-        self <= other
-
-        :param other: other BasedReal object
-        :return: True if self is greater or equal to other, False if not
-        """
+        """self <= other"""
         return not self > other
 
     def __floor__(self):
@@ -1155,6 +1157,11 @@ class BasedReal(Real):
     def __ceil__(self):
         """Finds the least Integral >= self."""
         return self.__trunc__() + (1 if self.sign > 0 else 0)
+
+    def __hash__(self) -> int:
+        if self.remainder == 0 and all([x == 0 for x in self.right]):
+            return int(self)
+        return hash((self.left, self.right, self.sign, self.remainder))
 
     def sqrt(self, precision=None):
         raise NotImplementedError

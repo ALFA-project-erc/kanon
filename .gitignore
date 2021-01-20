@@ -67,3 +67,5 @@ pip-wheel-metadata/
 .devcontainer
 
 coverage.xml
+.tmp
+.hypothesis

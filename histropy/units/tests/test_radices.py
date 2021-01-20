@@ -1,8 +1,13 @@
 import math as m
-from decimal import Decimal
+import operator as op
+from decimal import Decimal, InvalidOperation
 from typing import Type
 
+import hypothesis
 import pytest
+from hypothesis import strategies as st
+from hypothesis.core import given
+from hypothesis.strategies._internal.core import integers
 
 from histropy.units import BasedReal, Historical, Sexagesimal
 from histropy.units.errors import IllegalBaseValueError, IllegalFloatValueError
@@ -60,6 +65,7 @@ class TestRadix:
 
     def test_build(self):
         assert Sexagesimal.from_float(0.5, 4) == Sexagesimal((), (30,))
+        assert Sexagesimal.from_float(-0.016666666666666666, 2) == -Sexagesimal((0,), (1,))
         assert Sexagesimal.from_float(0.5, 4).right == (30, 0, 0, 0)
         assert Sexagesimal.from_int(5, 2) == Sexagesimal(5)
         assert Sexagesimal("21,1,6,3;34") == Sexagesimal((21, 1, 6, 3), (34,))
@@ -83,6 +89,9 @@ class TestRadix:
         assert s << 1 == Sexagesimal((20, 1, 2, 30, 0), ())
         assert s >> -1 == Sexagesimal((20, 1, 2, 30, 0), ())
         assert s >> 7 == Sexagesimal((), (0, 0, 0, 20, 1, 2, 30))
+        s = Sexagesimal((20,), (0, 2, 0), remainder=Decimal(0.5))
+        assert s << 2 == Sexagesimal((20, 0, 2), (0, 30))
+        assert s << 5 == Sexagesimal((20, 0, 2, 0, 30, 0), ())
 
     def test_resize(self):
         s = Sexagesimal(1, 2, 3)
@@ -107,6 +116,9 @@ class TestRadix:
         assert s.resize(4).remainder == Decimal(51) / 60 + Decimal(21) / 60**2 + Decimal(36) / 60**3
 
         assert round(s, 4) == Sexagesimal((2, 2), (7, 23, 55, 12))
+
+        a = Sexagesimal(1, 0, remainder=Decimal("0.0000714235"))
+        assert a / (a >> 2) == 3600
 
     def test_comparisons(self):
         s = Sexagesimal((1, 2), (30,))
@@ -135,79 +147,57 @@ class TestRadix:
         assert s is not Sexagesimal((1, 2), (30, 0, 0, 0))
         assert s == Sexagesimal((1, 2), (30, 0, 0, 0))
 
-    def test_add_sub(self):
-        s = Sexagesimal(20, 1, 2, 10)
-        assert s + s == Sexagesimal(40, 2, 4, 20)
+    def biop_testing(self, x, y, operator):
+        fx, fy = float(x), float(y)
+        a = float(operator(x, y))
+        b: float = operator(fx, fy)
+        try:
+            abstol = 1e-11 if a and b else 1e-09
+            assert m.isclose(a, b.real, abs_tol=abstol)
+            a = float(operator(x, fy))
+            b = float(operator(fx, y))
+            assert m.isclose(a, b.real, abs_tol=abstol)
+        except Exception as e:
+            hypothesis.note(f"{operator.__name__}: {a} {b}")
+            raise e
 
-        a = Sexagesimal(3, 21, 0, 0)
-        assert s + a == Sexagesimal(23, 22, 2, 10)
+    @given(st.from_type(Sexagesimal),
+           st.from_type(Sexagesimal))
+    def test_operations_with_remainders(self, x, y):
+        hypothesis.note(x.remainder)
+        hypothesis.note(y.remainder)
+        fx = float(x)
 
-        s = Sexagesimal(31, 1, 2, 30)
-        assert s + s == Sexagesimal(1, 2, 2, 5, 0)
-        a = Sexagesimal(1, 31, 1, 2, 30)
-        assert a + s == Sexagesimal(2, 2, 2, 5, 0)
+        assert float(-x) == -fx
+        assert float(+x) == fx
+        assert abs(x) == abs(fx)
 
-        a = -Sexagesimal(3, 1, 4, 29)
-        assert s + a == Sexagesimal(27, 59, 58, 1)
+        for o in (op.mul, op.add, op.sub):
+            self.biop_testing(x, y, o)
 
-        a = Sexagesimal(3, 1, 0, 30)
-        s = Sexagesimal(31, 1, 2, 30)
-        assert a - s == -Sexagesimal(28, 0, 2, 0)
-        assert -a + s == Sexagesimal(28, 0, 2, 0)
-        assert s - a == Sexagesimal(28, 0, 2, 0)
+        if y != 0:
+            try:
+                self.biop_testing(x, y, op.truediv)
+            except InvalidOperation:
+                pass
 
-        assert a + s.shift(1) == Sexagesimal((3, 32, 1, 32), (30,))
-        assert a - s.shift(1) == Sexagesimal((2, 29, 59, 27), (30,))
+    @given(st.from_type(Sexagesimal),
+           st.from_type(Sexagesimal))
+    def test_operations_without_remainders(self, x, y):
+        x, y = x.truncate(), y.truncate()
+        fy = float(y)
 
-        assert Sexagesimal(1, 2) + 0.5 == Sexagesimal((1, 2), (30,))
+        for o in (op.mul, op.add, op.sub, op.pow):
+            if o == op.pow and (fy < 0 or fy > 10):
+                continue
+            self.biop_testing(x, y, o)
 
-        s = Sexagesimal((1, 2), (30,)) + 0.5
-        assert s.remainder == 0
-        assert s.left == (1, 3)
-        assert s.right == (0,)
-        s = 0.5 + Sexagesimal((1, 2), (30,))
-        assert s.remainder == 0
-        assert s.left == (1, 3)
-        assert s.right == (0,)
+        if y != 0:
+            self.biop_testing(x, y, op.truediv)
 
-        s = Sexagesimal((1, 2), (30,), remainder=Decimal('0.31')) + \
-            Sexagesimal((), (29,), remainder=Decimal('0.70'))
-        assert m.isclose(s.remainder, 0.01, abs_tol=0.0001)
-        assert s.left == (1, 3)
-        assert s.right == (0,)
-
-    def test_mul_div(self):
-        def check_mul(a, b):
-            assert m.isclose(float(a * b), float(a) * float(b))
-
-        s = Sexagesimal(20, 1, 2, 10)
-
-        assert s * Sexagesimal(2) == Sexagesimal(40, 2, 4, 20)
-        assert s * -Sexagesimal(3) == -Sexagesimal(1, 0, 3, 6, 30)
-
-        check_mul(s, Sexagesimal(38, 3))
-        check_mul(s, Sexagesimal((3,), (30,)))
-        check_mul(s, Sexagesimal((3,), (), remainder=Decimal('0.5')))
-        check_mul(Sexagesimal((12, 3), (5, 38, 4), remainder=Decimal('0.26')),
-                  -Sexagesimal((2,), (53, 0, 1, 0, 0), remainder=Decimal('0.84')))
-
-        assert Sexagesimal(40, 2) // Sexagesimal(2) == Sexagesimal(20, 1)
-        assert Sexagesimal((40, 2), (30,)) // Sexagesimal(2) == Sexagesimal(20, 1)
-        assert Sexagesimal((40, 2), ()) // Sexagesimal(2) == Sexagesimal(20, 1)
-
-        assert 10.5 // -2 == Sexagesimal((10,), (30,)) // -Sexagesimal(2)
-        assert 1 // 23 == Sexagesimal(1) // Sexagesimal(23)
-
-        assert Sexagesimal(8) % Sexagesimal(3) == Sexagesimal(2)
-        assert Sexagesimal((8,), (30,)) % Sexagesimal(2) == Sexagesimal((0,), (30,))
-        assert Sexagesimal((8,), ()) % Sexagesimal(2) == Sexagesimal()
-
-        assert 10.5 % -2 == Sexagesimal((10,), (30,)) % -Sexagesimal(2)
-        assert 1 % 23 == Sexagesimal(1) % Sexagesimal(23)
-
-        assert Sexagesimal(8) / Sexagesimal(4) == Sexagesimal(2)
-        assert Sexagesimal(8) / Sexagesimal(3) == Sexagesimal((2,), (40,))
-        assert Sexagesimal(1) / Sexagesimal(1, 0) == Sexagesimal((), (1,))
-
-        assert 10.5 / -2 == Sexagesimal((10,), (30,)) / -Sexagesimal(2)
-        assert 1 / 23 == float(Sexagesimal(1) / Sexagesimal(23))
+    @given(integers(min_value=-1e15, max_value=1e15).map(Sexagesimal.from_int),
+           integers(min_value=-1e15, max_value=1e15).filter(lambda x: x != 0).map(Sexagesimal.from_int))
+    def test_mod_integers(self, x, y):
+        hypothesis.assume(int(x) % int(y) == float(x) % float(y))
+        self.biop_testing(x, y, op.mod)
+        self.biop_testing(x, y, op.floordiv)

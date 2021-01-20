@@ -39,6 +39,24 @@ def pytest_configure(config):
         packagename = os.path.basename(os.path.dirname(__file__))
         TESTED_VERSIONS[packagename] = __version__
 
+
+def _hypothesis_sexagesimal_strategy():  # noqa
+    """We define hypothesis strategy to generate Sexagesimal values in tests
+    """
+    from hypothesis.strategies import (builds, decimals, integers, lists,
+                                       register_type_strategy, sampled_from)
+
+    from histropy.units.radices import Sexagesimal
+
+    strat = builds(
+        Sexagesimal,
+        lists(integers(0, 59), max_size=2),
+        lists(integers(0, 59), max_size=2),
+        remainder=decimals(0, 1).filter(lambda x: x != 1),
+        sign=sampled_from((-1, 1))
+    )
+    register_type_strategy(Sexagesimal, strat)
+
 # Uncomment the last two lines in this block to treat all DeprecationWarnings as
 # exceptions. For Astropy v2.0 or later, there are 2 additional keywords,
 # as follow (although default should work for most cases).

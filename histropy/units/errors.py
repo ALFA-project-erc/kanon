@@ -37,7 +37,7 @@ class IllegalBaseValueError(ValueError):
         self.num = num
 
     def __str__(self):
-        return f"An invalid value for ({type(self.radix).__name__}) was found ('{self.num}'); should be in the range [0,{self.base}])."
+        return f"An invalid value for ({self.radix.name}) was found ('{self.num}'); should be in the range [0,{self.base}])."
 
 
 class IllegalFloatValueError(ValueError):
