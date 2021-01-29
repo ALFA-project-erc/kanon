@@ -1,16 +1,20 @@
 import math as m
 import operator as op
 from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 from typing import Type
 
 import hypothesis
 import pytest
+from astropy.units import degree
+from astropy.units.quantity import Quantity
 from hypothesis import strategies as st
 from hypothesis.core import given
-from hypothesis.strategies._internal.core import integers
 
 from histropy.units import BasedReal, Historical, Sexagesimal
-from histropy.units.errors import IllegalBaseValueError, IllegalFloatValueError
+from histropy.units.errors import (EmptyStringException, IllegalBaseValueError,
+                                   IllegalFloatError, TooManySeparators)
+from histropy.units.radices import RadixBase
 
 Sexagesimal: Type[BasedReal]
 Historical: Type[BasedReal]
@@ -19,6 +23,8 @@ Historical: Type[BasedReal]
 class TestRadix:
 
     def test_bases(self):
+        with pytest.raises(ValueError):
+            RadixBase([1], [2], "Sexagesimal")
         assert Historical('2r 7s 29; 45') == 339.75
         with pytest.raises(IllegalBaseValueError):
             Historical((-6, 3), ())
@@ -26,126 +32,138 @@ class TestRadix:
             Historical((11, 10, 10), ())
 
     def test_init(self):
-        s = Sexagesimal((1, 2), (30,))
-        assert float(s) == 62.5
-        assert s == 62.5
-        s = -Sexagesimal((1, 2), (30,))
-        assert s == -62.5
-        s = Sexagesimal((0, 0, 1, 2), (30, 0))
-        assert s == Sexagesimal((1, 2), (30,))
-        s = Sexagesimal((0, 0), (36,))
-        assert s == 0.6
-        assert s.decimal == Decimal('0.6')
-        assert s.left == (0,)
-        s = Sexagesimal((0, 0), (3,), remainder=Decimal('0.5'))
-        assert s == 3.5 * 1 / 60
+        assert Sexagesimal(
+            (1, 2, 31), (6,), sign=-1, remainder=Decimal('0.3')
+        ).__repr__() == "-01,02,31 ; 06 |r0.3"
 
-        assert Sexagesimal((), (0, 0, 0, 0)).right == (0, 0, 0, 0)
+        # From float
+        assert Sexagesimal.from_float(-0.016666666666666666, 2) == -Sexagesimal((0,), (1,))
+        assert Sexagesimal.from_float(0.5, 4).equals(Sexagesimal("0; 30, 0, 0, 0"))
+        with pytest.raises(TypeError):
+            Sexagesimal.from_float("s", 1)
 
-        assert Sexagesimal(1, 2, 3, sign=-1) == -3723
+        # From int
+        assert Sexagesimal.from_int(5, 2) == Sexagesimal(5)
+        with pytest.raises(TypeError):
+            Sexagesimal.from_int("s")
 
-        assert Sexagesimal("-1,2,3;30") == -3723.5
+        # From Decimal
+        assert Sexagesimal.from_decimal(Decimal(5), 2) == Sexagesimal(5)
+        with pytest.raises(TypeError):
+            Sexagesimal.from_decimal(5, 1)
 
-        assert Sexagesimal((1, 2, 3, 4, 5), (6, 7, 8))[:] == (1, 2, 3, 4, 5, 6, 7, 8)
+        # From Fraction
+        assert Sexagesimal.from_fraction(Fraction(5, 1)).equals(Sexagesimal(5))
+        assert Sexagesimal.from_fraction(Fraction(5, 2)) == Sexagesimal("2;30")
+        with pytest.raises(TypeError):
+            Sexagesimal.from_fraction(5)
 
-        assert Sexagesimal((1, 2, 31), (6, 7, 8), sign=-1).__repr__() == "-01,02,31 ; 06,07,08"
-        assert Sexagesimal((1, 2, 31), (6,), sign=-1, remainder=Decimal('0.3')).__repr__() == "-01,02,31 ; 06 |r0.3"
+        # From str
+        assert Sexagesimal("21,1,6,3;34") == Sexagesimal((21, 1, 6, 3), (34,))
+        assert Sexagesimal("0,0,0,0;").equals(Sexagesimal(0))
+        with pytest.raises(TypeError):
+            Sexagesimal._from_string(5)
+        with pytest.raises(EmptyStringException):
+            Sexagesimal("")
+        with pytest.raises(TooManySeparators):
+            Sexagesimal("1;2;3")
 
+        # From Sequence
         with pytest.raises(IllegalBaseValueError):
             Sexagesimal((-6, 3), ())
-        with pytest.raises(IllegalFloatValueError):
+        with pytest.raises(IllegalFloatError):
             Sexagesimal((0.3, 5), (6, 8))
+
+        # From multiple ints
         with pytest.raises(ValueError):
             Sexagesimal(3, 5, remainder=Decimal(-5))
         with pytest.raises(ValueError):
             Sexagesimal(3, 5, remainder=0.6)
 
+        # Incorrect parameters
         with pytest.raises(TypeError):
             BasedReal()
-
-    def test_build(self):
-        assert Sexagesimal.from_float(0.5, 4) == Sexagesimal((), (30,))
-        assert Sexagesimal.from_float(-0.016666666666666666, 2) == -Sexagesimal((0,), (1,))
-        assert Sexagesimal.from_float(0.5, 4).right == (30, 0, 0, 0)
-        assert Sexagesimal.from_int(5, 2) == Sexagesimal(5)
-        assert Sexagesimal("21,1,6,3;34") == Sexagesimal((21, 1, 6, 3), (34,))
+        with pytest.raises(ValueError):
+            Sexagesimal(Decimal(5))
+        with pytest.raises(ValueError):
+            Sexagesimal("", "")
+        with pytest.raises(ValueError):
+            Sexagesimal("", "", "", "")
+        with pytest.raises(TypeError):
+            Sexagesimal(("a", 2), (1, 2))
+        with pytest.raises(ValueError):
+            Sexagesimal(1, sign=2)
 
     def test_get(self):
-        s = Sexagesimal((1, 2, 30), (18,))
+        s = Sexagesimal("1, 2, 30; 18, 12, 23")
         assert s[-2] == 1
-        assert s[-1] == 2
         assert s[0] == 30
         assert s[1] == 18
-        assert s[:] == (1, 2, 30, 18)
+        assert s[:] == (1, 2, 30, 18, 12, 23)
         assert s[:0] == (1, 2)
-        assert s[3::-1] == (18, 30, 2, 1)
-        assert s[-1:] == (2, 30, 18)
-        s = Sexagesimal((1, 2, 3, 4, 5, 6), (7, 8, 9, 10))
-        assert s[-4:1] == (2, 3, 4, 5, 6)
+        assert s[3::-1] == (23, 12, 18, 30, 2, 1)
+        assert s[-1:] == (2, 30, 18, 12, 23)
+        assert s[-1:2] == (2, 30, 18)
+
+        with pytest.raises(IndexError):
+            s[100]
+        with pytest.raises(TypeError):
+            s["5"]
+
+    def test_truncations(self):
+        s = Sexagesimal("1, 2, 30; 18, 52, 23")
+        assert round(s).equals(s)
+        assert round(s, 1).equals(Sexagesimal("1,2,30;19"))
+        assert s.truncate(1).equals(Sexagesimal("1,2,30;18"))
+        assert s.truncate(100).equals(s)
+        assert m.trunc(s) == 3750
+        assert m.floor(s) == 3750
+        assert m.ceil(s) == 3751
+        assert m.floor(-s) == -3749
+        assert m.ceil(-s) == -3750
+        assert Sexagesimal(1, 2, 3).minimize_precision().equals(Sexagesimal(1, 2, 3))
+        assert Sexagesimal("1, 2, 3; 0, 0").minimize_precision().equals(Sexagesimal(1, 2, 3))
+
+    def test_misc(self):
+        s = Sexagesimal(5)
+        assert (s or 1) == 5
+        assert not s.equals("5")
+        assert s.to_fraction() == Fraction(5)
+
+        assert s ** -1 == 1 / 5
+
+        assert (s / 1).equals(s)
+        assert (s / -1).equals(-s)
+        with pytest.raises(ZeroDivisionError):
+            s / 0
 
     def test_shift(self):
-        s = Sexagesimal((20, 1, 2, 30), (0,))
-        assert s >> 1 == Sexagesimal((20, 1, 2), (30,))
-        assert s << 1 == Sexagesimal((20, 1, 2, 30, 0), ())
-        assert s >> -1 == Sexagesimal((20, 1, 2, 30, 0), ())
-        assert s >> 7 == Sexagesimal((), (0, 0, 0, 20, 1, 2, 30))
+        s = Sexagesimal("20, 1, 2, 30; 0")
+        assert (s >> 1).equals(Sexagesimal("20, 1, 2; 30, 0"))
+        assert (s << 1).equals(Sexagesimal("20, 1, 2, 30, 0"))
+        assert (s >> -1).equals(s << 1)
+        assert (s >> 7).equals(Sexagesimal("0; 0, 0, 0, 20, 1, 2, 30, 0"))
         s = Sexagesimal((20,), (0, 2, 0), remainder=Decimal(0.5))
-        assert s << 2 == Sexagesimal((20, 0, 2), (0, 30))
-        assert s << 5 == Sexagesimal((20, 0, 2, 0, 30, 0), ())
+        assert (s << 2).equals(Sexagesimal((20, 0, 2), (0,), remainder=Decimal(0.5)))
+        assert (s << 5).equals(Sexagesimal(20, 0, 2, 0, 30, 0))
 
-    def test_resize(self):
-        s = Sexagesimal(1, 2, 3)
-        assert s.resize(4) == s
-        assert s.resize(4).resize(2) == s
-        s = Sexagesimal((1, 2, 3), (30, 30))
-        assert s.resize(4) == s
-        assert s.resize(4).resize(2) == s
-        assert len(s.right) == 2
-        assert len(s.resize(4).right) == 4
-        assert len(s.resize(4).resize(0).right) == 0
+    @given(st.integers(min_value=0, max_value=15), st.integers(min_value=0, max_value=15))
+    def test_resize(self, x, y):
+        s = Sexagesimal("1, 2, 3; 30, 25")
+        assert s.resize(x) == s
+        resized = s.resize(x).resize(y)
+        assert m.isclose(resized, s)
+        assert resized.significant == y
 
-        s = Sexagesimal((1,), (30,), remainder=Decimal('0.5'))
-        assert s.resize(2).remainder == 0
-        assert s.resize(2).resize(1).remainder == 0.5
-
-        s = Sexagesimal((1,), (30, 36), remainder=Decimal('0.5'))
-        assert s.resize(1).remainder == Decimal('36.5') / 60
-        assert s.resize(1).right == (30,)
-        s = Sexagesimal('02,02 ; 07,23,55,11,51,21,36')
-        assert s.resize(4).right == (7, 23, 55, 11)
-        assert s.resize(4).remainder == Decimal(51) / 60 + Decimal(21) / 60**2 + Decimal(36) / 60**3
-
-        assert round(s, 4) == Sexagesimal((2, 2), (7, 23, 55, 12))
-
-        a = Sexagesimal(1, 0, remainder=Decimal("0.0000714235"))
-        assert a / (a >> 2) == 3600
-
-    def test_comparisons(self):
-        s = Sexagesimal((1, 2), (30,))
-        assert s <= Sexagesimal((1, 2), (30,))
-        assert s >= Sexagesimal((1, 2), (30,))
-        with pytest.raises(AssertionError):
-            assert s > Sexagesimal((1, 2), (30,))
-
-        assert s > Sexagesimal(1, 2)
-        assert s >= Sexagesimal(1, 2)
-        with pytest.raises(AssertionError):
-            assert s == Sexagesimal(1, 2)
-
-        assert s < Sexagesimal(1, 2, 3)
-        assert s <= Sexagesimal(1, 2, 3)
-        with pytest.raises(AssertionError):
-            assert s == Sexagesimal(1, 2, 3)
-
-        assert s != Sexagesimal(1, 2, 3)
-        assert s is not Sexagesimal(1, 2, 3)
-
-        assert s is Sexagesimal((1, 2), (30,))
-        assert s == Sexagesimal((1, 2), (30,))
-        assert s is not Sexagesimal(1, 2, remainder=Decimal('0.5'))
-        assert s == Sexagesimal(1, 2, remainder=Decimal('0.5'))
-        assert s is not Sexagesimal((1, 2), (30, 0, 0, 0))
-        assert s == Sexagesimal((1, 2), (30, 0, 0, 0))
+    @given(st.floats(allow_infinity=False, allow_nan=False))
+    def test_comparisons(self, x):
+        s = Sexagesimal("1, 2; 30")
+        xs = Sexagesimal.from_float(x, 1)
+        for comp in (op.lt, op.le, op.eq, op.ne, op.ge, op.gt):
+            if comp(float(s), x):
+                assert comp(s, xs)
+            else:
+                assert not comp(s, xs)
 
     def biop_testing(self, x, y, operator):
         fx, fy = float(x), float(y)
@@ -164,8 +182,6 @@ class TestRadix:
     @given(st.from_type(Sexagesimal),
            st.from_type(Sexagesimal))
     def test_operations_with_remainders(self, x, y):
-        hypothesis.note(x.remainder)
-        hypothesis.note(y.remainder)
         fx = float(x)
 
         assert float(-x) == -fx
@@ -195,9 +211,19 @@ class TestRadix:
         if y != 0:
             self.biop_testing(x, y, op.truediv)
 
-    @given(integers(min_value=-1e15, max_value=1e15).map(Sexagesimal.from_int),
-           integers(min_value=-1e15, max_value=1e15).filter(lambda x: x != 0).map(Sexagesimal.from_int))
+    @given(st.integers(min_value=-1e15, max_value=1e15).map(Sexagesimal.from_int),
+           st.integers(min_value=-1e15, max_value=1e15).filter(lambda x: x != 0).map(Sexagesimal.from_int))
     def test_mod_integers(self, x, y):
         hypothesis.assume(int(x) % int(y) == float(x) % float(y))
         self.biop_testing(x, y, op.mod)
         self.biop_testing(x, y, op.floordiv)
+
+    def test_quantity(self):
+        q = Sexagesimal(1) * degree
+        assert isinstance(q, Quantity)
+        assert q.unit == degree
+        assert q.value.equals(Sexagesimal(1))
+        q = Sexagesimal(1) / degree
+        assert isinstance(q, Quantity)
+        assert q.unit == 1 / degree
+        assert q.value.equals(Sexagesimal(1))

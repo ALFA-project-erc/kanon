@@ -40,18 +40,18 @@ class IllegalBaseValueError(ValueError):
         return f"An invalid value for ({self.radix.name}) was found ('{self.num}'); should be in the range [0,{self.base}])."
 
 
-class IllegalFloatValueError(ValueError):
+class IllegalFloatError(TypeError):
     """
     Raised when an expected int value is a float.
 
     Parameters
     ----------
     :param num: float
-    :raises: IllegalFloatValueError
+    :raises: IllegalFloatError
 
     ```python
     if isinstance(val, float):
-        raise IllegalFloatValueError(val)
+        raise IllegalFloatError(val)
     ```
     """
 
