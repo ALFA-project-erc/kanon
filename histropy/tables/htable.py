@@ -1,47 +1,52 @@
 from numbers import Number
 from typing import Callable, Dict, Generic, List, Type, TypeVar
 
+import astropy.units as u
 import pandas as pd
 from astropy.io import registry
 from astropy.table import Table
+from astropy.table.table import TableAttribute
 
+from histropy.tables.symmetries import Symmetry
 from histropy.units import Sexagesimal
 from histropy.units.radices import BasedReal
-from histropy.utils.types.dishas import NumberType, TableContent
+from histropy.utils.types.dishas import NumberType, TableContent, UnitType
 
 from .interpolations import Interpolator, linear_interpolation
 
 Sexagesimal: Type[BasedReal]
 
+IT = TypeVar('IT', bound=Number)
 NT = TypeVar('NT', bound=Number)
 
 
-class HTable(Table, Generic[NT]):
+class HTable(Table, Generic[IT, NT]):
 
-    def __init__(self, *args, **kwargs):
-        index = kwargs.get("index")
-        if index:
-            del kwargs["index"]
+    _interpolator: Interpolator = TableAttribute(default=linear_interpolation)
+
+    def __init__(self, *args, index=None, symmetry: List[Symmetry] = [], **kwargs):
         super().__init__(*args, **kwargs)
+
         if index:
             self.add_index(index)
 
-        self.symmetry = None
-
+        self.symmetry = symmetry
         self.bounds = (float("-inf"), float("inf"))
-
-        self.interpolate = linear_interpolation
 
     @property
     def interpolate(self) -> Interpolator:
-        return self._interpolate
+        return self._interpolator
 
     @interpolate.setter
     def interpolate(self, func: Interpolator):
-        self._interpolate = func
+        self._interpolator = func
 
-    def add_symmetry(self, symmetry: str):
-        pass
+    def to_pandas(self, index=None, use_nullable_int=True, symmetry=True) -> pd.DataFrame:
+        df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
+        if symmetry:
+            for sym in self.symmetry:
+                df = df.pipe(sym.symmetric_df)
+        return df
 
     def get(self, key: Number) -> NT:
         """Get a value from any keys based on interpolated data
@@ -53,16 +58,17 @@ class HTable(Table, Generic[NT]):
         :rtype: NT
         """
 
+        df = self.to_pandas()
+        unit = self.columns[1].unit or 1
         try:
-            return self.loc[key][1]
+            return df.loc[float(key)][0] * unit
         except KeyError:
             pass
 
         if self.bounds[0] < key < self.bounds[1]:
-            df: pd.DataFrame = self.to_pandas(index=True)
             df.index = df.index.map(float)
 
-            return self.interpolate(df, key)
+            return self.interpolate(df, key) * unit
 
         else:
             raise NotImplementedError
@@ -87,19 +93,46 @@ def read_table_dishas(requested_id: str) -> HTable:
         negative = array[0][0] == "-"
         return Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
 
-    numberReader: Dict[NumberType, Callable[[List[str]], Number]] = {
-        "sexagesimal": read_sexag_array
+    def read_intsexag_array(array: List[str]) -> Sexagesimal:
+        if len(array) == 1:
+            return Sexagesimal(array[0])
+        else:
+            return (
+                read_sexag_array(array[1:]) >> len(array) - 1
+            ) + Sexagesimal.from_int(int(array[0][0]), len(array))
+
+    number_reader: Dict[NumberType, Callable[[List[str]], Number]] = {
+        "sexagesimal": read_sexag_array,
+        "floating_sexagesimal": read_sexag_array,
+        "integer and sexagesimal": read_intsexag_array
     }
 
-    args = [numberReader[res["argument1_type_of_number"]](v["value"]) for v in values["args"]["argument1"]]
-    entries = [numberReader[res["entry_type_of_number"]](v["value"]) for v in values["entry"]]
+    unit_reader: Dict[UnitType, u.Unit] = {
+        "degree": u.degree,
+        "day": u.day
+    }
 
-    return HTable(
+    arg_types = (res["argument1_type_of_number"], res["argument1_number_unit"])
+    entry_types = (res["entry_type_of_number"], res["entry_number_unit"])
+
+    try:
+        args = [number_reader.get(arg_types[0], lambda x:x)(v["value"]) for v in values["args"]["argument1"]]
+        entries = [number_reader.get(entry_types[0], lambda x:x)(v["value"]) for v in values["entry"]]
+    except ValueError:
+        args = [v["value"] for v in values["args"]["argument1"]]
+        entries = [v["value"] for v in values["entry"]]
+
+    table = HTable(
         [args, entries],
         names=(res["argument1_name"], "Entries"),
         index=(res["argument1_name"]),
         dtype=[object, object]
     )
+
+    table.columns[0].unit = unit_reader.get(arg_types[1])
+    table.columns[1].unit = unit_reader.get(entry_types[1])
+
+    return table
 
 
 registry.register_reader("dishas", HTable, read_table_dishas)

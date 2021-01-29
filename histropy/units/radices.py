@@ -4,10 +4,12 @@ from decimal import Decimal
 from fractions import Fraction
 from functools import cached_property, lru_cache
 from numbers import Number, Real
-from typing import (Any, ClassVar, Dict, Iterable, List, Literal, Optional,
+from typing import (Any, ClassVar, Dict, List, Literal, Optional, Sequence,
                     Tuple, Type)
 
 import numpy as np
+from astropy.units.core import UnitBase
+from astropy.units.quantity import Quantity
 
 from histropy.utils.list_to_tuple import list_to_tuple
 from histropy.utils.looping_list import LoopingList
@@ -39,10 +41,10 @@ class RadixBase:
 
     def __init__(
         self,
-        left: Iterable[int],
-        right: Iterable[int],
+        left: Sequence[int],
+        right: Sequence[int],
         name: str,
-        integer_separators: Optional[Iterable[str]] = None,
+        integer_separators: Optional[Sequence[str]] = None,
     ):
         """
         Definition of a numeral system. A radix must be specified for each integer position
@@ -166,9 +168,7 @@ class BasedReal(Real):
     """
 
     base: RadixBase
-    """
-    RadixBase of this BasedReal
-    """
+    """RadixBase of this BasedReal"""
     __left: Tuple[int]
     __right: Tuple[int]
     __remainder: Decimal
@@ -205,7 +205,7 @@ class BasedReal(Real):
         Remove the useless trailing zeros in the integer part and return how many were removed
         """
         count = 0
-        for i in self.left:
+        for i in self.left[:-1]:
             if i != 0:
                 break
             count += 1
@@ -221,12 +221,12 @@ class BasedReal(Real):
 
         Arguments:
 
-        - a String
+        - str
 
         >>> Sexagesimal("-2,31;12,30")
         -02,31 ; 12,30
 
-        - 2 Sequences representing integral part and fractional part
+        - 2 Sequence[int] representing integral part and fractional part
 
         >>> Sexagesimal((2,31), (12,30), sign=-1)
         -02,31 ; 12,30
@@ -238,7 +238,7 @@ class BasedReal(Real):
         >>> Sexagesimal(Sexagesimal("-2,31;12,30"), 1)
         -02,31 ; 12 |r0.5
 
-        - multiple integers representing an integral number in current base
+        - multiple int representing an integral number in current base
 
         >>> Sexagesimal(21, 1, 3)
         21,01,03 ;
@@ -266,7 +266,7 @@ class BasedReal(Real):
             elif isinstance(args[0], tuple) and isinstance(args[1], tuple):
                 self.__left = args[0]
                 self.__right = args[1]
-            elif all([isinstance(a, Iterable) and not isinstance(a, str) for a in args]):
+            elif all([isinstance(a, Sequence) and not isinstance(a, str) for a in args]):
                 return cls.__new__(cls, tuple(args[0]), tuple(args[1]), remainder=remainder, sign=sign)
             else:
                 raise ValueError("Incorrect parameters at BasedReal creation")
@@ -283,11 +283,8 @@ class BasedReal(Real):
 
         self.__check_range()
 
-        if self.__simplify_integer_part():
-            return cls.__new__(cls, self.left, self.right, remainder=self.remainder, sign=self.sign)
-
-        if len(self.__left) == 0:
-            self.__left = (0,)
+        if self.__simplify_integer_part() or not self.left:
+            return cls.__new__(cls, self.left or (0,), self.right, remainder=self.remainder, sign=self.sign)
 
         return self
 
@@ -352,6 +349,10 @@ class BasedReal(Real):
         :rtype: int
         """
         return len(self.right)
+
+    @property
+    def real(self) -> float:
+        return float(self)
 
     @cached_property
     def decimal(self) -> Decimal:
@@ -885,9 +886,6 @@ class BasedReal(Real):
 
         >>> Sexagesimal('01, 21; 47, 25') + Sexagesimal('45; 32, 14, 22')
         02,07 ; 19,39 |r0.4
-
-        :param other:
-        :return: the sum of the two BasedReal objects
         """
         if type(self) is not type(other):
             return self + self.from_float(float(other), significant=self.significant)
@@ -999,11 +997,15 @@ class BasedReal(Real):
 
         >>> Sexagesimal('01, 12; 04, 17') * Sexagesimal('7; 45, 55')
         09,19 ; 39,15 |r0.7
-
-        :param other: The other BasedReal to multiply
-        :return: The product of the 2 BasedReal object
         """
-        if type(self) is not type(other):
+
+        if isinstance(other, UnitBase):
+            return Quantity(self, dtype=object, unit=other)
+
+        elif not isinstance(other, Number):
+            raise TypeError
+
+        elif type(self) is not type(other):
             return self * self.from_float(other, self.significant)
 
         if self == 1:
@@ -1111,12 +1113,13 @@ class BasedReal(Real):
         self / other
         NB: To specify the precision of the result (i.e. its number of significant positions) you should use the
         division method. By default it will take the maximum of significant places + 1
-
-        :param other: the other BasedReal object
-        :return: the division of self with other
         """
-        if type(self) is type(other):
+        if isinstance(other, UnitBase):
+            return Quantity(self, dtype=object, unit=1 / other)
+
+        elif type(self) is type(other):
             return self.division(other, min(self.significant, other.significant) + 1)
+
         elif isinstance(other, Number):
             return self / self.from_float(float(other), significant=self.significant)
         else:
@@ -1166,6 +1169,15 @@ class BasedReal(Real):
     def sqrt(self, precision=None):
         raise NotImplementedError
         return type(self).from_float(math.sqrt(float(self)), self.significant)
+
+    def __bool__(self):
+        return self == 0
+
+    def is_integer(self) -> bool:
+        return self.remainder == 0 and all(x == 0 for x in self.right)
+
+    def __iter__(self):
+        raise TypeError
 
 
 # here we define standard bases and automatically generate the corresponding BasedReal classes

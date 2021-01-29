@@ -40,13 +40,13 @@ def pytest_configure(config):
         TESTED_VERSIONS[packagename] = __version__
 
 
-def _hypothesis_sexagesimal_strategy():  # noqa
+def _hypothesis_sexagesimal_strategy():
     """We define hypothesis strategy to generate Sexagesimal values in tests
     """
     from hypothesis.strategies import (builds, decimals, integers, lists,
                                        register_type_strategy, sampled_from)
 
-    from histropy.units.radices import Sexagesimal
+    from histropy.units import Sexagesimal
 
     strat = builds(
         Sexagesimal,

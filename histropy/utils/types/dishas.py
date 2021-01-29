@@ -12,6 +12,7 @@ class OriginalValue(TypedDict):
 
 NumberType = Literal["sexagesimal"]
 SymmetryType = Literal["mirror", "periodic"]
+SymmetryOperation = Literal["opposite", "identity", "addition", "substraction"]
 UnitType = Literal["degree"]
 
 
@@ -38,7 +39,7 @@ class Template(TypedDict):
     })]
 
 
-class Symmetry(TypedDict):
+class DSymmetry(TypedDict):
     type: SymmetryType
     parameter: str
     sign: Literal[-1, 1]
@@ -47,7 +48,7 @@ class Symmetry(TypedDict):
     target: List[str]
     direction: Literal[-1, 1]
     effective_symmetry: TypedDict("effective_symmetry", {
-        "computeNewValue": List[Literal["opposite", "identity", "addition", "substraction"]],
+        "computeNewValue": List[SymmetryOperation],
         "parameters": List[str]
     })
 
@@ -63,7 +64,7 @@ class TableContent(TypedDict):
         }),
         "entry": List[OriginalValue],
         "template": Template,
-        "symmetries": List[Symmetry]
+        "symmetries": List[DSymmetry]
     })
     value_float: TypedDict("value_float", {
         "args": TypedDict("args", {
