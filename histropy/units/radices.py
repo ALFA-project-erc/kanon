@@ -18,8 +18,8 @@ from histropy.utils.looping_list import LoopingList
 
 from .errors import (EmptyStringException, IllegalBaseValueError,
                      IllegalFloatError, TooManySeparators)
-from .precision import (PreciseNumber, TruncatureMode, _with_context_precision,
-                        set_precision)
+from .precision import (PreciseNumber, PrecisionMode, TruncatureMode,
+                        _with_context_precision, set_precision)
 
 """
 In this module we define RadixBase and BasedReal.
@@ -654,7 +654,7 @@ class BasedReal(Real, PreciseNumber):
             significant = self.significant
         n = self.resize(significant)
         if n.remainder >= 0.5:
-            with set_precision(tmode=TruncatureMode.NONE):
+            with set_precision(pmode=PrecisionMode.MAX, tmode=TruncatureMode.NONE):
                 n += type(self)(1, sign=self.sign) >> significant
         return n.truncate(significant)
 

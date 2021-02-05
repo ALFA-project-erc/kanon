@@ -35,6 +35,8 @@ class TestPrecision:
             self.equality(s1 * s2, Sexagesimal((1,), (0, 0, 0), remainder=Decimal("0.2")))
             self.equality(s1 / s2, Sexagesimal((0,), (15, 0, 0), remainder=Decimal("0.05")))
 
+            assert round(Sexagesimal(2, remainder=Decimal("0.5"))) == 3
+
         with pytest.raises(NotImplementedError):
             with set_precision(pmode=PrecisionMode.FULL):
                 pass

@@ -62,10 +62,7 @@ class PrecisionContext:
     def mutate(self, pmode: Optional[PrecisionMode] = None,
                tmode: Optional[TruncatureMode] = None,
                custom_precision: Optional[int] = None):
-        if self.custom_precision is not None and tmode != PrecisionMode.CUSTOM:
-            self.custom_precision = custom_precision
-        else:
-            self.custom_precision = custom_precision or self.custom_precision
+        self.custom_precision = custom_precision
         self.pmode = pmode or self.pmode
         self.tmode = tmode or self.tmode
 
