@@ -8,14 +8,18 @@ from typing import (Any, ClassVar, Dict, List, Literal, Optional, Sequence,
                     Tuple, Type)
 
 import numpy as np
-from astropy.units.core import UnitBase
+from astropy.units.core import UnitBase, UnitTypeError
 from astropy.units.quantity import Quantity
+from astropy.units.quantity_helper.converters import UFUNC_HELPERS
+from astropy.units.quantity_helper.helpers import _d
 
 from histropy.utils.list_to_tuple import list_to_tuple
 from histropy.utils.looping_list import LoopingList
 
 from .errors import (EmptyStringException, IllegalBaseValueError,
                      IllegalFloatError, TooManySeparators)
+from .precision import (PreciseNumber, TruncatureMode, _with_context_precision,
+                        set_precision)
 
 """
 In this module we define RadixBase and BasedReal.
@@ -141,7 +145,7 @@ def ndigit_for_radix(radix: int) -> int:
     return int(np.ceil(np.log10(radix)))
 
 
-class BasedReal(Real):
+class BasedReal(Real, PreciseNumber):
     """
     Abstract class allowing to represent a value in a specific RadixBase.
     Each time a new RadixBase object is recorded, a new class inheriting from BasedReal
@@ -333,10 +337,6 @@ class BasedReal(Real):
         """
         return len(self.right)
 
-    @property
-    def real(self) -> float:  # pragma: no cover
-        return float(self)
-
     @cached_property
     def decimal(self) -> Decimal:
         """
@@ -487,7 +487,7 @@ class BasedReal(Real):
 
         return cls(left_numbers, right_numbers, sign=sign)
 
-    def resize(self, significant: int):
+    def resize(self, significant: int) -> "BasedReal":
         """
         Resizes and returns a new BasedReal object to the specified precision
 
@@ -545,6 +545,20 @@ class BasedReal(Real):
         left = self.left if n >= 0 else self.left[:-n]
         right = self.right[:n] if n >= 0 else ()
         return type(self)(left, right, sign=self.sign)
+
+    def floor(self, significant: Optional[int] = None) -> "BasedReal":
+        resized = self.resize(significant) if significant else self
+        if resized.remainder == 0 or self.sign == 1:
+            return resized.truncate()
+        else:
+            return round(resized._set_remainder(Decimal(0.5)))
+
+    def ceil(self, significant: Optional[int] = None) -> "BasedReal":
+        resized = self.resize(significant) if significant else self
+        if resized.remainder == 0 or self.sign == -1:
+            return resized.truncate()
+        else:
+            return round(resized._set_remainder(Decimal(0.5)))
 
     def minimize_precision(self) -> "BasedReal":
         """
@@ -640,7 +654,8 @@ class BasedReal(Real):
             significant = self.significant
         n = self.resize(significant)
         if n.remainder >= 0.5:
-            n += type(self)(1, sign=self.sign) >> significant
+            with set_precision(tmode=TruncatureMode.NONE):
+                n += type(self)(1, sign=self.sign) >> significant
         return n.truncate(significant)
 
     def __getitem__(self, key):
@@ -866,6 +881,7 @@ class BasedReal(Real):
 
         return type(self)(q_res.left, right, remainder=r.decimal / denominator.decimal, sign=sign)
 
+    @_with_context_precision
     def __add__(self, other: "BasedReal") -> "BasedReal":
         """
         self + other
@@ -879,10 +895,8 @@ class BasedReal(Real):
         elif type(self) is not type(other):
             return self + self.from_float(float(other), significant=self.significant)
 
-        min_sig = min(self.significant, other.significant)
-
         if self.decimal == -other.decimal:
-            return self.zero(min_sig)
+            return self.zero()
 
         maxright = max(self.significant, other.significant)
         maxleft = max(len(self.left), len(other.left))
@@ -913,7 +927,7 @@ class BasedReal(Real):
         left = numbers[:maxleft + 1]
         right = numbers[maxleft + 1:]
 
-        return type(self)(left, right, remainder=abs(remainder), sign=sign).resize(min_sig)
+        return type(self)(left, right, remainder=abs(remainder), sign=sign)
 
     def __radd__(self, other) -> "BasedReal":
         """other + self"""
@@ -982,6 +996,7 @@ class BasedReal(Real):
             return self
         return -self
 
+    @_with_context_precision
     def __mul__(self, other: "BasedReal") -> "BasedReal":
         """
         self * other
@@ -991,7 +1006,7 @@ class BasedReal(Real):
         """
 
         if isinstance(other, UnitBase):
-            return Quantity(self, dtype=object, unit=other)
+            return BasedQuantity(self, unit=other)
 
         elif not isinstance(other, Number):
             raise NotImplementedError
@@ -1004,7 +1019,7 @@ class BasedReal(Real):
         if other in (1, -1):
             return self if other == 1 else -self
         if self == 0 or other == 0:
-            return self.zero(max(self.significant, other.significant))
+            return self.zero()
 
         sign = self.sign * other.sign
 
@@ -1044,7 +1059,7 @@ class BasedReal(Real):
                      + va_rem * vb_rem
                      )
 
-        return res.resize(min(self.significant, other.significant))
+        return res
 
     def __rmul__(self, other):
         """other * self"""
@@ -1095,6 +1110,7 @@ class BasedReal(Real):
         """other % self"""
         return other % float(self)
 
+    @_with_context_precision
     def __truediv__(self, other: "BasedReal") -> "BasedReal":
         """
         self / other
@@ -1102,10 +1118,10 @@ class BasedReal(Real):
         division method. By default it will take the maximum of significant places + 1
         """
         if isinstance(other, UnitBase):
-            return Quantity(self, dtype=object, unit=1 / other)
+            return self * (other ** -1)
 
         elif type(self) is type(other):
-            return self.division(other, min(self.significant, other.significant) + 1)
+            return self.division(other, max(self.significant, other.significant))
 
         elif isinstance(other, Number):
             return self / self.from_float(float(other), significant=self.significant)
@@ -1185,6 +1201,52 @@ class BasedReal(Real):
     def __iter__(self):
         raise TypeError
 
+    def _set_remainder(self, remainder: Decimal) -> "BasedReal":
+        return type(self)(self.left, self.right, sign=self.sign, remainder=remainder)
+
+
+class BasedQuantity(Quantity):
+
+    def __new__(cls, value, unit, **kwargs):
+        if (
+            not isinstance(value, BasedReal)
+            or isinstance(value, (Sequence, np.ndarray)) and not all(isinstance(v, BasedReal) for v in value)
+        ):
+            return Quantity(value, unit, **kwargs)
+        return super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
+
+    def __lshift__(self, other):
+        if isinstance(other, Number):
+            return super(Quantity, self).__lshift__(other)
+        return super().__lshift__(other)
+
+    def __rshift__(self, other):
+        if isinstance(other, Number):
+            return super(Quantity, self).__rshift__(other)
+        return super().__rshift__(other)
+
+    def __getattr__(self, attr: str):
+        if attr.startswith(("_", "__")) and not attr.endswith('__'):
+            raise AttributeError
+        vect = np.frompyfunc(lambda x: getattr(x, attr), 1, 1)
+        properties = ("left", "right", "significant", "sign", "remainder", "base")
+        unit = _d(self.unit) if attr not in properties else None
+        UFUNC_HELPERS[vect] = lambda *_: ([None, None], unit)
+        if callable(getattr(BasedReal, attr)):
+            def _new_func(*args):
+                vfunc = np.frompyfunc(lambda x: x(*args), 1, 1)
+                UFUNC_HELPERS[vfunc] = lambda *_: ([None, None], unit)
+                return vfunc(vect(self))
+            return _new_func
+        else:
+            return vect(self)
+
+    def __round__(self, significant: Optional[int] = None):
+        return self.__getattr__("__round__")(significant)
+
+    def __quantity_subclass__(self, _):
+        return type(self), True
+
 
 # here we define standard bases and automatically generate the corresponding BasedReal classes
 RadixBase([60], [60], "sexagesimal")
@@ -1197,3 +1259,15 @@ RadixBase([10], [24, 60], "temporal")
 
 Sexagesimal = radix_registry["Sexagesimal"]
 Historical = radix_registry["Historical"]
+
+
+def _shift_helper(f, unit1, unit2):
+    if unit2:  # pragma: no cover
+        raise UnitTypeError("Can only apply '{}' function to "
+                            "dimensionless quantities"
+                            .format(f.__name__))
+    return [None, None], _d(unit1)
+
+
+UFUNC_HELPERS[np.left_shift] = _shift_helper
+UFUNC_HELPERS[np.right_shift] = _shift_helper

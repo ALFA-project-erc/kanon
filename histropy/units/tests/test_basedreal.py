@@ -6,30 +6,17 @@ from typing import Type
 
 import hypothesis
 import pytest
-from astropy.units import degree
-from astropy.units.quantity import Quantity
 from hypothesis import strategies as st
 from hypothesis.core import given
 
-from histropy.units import BasedReal, Historical, Sexagesimal
+from histropy.units import BasedReal, Sexagesimal
 from histropy.units.errors import (EmptyStringException, IllegalBaseValueError,
                                    IllegalFloatError, TooManySeparators)
-from histropy.units.radices import RadixBase
 
 Sexagesimal: Type[BasedReal]
-Historical: Type[BasedReal]
 
 
 class TestRadix:
-
-    def test_bases(self):
-        with pytest.raises(ValueError):
-            RadixBase([1], [2], "Sexagesimal")
-        assert Historical('2r 7s 29; 45') == 339.75
-        with pytest.raises(IllegalBaseValueError):
-            Historical((-6, 3), ())
-        with pytest.raises(IllegalBaseValueError):
-            Historical((11, 10, 10), ())
 
     def test_init(self):
         assert Sexagesimal(
@@ -131,6 +118,8 @@ class TestRadix:
         assert s.to_fraction() == Fraction(5)
 
         assert s ** -1 == 1 / 5
+        assert s ** 1 == s
+        assert Sexagesimal(0) ** 1 == 0
 
         assert (s / 1).equals(s)
         assert (s / -1).equals(-s)
@@ -217,13 +206,3 @@ class TestRadix:
         hypothesis.assume(int(x) % int(y) == float(x) % float(y))
         self.biop_testing(x, y, op.mod)
         self.biop_testing(x, y, op.floordiv)
-
-    def test_quantity(self):
-        q = Sexagesimal(1) * degree
-        assert isinstance(q, Quantity)
-        assert q.unit == degree
-        assert q.value.equals(Sexagesimal(1))
-        q = Sexagesimal(1) / degree
-        assert isinstance(q, Quantity)
-        assert q.unit == 1 / degree
-        assert q.value.equals(Sexagesimal(1))
