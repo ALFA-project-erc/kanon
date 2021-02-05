@@ -10,10 +10,10 @@ class OriginalValue(TypedDict):
     critical_apparatus: List[str]
 
 
-NumberType = Literal["sexagesimal"]
+NumberType = Literal["sexagesimal", "floating sexagesimal", "integer and sexagesimal"]
 SymmetryType = Literal["mirror", "periodic"]
 SymmetryOperation = Literal["opposite", "identity", "addition", "substraction"]
-UnitType = Literal["degree"]
+UnitType = Literal["degree", "day"]
 
 
 class Template(TypedDict):

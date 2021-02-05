@@ -1,5 +1,5 @@
 from numbers import Number
-from typing import Callable, Dict, Generic, List, Type, TypeVar
+from typing import Callable, Dict, Generic, List, Type, TypeVar, Union
 
 import astropy.units as u
 import pandas as pd
@@ -48,7 +48,7 @@ class HTable(Table, Generic[IT, NT]):
                 df = df.pipe(sym.symmetric_df)
         return df
 
-    def get(self, key: Number) -> NT:
+    def get(self, key: Number, with_unit=True) -> NT:
         """Get a value from any keys based on interpolated data
 
         :param key: Any argument for an interpolated function
@@ -59,7 +59,7 @@ class HTable(Table, Generic[IT, NT]):
         """
 
         df = self.to_pandas()
-        unit = self.columns[1].unit or 1
+        unit = (self.columns[1].unit if with_unit else 1) or 1
         try:
             return df.loc[float(key)][0] * unit
         except KeyError:
@@ -93,9 +93,9 @@ def read_table_dishas(requested_id: str) -> HTable:
         negative = array[0][0] == "-"
         return Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
 
-    def read_intsexag_array(array: List[str]) -> Sexagesimal:
+    def read_intsexag_array(array: List[str]) -> Union[Sexagesimal, int]:
         if len(array) == 1:
-            return Sexagesimal(array[0])
+            return int(array[0])
         else:
             return (
                 read_sexag_array(array[1:]) >> len(array) - 1
@@ -103,7 +103,7 @@ def read_table_dishas(requested_id: str) -> HTable:
 
     number_reader: Dict[NumberType, Callable[[List[str]], Number]] = {
         "sexagesimal": read_sexag_array,
-        "floating_sexagesimal": read_sexag_array,
+        "floating sexagesimal": read_sexag_array,
         "integer and sexagesimal": read_intsexag_array
     }
 
