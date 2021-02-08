@@ -46,7 +46,7 @@ def _hypothesis_sexagesimal_strategy():
     from hypothesis.strategies import (builds, decimals, integers, lists,
                                        register_type_strategy, sampled_from)
 
-    from histropy.units import Sexagesimal
+    from kanon.units import Sexagesimal
 
     strat = builds(
         Sexagesimal,

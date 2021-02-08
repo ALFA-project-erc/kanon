@@ -1,2 +1,2 @@
-.. automodapi:: histropy.tables
+.. automodapi:: kanon.tables
     :inherited-members:

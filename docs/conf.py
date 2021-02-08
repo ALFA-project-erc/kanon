@@ -107,7 +107,7 @@ release = package.__version__
 
 
 html_theme_options = {
-    'logotext1': 'histropy',  # white,  semi-bold
+    'logotext1': 'kanon',  # white,  semi-bold
     'logotext2': '',  # orange, light
     'logotext3': ':docs'   # white,  light
 }
@@ -137,7 +137,7 @@ html_title = '{0} v{1}'.format(project, release)
 htmlhelp_basename = project + 'doc'
 
 # Prefixes that are ignored for sorting the Python module index
-modindex_common_prefix = ["histropy."]
+modindex_common_prefix = ["kanon."]
 
 
 # -- Options for LaTeX output -------------------------------------------------

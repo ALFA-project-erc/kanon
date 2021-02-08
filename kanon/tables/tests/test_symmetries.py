@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from histropy.tables.symmetries import (OutOfBoundsOriginError,
-                                        OverlappingSymmetryError, Symmetry)
+from kanon.tables.symmetries import (OutOfBoundsOriginError,
+                                     OverlappingSymmetryError, Symmetry)
 
 
 class TestSymmetry:

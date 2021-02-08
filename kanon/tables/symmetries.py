@@ -4,7 +4,7 @@ from typing import List, Literal, Optional, Tuple
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-from histropy.utils.types.dishas import SymmetryType
+from kanon.utils.types.dishas import SymmetryType
 
 
 @dataclass

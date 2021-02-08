@@ -6,8 +6,8 @@ import numpy as np
 from hypothesis import assume
 from hypothesis.core import given
 
-from histropy.tables.htable import HTable
-from histropy.tables.symmetries import Symmetry
+from kanon.tables.htable import HTable
+from kanon.tables.symmetries import Symmetry
 
 
 class TestHTable:

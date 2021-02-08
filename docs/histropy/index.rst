@@ -1,8 +1,8 @@
 **********************
-histropy Documentation
+kanon Documentation
 **********************
 
-This is the documentation for histropy.
+This is the documentation for kanon.
 
 Reference/API
 =============

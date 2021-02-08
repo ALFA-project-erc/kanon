@@ -74,7 +74,7 @@ except Exception:
     version = '{version}'
 """.lstrip()
 
-setup(use_scm_version={'write_to': os.path.join('histropy', 'version.py'),
+setup(use_scm_version={'write_to': os.path.join('kanon', 'version.py'),
                        'write_to_template': VERSION_TEMPLATE},
       include_package_data=True,
       ext_modules=get_extensions())

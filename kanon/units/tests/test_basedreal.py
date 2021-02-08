@@ -9,9 +9,9 @@ import pytest
 from hypothesis import strategies as st
 from hypothesis.core import given
 
-from histropy.units import BasedReal, Sexagesimal
-from histropy.units.errors import (EmptyStringException, IllegalBaseValueError,
-                                   IllegalFloatError, TooManySeparators)
+from kanon.units import BasedReal, Sexagesimal
+from kanon.units.errors import (EmptyStringException, IllegalBaseValueError,
+                                IllegalFloatError, TooManySeparators)
 
 Sexagesimal: Type[BasedReal]
 

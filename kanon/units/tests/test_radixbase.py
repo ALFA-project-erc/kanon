@@ -1,7 +1,7 @@
 import pytest
 
-from histropy.units.errors import IllegalBaseValueError
-from histropy.units.radices import Historical, RadixBase
+from kanon.units.errors import IllegalBaseValueError
+from kanon.units.radices import Historical, RadixBase
 
 
 class TestRadixBase:

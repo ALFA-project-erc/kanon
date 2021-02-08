@@ -3,10 +3,10 @@ from typing import Type
 
 import pytest
 
-from histropy.units import BasedReal, Sexagesimal
-from histropy.units.precision import (CustomPrecisionError, PrecisionMode,
-                                      TruncatureMode, _with_context_precision,
-                                      set_precision)
+from kanon.units import BasedReal, Sexagesimal
+from kanon.units.precision import (CustomPrecisionError, PrecisionMode,
+                                   TruncatureMode, _with_context_precision,
+                                   set_precision)
 
 Sexagesimal: Type[BasedReal]
 

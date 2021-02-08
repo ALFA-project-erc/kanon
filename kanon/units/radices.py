@@ -13,8 +13,8 @@ from astropy.units.quantity import Quantity
 from astropy.units.quantity_helper.converters import UFUNC_HELPERS
 from astropy.units.quantity_helper.helpers import _d
 
-from histropy.utils.list_to_tuple import list_to_tuple
-from histropy.utils.looping_list import LoopingList
+from kanon.utils.list_to_tuple import list_to_tuple
+from kanon.utils.looping_list import LoopingList
 
 from .errors import (EmptyStringException, IllegalBaseValueError,
                      IllegalFloatError, TooManySeparators)

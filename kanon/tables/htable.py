@@ -7,10 +7,10 @@ from astropy.io import registry
 from astropy.table import Table
 from astropy.table.table import TableAttribute
 
-from histropy.tables.symmetries import Symmetry
-from histropy.units import Sexagesimal
-from histropy.units.radices import BasedReal
-from histropy.utils.types.dishas import NumberType, TableContent, UnitType
+from kanon.tables.symmetries import Symmetry
+from kanon.units import Sexagesimal
+from kanon.units.radices import BasedReal
+from kanon.utils.types.dishas import NumberType, TableContent, UnitType
 
 from .interpolations import Interpolator, linear_interpolation
 

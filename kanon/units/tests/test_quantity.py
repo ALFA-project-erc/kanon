@@ -1,7 +1,7 @@
 import pytest
 from astropy.units import Quantity, arcminute, degree
 
-from histropy.units.radices import BasedQuantity, Sexagesimal
+from kanon.units.radices import BasedQuantity, Sexagesimal
 
 
 class TestQuantity:

@@ -25,7 +25,7 @@ test:
   script:
     - pip install .
     - pip install .[test]
-    - pytest --junitxml=report.xml -p "no:hypothesispytest" --pyargs histropy docs --cov histropy --cov-config=setup.cfg
+    - pytest --junitxml=report.xml -p "no:hypothesispytest" --pyargs kanon docs --cov kanon --cov-config=setup.cfg
     - coverage xml
   artifacts:
     reports:

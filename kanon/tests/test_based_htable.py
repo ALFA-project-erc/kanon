@@ -10,9 +10,9 @@ from astropy.units.quantity import Quantity
 from astropy.utils.data import get_pkg_data_filename
 from hypothesis.core import given
 
-from histropy.tables import HTable
-from histropy.tables.htable import DISHAS_REQUEST_URL
-from histropy.units import BasedReal, Sexagesimal
+from kanon.tables import HTable
+from kanon.tables.htable import DISHAS_REQUEST_URL
+from kanon.units import BasedReal, Sexagesimal
 
 Sexagesimal: Type[BasedReal]
 
