@@ -1,11 +1,13 @@
 from numbers import Number
-from typing import Callable, Tuple, TypeVar
+from typing import Callable, TypeVar
 
 import pandas as pd
 
+__all__ = ["Interpolator", "linear_interpolation"]
+
+
 NT = TypeVar("NT", bound=Number)
 
-Point = Tuple[Number, Number]
 Interpolator = Callable[[pd.DataFrame, Number], NT]
 
 

@@ -1,3 +1,26 @@
+"""
+In this module we define RadixBase and BasedReal.
+RadixBase is the basis of the way we work with different radices.
+BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
+
+>>> from kanon.units.radices import RadixBase, radix_registry
+>>> RadixBase([20, 5, 18], [24, 60], "example_radix", ["","u ","sep "]) #doctest:+SKIP
+>>> number = radix_registry["ExampleRadix"]((8, 12, 3, 1), (23, 31)) #doctest:+SKIP
+>>> number
+08 12u 3sep 01 ; 23,31
+>>> float(number) #doctest:+SKIP
+1261.979861111111
+
+IGNORE:
+    >>> import builtins
+    >>> builtins.Sexagesimal = radix_registry["Sexagesimal"]
+    >>> builtins.Historical = radix_registry["Historical"]
+    >>> Historical(1)
+    1 ;
+
+IGNORE
+"""
+
 import math
 import warnings
 from decimal import Decimal
@@ -21,19 +44,11 @@ from .errors import (EmptyStringException, IllegalBaseValueError,
 from .precision import (PreciseNumber, PrecisionMode, TruncatureMode,
                         _with_context_precision, set_precision)
 
-"""
-In this module we define RadixBase and BasedReal.
-RadixBase is the basis of the way we work with different radices.
-BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
-"""
-
 __all__ = ["RadixBase", "BasedReal", "radix_registry"]
 
 
 radix_registry: ClassVar[Dict[str, Type["BasedReal"]]] = {}
-"""
-Registry containing all instanciated BasedReal classes.
-"""
+"""Registry containing all instanciated BasedReal classes."""
 
 
 class RadixBase:
@@ -147,17 +162,17 @@ def ndigit_for_radix(radix: int) -> int:
 
 class BasedReal(Real, PreciseNumber):
     """
-    Abstract class allowing to represent a value in a specific RadixBase.
-    Each time a new RadixBase object is recorded, a new class inheriting from BasedReal
-    is created and recorded in radix_registry.
-    The RadixBase to be used will be placed in the class attribute 'base'
+    Abstract class allowing to represent a value in a specific `RadixBase`.
+    Each time a new `RadixBase` object is recorded, a new class inheriting from BasedReal
+    is created and recorded in `radix_registry`.
+    The `RadixBase` to be used will be placed in the class attribute `base`
 
     Class attributes:
-       - base :        A RadixBase object (will be attributed dynamically to the children inheriting this class)
+       - base :        A `RadixBase` object (will be attributed dynamically to the children inheriting this class)
     """
 
     base: RadixBase
-    """RadixBase of this BasedReal"""
+    """`RadixBase` of this BasedReal"""
     __left: Tuple[int]
     __right: Tuple[int]
     __remainder: Decimal
@@ -210,31 +225,31 @@ class BasedReal(Real, PreciseNumber):
 
         Arguments:
 
-        - str
+        - `str`
 
         >>> Sexagesimal("-2,31;12,30")
         -02,31 ; 12,30
 
-        - 2 Sequence[int] representing integral part and fractional part
+        - 2 `Sequence[int]` representing integral part and fractional part
 
         >>> Sexagesimal((2,31), (12,30), sign=-1)
         -02,31 ; 12,30
         >>> Sexagesimal([2,31], [12,30])
         02,31 ; 12,30
 
-        - a BasedReal with a significant number of digits,
+        - a `BasedReal` with a significant number of digits,
 
         >>> Sexagesimal(Sexagesimal("-2,31;12,30"), 1)
         -02,31 ; 12 |r0.5
 
-        - multiple int representing an integral number in current base
+        - multiple `int` representing an integral number in current `base`
 
         >>> Sexagesimal(21, 1, 3)
         21,01,03 ;
 
         :param remainder: When a computation requires more precision than the precision \
-        of this number, we store a Decimal remainder to keep track of it, defaults to 0.0
-        :type remainder: Decimal, optional
+        of this number, we store a :class:`~decimal.Decimal` remainder to keep track of it, defaults to 0.0
+        :type remainder: ~decimal.Decimal, optional
         :param sign: The sign of this number, defaults to 1
         :type sign: int, optional
         :raises ValueError: Unexpected or illegal arguments
@@ -303,20 +318,20 @@ class BasedReal(Real, PreciseNumber):
     def remainder(self) -> Decimal:
         """
         When a computation requires more significant figures than the precision of this number,
-        we store a Decimal remainder to keep track of it
+        we store a :class:`~decimal.Decimal` remainder to keep track of it
 
         >>> Sexagesimal(1,2,3, remainder=Decimal("0.2")).remainder
         Decimal('0.2')
 
-        :return: Remainder of this BasedReal
-        :rtype: Decimal
+        :return: Remainder of this `BasedReal`
+        :rtype: ~decimal.Decimal
         """
         return self.__remainder
 
     @property
     def sign(self) -> Literal[-1, 1]:
         """
-        Sign of this BasedReal
+        Sign of this `BasedReal`
 
         >>> Sexagesimal(1,2,3, sign=-1).sign
         -1
@@ -328,7 +343,7 @@ class BasedReal(Real, PreciseNumber):
     @property
     def significant(self) -> int:
         """
-        Precision of this BasedReal (equals to length of fractional part)
+        Precision of this `BasedReal` (equals to length of fractional part)
 
         >>> Sexagesimal((1,2,3), (4,5)).significant
         2
@@ -340,7 +355,7 @@ class BasedReal(Real, PreciseNumber):
     @cached_property
     def decimal(self) -> Decimal:
         """
-        This BasedNumber converted as a Decimal
+        This `BasedReal` converted as a ~decimal.Decimal
 
         >>> Sexagesimal((1,2,3), (15,36)).decimal
         Decimal('3723.26')
@@ -362,7 +377,7 @@ class BasedReal(Real, PreciseNumber):
 
     def to_fraction(self) -> Fraction:
         """
-        :return: this BasedReal as a Fraction object.
+        :return: this `BasedReal` as a :class:`~fractions.Fraction` object.
         """
         return Fraction(self.decimal)
 
@@ -1256,9 +1271,6 @@ RadixBase([10], [100], "historical_decimal")
 RadixBase([10], [60], "integer_and_sexagesimal")
 RadixBase([10], [24, 60], "temporal")
 # add new definitions here, corresponding BasedReal inherited classes will be automatically generated
-
-Sexagesimal = radix_registry["Sexagesimal"]
-Historical = radix_registry["Historical"]
 
 
 def _shift_helper(f, unit1, unit2):

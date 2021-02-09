@@ -1,7 +1,7 @@
 import pytest
 
+from kanon.units import Historical, RadixBase
 from kanon.units.errors import IllegalBaseValueError
-from kanon.units.radices import Historical, RadixBase
 
 
 class TestRadixBase:

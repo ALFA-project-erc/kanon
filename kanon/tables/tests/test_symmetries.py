@@ -7,23 +7,23 @@ from kanon.tables.symmetries import (OutOfBoundsOriginError,
 
 class TestSymmetry:
 
-    def test_symmetric_df(self):
+    def test_symmetry_call(self):
         symmirror = Symmetry("mirror", sign=-1)
         symperiod = Symmetry("periodic")
 
         df = pd.DataFrame()
 
-        assert symmirror.symmetric_df(df).equals(df)
+        assert symmirror(df).equals(df)
 
         df = pd.DataFrame({"a": [1, 2, 4], "b": [4, 5, 6]}).set_index("a")
 
-        symdf = symmirror.symmetric_df(df)
+        symdf = symmirror(df)
 
         assert len(symdf) == 2 * len(df) - 1
 
         assert list(symdf.index) == [1, 2, 4, 6, 7]
 
-        symdf = symperiod.symmetric_df(df)
+        symdf = symperiod(df)
 
         assert len(symdf) == 2 * len(df)
 
@@ -32,11 +32,11 @@ class TestSymmetry:
 
         sym = Symmetry("periodic", source=(0, 1))
         with pytest.raises(OutOfBoundsOriginError):
-            sym.symmetric_df(df)
+            sym(df)
 
         sym = Symmetry("periodic", targets=[1])
         with pytest.raises(OverlappingSymmetryError):
-            sym.symmetric_df(df)
+            sym(df)
 
         sym = Symmetry("periodic", source=(1, 2), targets=[5])
-        assert sym.symmetric_df(df).index[-1] == 6
+        assert sym(df).index[-1] == 6

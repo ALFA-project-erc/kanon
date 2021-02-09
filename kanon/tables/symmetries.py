@@ -3,27 +3,27 @@ from numbers import Number
 from typing import List, Literal, Optional, Tuple
 
 import pandas as pd
-from pandas.core.frame import DataFrame
+from pandas import DataFrame
+
+__all__ = ["Symmetry"]
 
 
 @dataclass
 class Symmetry:
-    """Defines a symmetry strategy that can be applied on a :class: `pd.DataFrame`
+    """Defines a symmetry strategy that can be applied on a :class:`~pandas.DataFrame`
     from a specified source interval to one or multiple target keys
 
     >>> df = DataFrame({"val": [5, 9, 2]} ,index=[0,1,3])
-
     >>> sym = Symmetry("mirror")
-    >>> df.pipe(sym.symmetric_df)
+    >>> df.pipe(sym)
     val
     0   5
     1   9
     3   2
     5   9
     6   5
-
     >>> sym = Symmetry("periodic", sign=-1)
-    >>> df.pipe(sym.symmetric_df)
+    >>> df.pipe(sym)
     val
     0    5
     1    9
@@ -31,9 +31,8 @@ class Symmetry:
     4   -5
     5   -9
     7   -2
-
     >>> sym = Symmetry("periodic", sign=-1, anti=-1, source=(0,1), targets=[5,9])
-    >>> df.pipe(sym.symmetric_df)
+    >>> df.pipe(sym)
     val
     0   -5
     1   -9
@@ -43,7 +42,7 @@ class Symmetry:
     9    5
     10   9
 
-    :param symtype: Type of the symmetry, it can be of the same direction (`periodic`)
+    :param symtype: Type of the symmetry, it can be of the same direction (`periodic`) \
     or the oposite (`mirror`)
     :type symtype: Literal["periodic", "mirror"]
     :param offset: Offset to add to the symmetry values, defaults to 0
@@ -52,10 +51,10 @@ class Symmetry:
     :type sign: Literal[-1, 1], optional
     :param anti: Relative signs of the whole symmetric output, defaults to 1
     :type anti: Literal[-1, 1], optional
-    :param source: Tuple representing the lower and upper bound to take the values from,
+    :param source: Tuple representing the lower and upper bound to take the values from, \
     defaults to the whole DataFrame
     :type source: Tuple[Number, Number], optional
-    :param targets: List of keys where the symmetry are pasted, defaults to the end of
+    :param targets: List of keys where the symmetry are pasted, defaults to the end of \
     the DataFrame
     :type targets: List[int]
     """
@@ -74,7 +73,7 @@ class Symmetry:
             if self.source[0] >= self.source[1]:
                 raise ValueError
 
-    def symmetric_df(self, df: DataFrame):
+    def __call__(self, df: DataFrame):
 
         if len(df) == 0:
             return df

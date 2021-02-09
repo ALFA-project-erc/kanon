@@ -30,6 +30,8 @@ import os
 import sys
 from importlib import import_module
 
+from sphinx.ext.autodoc import between
+
 try:
     from sphinx_astropy.conf.v1 import *  # noqa
 except ImportError:
@@ -205,3 +207,12 @@ linkcheck_anchors = False
 #     dtype, target = line.split(None, 1)
 #     target = target.strip()
 #     nitpick_ignore.append((dtype, six.u(target)))
+
+intersphinx_mapping['pandas'] = ('https://pandas.pydata.org/pandas-docs/stable/', None)
+
+
+def setup(app):
+    # Register a sphinx.ext.autodoc.between listener to ignore everything
+    # between lines that contain the word IGNORE
+    app.connect('autodoc-process-docstring', between('^.*IGNORE.*$', exclude=True))
+    return app

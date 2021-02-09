@@ -1,5 +1,5 @@
 from numbers import Number
-from typing import Callable, Dict, Generic, List, Type, TypeVar, Union
+from typing import Callable, Dict, List, Type, Union
 
 import astropy.units as u
 import pandas as pd
@@ -7,20 +7,20 @@ from astropy.io import registry
 from astropy.table import Table
 from astropy.table.table import TableAttribute
 
-from kanon.tables.symmetries import Symmetry
 from kanon.units import Sexagesimal
 from kanon.units.radices import BasedReal
 from kanon.utils.types.dishas import NumberType, TableContent, UnitType
 
 from .interpolations import Interpolator, linear_interpolation
+from .symmetries import Symmetry
+
+__all__ = ["HTable"]
+
 
 Sexagesimal: Type[BasedReal]
 
-IT = TypeVar('IT', bound=Number)
-NT = TypeVar('NT', bound=Number)
 
-
-class HTable(Table, Generic[IT, NT]):
+class HTable(Table):
 
     _interpolator: Interpolator = TableAttribute(default=linear_interpolation)
 
@@ -45,10 +45,10 @@ class HTable(Table, Generic[IT, NT]):
         df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
         if symmetry:
             for sym in self.symmetry:
-                df = df.pipe(sym.symmetric_df)
+                df = df.pipe(sym)
         return df
 
-    def get(self, key: Number, with_unit=True) -> NT:
+    def get(self, key: Number, with_unit=True) -> Number:
         """Get a value from any keys based on interpolated data
 
         :param key: Any argument for an interpolated function

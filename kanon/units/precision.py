@@ -6,13 +6,15 @@ from functools import wraps
 from numbers import Number
 from typing import Optional
 
+__all__ = ["PrecisionMode", "TruncatureMode", "set_precision", "PrecisionContext", "PreciseNumber"]
+
 
 @unique
 class PrecisionMode(Enum):
-    SCI = 0  # Following scientific notation
-    MAX = 1  # Using max significant
-    FULL = 2  # Full calculation (until 100 significant numbers)
-    CUSTOM = 3  # Use a specific significant number
+    SCI = 0  #: Following scientific notation
+    MAX = 1  #: Using max significant
+    FULL = 2  #: Full calculation (until 100 significant numbers)
+    CUSTOM = 3  #: Use a specific significant number
 
 
 @unique

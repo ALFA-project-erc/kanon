@@ -1,8 +1,8 @@
-**********************
-kanon Documentation
-**********************
+*******************
+Kanon Documentation
+*******************
 
-This is the documentation for kanon.
+The History of Astronomy Python package Kanon documentation.
 
 Reference/API
 =============
@@ -10,5 +10,5 @@ Reference/API
 .. toctree::
   :maxdepth: 2
 
-  tables.rst
-  units.rst
+  tables/index.rst
+  units/index.rst
