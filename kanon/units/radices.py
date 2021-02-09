@@ -6,7 +6,7 @@ BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
 >>> from kanon.units.radices import RadixBase, radix_registry
 >>> RadixBase([20, 5, 18], [24, 60], "example_radix", ["","u ","sep "]) #doctest:+SKIP
 >>> number = radix_registry["ExampleRadix"]((8, 12, 3, 1), (23, 31)) #doctest:+SKIP
->>> number
+>>> number #doctest:+SKIP
 08 12u 3sep 01 ; 23,31
 >>> float(number) #doctest:+SKIP
 1261.979861111111
