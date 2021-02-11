@@ -31,6 +31,7 @@ class TestQuantity:
 
         assert round(q, 2).value.equals(round(q.value, 2))
 
+    @pytest.mark.filterwarnings("ignore")
     def test_shifting(self):
         q = Sexagesimal("1;0,1,31") * degree
 

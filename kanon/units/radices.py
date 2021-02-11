@@ -190,10 +190,10 @@ class BasedReal(Real, PreciseNumber):
                 self += (self.one() * self.sign) >> self.significant
             else:
                 raise ValueError(f"Illegal remainder value ({self.remainder}), should be a Decimal between [0.,1.[")
-        if self.base.factor_at_pos(len(self.left) - 1) > 1e+15:
+        if self.base.factor_at_pos(len(self.left) - 1) > 1e+15 and self.remainder:
             warnings.warn("""
                         Integer part of this number exceeds floating point precision.
-                        Calculations made with this number might return incorrect results
+                        Calculations made with this number as a float might return incorrect results.
                         """)
         for x in self[:]:
             if isinstance(x, float):
@@ -646,9 +646,32 @@ class BasedReal(Real, PreciseNumber):
 
         return type(self)(left, right, remainder=remainder.remainder, sign=self.sign)
 
+    @lru_cache
     def subunit_quantity(self, i: int) -> int:
-        # return round(self >> i)
-        raise NotImplementedError
+        """Convert this sexagesimal to the integer value from the specified fractional point.
+
+        >>> number = Sexagesimal("1,0;2,30,1")
+
+        Amount of minutes in `number`
+        >>> number.subunit_quantity(1)
+        3602
+
+        Amount of zodiacal signs in `number`
+        >>> number.subunit_quantity(-1)
+        1
+
+        :param i: Rank of the subunit to compute from.
+        :type i: int
+        :return: Integer amount of the specified subunit.
+        :rtype: int
+        """
+
+        res = 0
+        factor = 1
+        for idx, v in enumerate(self[:i + 1][::-1]):
+            res += v * factor
+            factor *= self.base[i - idx]
+        return self.sign * res
 
     def __round__(self, significant: Optional[int] = None):
         """
@@ -1090,11 +1113,14 @@ class BasedReal(Real, PreciseNumber):
                 return (self.zero(min_significant),) * 2
 
             max_significant = max(self.significant, other.significant)
-            s_self = self << max_significant
-            s_other = other << max_significant
+            s_self = self.resize(max_significant)
+            s_other = other.resize(max_significant)
             if s_self.remainder == s_other.remainder == 0:
-                fdiv, mod = divmod(int(s_self), int(s_other))
-                return self.from_int(fdiv, min_significant), self.from_int(mod, min_significant) >> max_significant
+                qself = s_self.subunit_quantity(max_significant)
+                qother = s_other.subunit_quantity(max_significant)
+                fdiv, mod = divmod(qself, qother)
+                return self.from_int(fdiv, min_significant), self.from_int(mod, min_significant
+                                                                           ) >> max_significant
             else:
                 fdiv = math.floor(self.decimal / other.decimal)
                 if fdiv == self.decimal / other.decimal:

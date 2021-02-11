@@ -1,5 +1,6 @@
 import math as m
 import operator as op
+import warnings
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 from typing import Type
@@ -126,6 +127,8 @@ class TestRadix:
         with pytest.raises(ZeroDivisionError):
             s / 0
 
+        assert Sexagesimal("1,0;2,30,1").subunit_quantity(1) == 3602
+
     def test_shift(self):
         s = Sexagesimal("20, 1, 2, 30; 0")
         assert (s >> 1).equals(Sexagesimal("20, 1, 2; 30, 0"))
@@ -177,8 +180,10 @@ class TestRadix:
         assert float(+x) == fx
         assert abs(x) == abs(fx)
 
-        for o in (op.mul, op.add, op.sub):
-            self.biop_testing(x, y, o)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            for o in (op.mul, op.add, op.sub):
+                self.biop_testing(x, y, o)
 
         if y != 0:
             try:
