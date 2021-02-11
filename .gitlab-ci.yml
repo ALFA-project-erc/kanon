@@ -1,6 +1,6 @@
 workflow:
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ / \[no-ci\]$/
+    - if: $CI_COMMIT_MESSAGE =~ / \[no-ci\]/
       when: never
 
 stages:
