@@ -2,6 +2,7 @@ workflow:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ / \[no-ci\]/
       when: never
+    - when: always
 
 stages:
   - lint
