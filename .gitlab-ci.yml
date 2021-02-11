@@ -1,7 +1,11 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ / \[no-ci\]$/
+      when: never
+
 stages:
   - lint
   - test
-  - coverage
 
 lint:
   stage: lint
@@ -17,6 +21,9 @@ test:
   image: python:3.8.7
   variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  only:
+    changes:
+      - kanon/**/*
   cache:
     paths:
       - .cache/pip
