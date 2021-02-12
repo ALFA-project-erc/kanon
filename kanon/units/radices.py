@@ -653,10 +653,12 @@ class BasedReal(Real, PreciseNumber):
         >>> number = Sexagesimal("1,0;2,30,1")
 
         Amount of minutes in `number`
+
         >>> number.subunit_quantity(1)
         3602
 
         Amount of zodiacal signs in `number`
+
         >>> number.subunit_quantity(-1)
         1
 
