@@ -1,16 +1,33 @@
 import pytest
 
-from kanon.units import Historical, RadixBase
-from kanon.units.errors import IllegalBaseValueError
+from kanon.units import RadixBase, radix_registry
 
 
 class TestRadixBase:
 
     def test_bases(self):
+        test_radix = RadixBase([1], [2], "Test")
+
+        assert "Test" in radix_registry
+        assert radix_registry["Test"].base is test_radix
+
+        assert test_radix.mixed
+
         with pytest.raises(ValueError):
             RadixBase([1], [2], "Sexagesimal")
-        assert Historical('2r 7s 29; 45') == 339.75
-        with pytest.raises(IllegalBaseValueError):
-            Historical((-6, 3), ())
-        with pytest.raises(IllegalBaseValueError):
-            Historical((11, 10, 10), ())
+
+        with pytest.raises(AssertionError):
+            RadixBase([], [2], "n1")
+        with pytest.raises(AssertionError):
+            RadixBase([1], [1.1], "n1")
+
+    def test_get(self):
+
+        sexa_base = radix_registry["Sexagesimal"].base
+
+        assert sexa_base[1] == 60
+        assert sexa_base[-1] == 60
+        assert sexa_base[100] == 60
+
+        histo_base = radix_registry["Historical"].base
+        assert histo_base[-2:1] == [10, 12, 30]

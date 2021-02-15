@@ -10,11 +10,12 @@ import pytest
 from hypothesis import strategies as st
 from hypothesis.core import given
 
-from kanon.units import BasedReal, Sexagesimal
+from kanon.units import BasedReal, Historical, Sexagesimal
 from kanon.units.errors import (EmptyStringException, IllegalBaseValueError,
                                 IllegalFloatError, TooManySeparators)
 
 Sexagesimal: Type[BasedReal]
+Historical: Type[BasedReal]
 
 
 class TestRadix:
@@ -211,3 +212,15 @@ class TestRadix:
         hypothesis.assume(int(x) % int(y) == float(x) % float(y))
         self.biop_testing(x, y, op.mod)
         self.biop_testing(x, y, op.floordiv)
+
+    def test_mixed(self):
+
+        h = Historical("11r 7s 29; 45")
+
+        assert h == 4199.75
+
+        assert (h >> 1).equals(Historical("1r 1s 18; 58, 45"))
+        assert (h >> 2).equals(Historical("1s 3; 36, 58, 45"))
+        assert (h << 1).equals(Historical("116r 10s 10; 30"))
+
+        assert Historical("1s 3; 36, 58").__str__() == "1s 03 ; 36,58"

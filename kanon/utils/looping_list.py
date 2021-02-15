@@ -21,8 +21,8 @@ class LoopingList(list, Generic[T]):
         if isinstance(key, slice):
             raise NotImplementedError
         if key >= len(self):
-            return self[len(self) - 1]
-        if key < -len(self):
+            return self[-1]
+        if key < -len(self) + 1:
             return self[0]
         return super().__getitem__(key)
 

@@ -3,7 +3,7 @@ In this module we define RadixBase and BasedReal.
 RadixBase is the basis of the way we work with different radices.
 BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
 
->>> from kanon.units.radices import RadixBase, radix_registry
+>>> from kanon.units import RadixBase, radix_registry
 >>> RadixBase([20, 5, 18], [24, 60], "example_radix", ["","u ","sep "]) #doctest:+SKIP
 >>> number = radix_registry["ExampleRadix"]((8, 12, 3, 1), (23, 31)) #doctest:+SKIP
 >>> number #doctest:+SKIP
@@ -28,7 +28,7 @@ from fractions import Fraction
 from functools import cached_property, lru_cache
 from numbers import Number, Real
 from typing import (Any, ClassVar, Dict, List, Literal, Optional, Sequence,
-                    Tuple, Type)
+                    Tuple, Type, Union)
 
 import numpy as np
 from astropy.units.core import UnitBase, UnitTypeError
@@ -76,7 +76,7 @@ class RadixBase:
         :param name: Name of this numeral system
         :param integer_separators: List of string separators, used for displaying the integer part of the number
         """
-        assert len(left) > 0 < len(right)
+        assert left and right
         assert all(isinstance(x, int) for x in left)
         assert all(isinstance(x, int) for x in right)
 
@@ -84,15 +84,13 @@ class RadixBase:
         self.right: LoopingList[int] = LoopingList(right)
         self.name = name
         if integer_separators is not None:
-            self.integer_separators: LoopingList[str] = LoopingList(
-                integer_separators)
+            if len(integer_separators) != len(left):
+                raise ValueError
+            self.integer_separators = LoopingList[str](integer_separators)
         else:
-            self.integer_separators: LoopingList[str] = LoopingList([
-                "," if x != 10 else "" for x in left
-            ])
+            self.integer_separators = LoopingList[str](["," if x != 10 else "" for x in left])
 
-        self.mixed = any(x != left[0] for x in left)
-        self.mixed = any(x != right[0] for x in right)
+        self.mixed = any(x != left[0] for x in left + right)
 
         # Build a class inheriting from BasedReal, that will use this RadixBase as
         # its numeral system.
@@ -106,22 +104,28 @@ class RadixBase:
         # Store the newly created BasedReal class
         self.type: Type[BasedReal] = new_type
 
-    def __getitem__(self, pos: int) -> int:
+    def __getitem__(self, key: Union[int, slice]) -> Union[int, LoopingList[int]]:
         """
         Return the radix at the specified position. Position 0 represents the last integer
         position before the fractional part (i.e. the position just before the ';' in sexagesimal
         notation, or just before the '.' in decimal notation). Positive positions represent
         the fractional positions, negative positions represent the integer positions.
 
-        :param pos: Position. <= 0 for integer part (with 0 being the right-most integer position), > 0 for fractional part
+        :param key: Position. <= 0 for integer part (with 0 being the right-most integer position), > 0 for fractional part
         :return: Radix at the specified position
         """
-        if pos <= 0:
-            return self.left[pos - 1]
-        else:
-            return self.right[pos - 1]
+        if isinstance(key, slice):
+            if not key.start or not key.stop:
+                raise ValueError("RadixBase slices must have a start and a stop value")
+            array = [self[i] for i in range(key.start, key.stop)]
+            return LoopingList[str](array[::key.step])
 
-    @lru_cache(maxsize=None, typed=True)
+        if key <= 0:
+            return self.left[key - 1]
+        else:
+            return self.right[key - 1]
+
+    @lru_cache
     def factor_at_pos(self, pos: int) -> int:
         """
         Returns an int factor corresponding to a digit at position pos.
@@ -414,7 +418,7 @@ class BasedReal(Real, PreciseNumber):
 
         for i in range(len(self.left)):
             if i > 0:
-                res += self.base.integer_separators[i]
+                res += self.base.integer_separators[i - len(self.left)]
             num = str(self.left[i])
             digit = ndigit_for_radix(self.base.left[i])
             res += "0" * (digit - len(num)) + num
@@ -631,8 +635,36 @@ class BasedReal(Real, PreciseNumber):
             return self
 
         if self.base.mixed:
+            result = [0] * (-i) + list(self[:]) + [0] * i
+            radix = self.base[-len(self.left) + min(0, i) + 1: len(self.right) + max(0, i) + 1]
+            remainder = Decimal(0)
+            for _ in range(abs(i)):
+                tmp = []
+                next = 0
+                if i > 0:
+                    for idx, val in enumerate(result):
+                        v, rem = divmod(Decimal(next), 1)
+                        tmp.append(int(v))
+                        next = (val + rem) / radix[idx] * radix[idx + 1]
+                    remainder += rem
+                    result = tmp
+                else:
+                    for idx, val in enumerate(result[::-1]):
+                        v, rem = divmod(next, 1)
+                        sv = 0
+                        if idx > 0:
+                            tmp[-1] += int(float((rem * radix[-idx])))
+                            sv, tmp[-1] = divmod(tmp[-1], radix[-idx])
+                        tmp.append(int(v + sv))
+                        next = Decimal(val) / radix[-idx - 1] * radix[- idx - 2]
+                    result = tmp[::-1]
 
-            raise NotImplementedError
+            result = result[None if i < 0 else i: None if i > 0 else (i + 1) or None]
+            return type(self)(
+                result[:len(self.left) - i],
+                result[len(self.left) - i:],
+                remainder=remainder + self.remainder, sign=self.sign
+            )
 
         else:
 
@@ -878,7 +910,7 @@ class BasedReal(Real, PreciseNumber):
         factor = 1
         for i in range(len(self.left)):
             value += factor * self.left[-i - 1]
-            factor *= self.base.left[i]
+            factor *= self.base.left[-i - 1]
 
         return value * self.sign
 
