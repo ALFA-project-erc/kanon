@@ -26,6 +26,7 @@ HTable (:class:`kanon.tables.htable.HTable`)
       ~HTable.masked
       ~HTable.meta
       ~HTable.read
+      ~HTable.symmetry
       ~HTable.write
 
    .. rubric:: Methods Summary
@@ -94,6 +95,7 @@ HTable (:class:`kanon.tables.htable.HTable`)
    .. autoattribute:: masked
    .. autoattribute:: meta
    .. autoattribute:: read
+   .. autoattribute:: symmetry
    .. autoattribute:: write
 
    .. rubric:: Methods Documentation

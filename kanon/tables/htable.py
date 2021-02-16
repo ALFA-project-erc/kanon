@@ -1,11 +1,13 @@
 from numbers import Number
-from typing import Callable, Dict, List, Type, Union
+from typing import Callable, Dict, List, Optional, Type, Union
 
 import astropy.units as u
 import pandas as pd
 from astropy.io import registry
 from astropy.table import Table
 from astropy.table.table import TableAttribute
+from astropy.units import Quantity
+from astropy.units.core import Unit
 
 from kanon.units import Sexagesimal
 from kanon.units.radices import BasedReal
@@ -21,41 +23,90 @@ Sexagesimal: Type[BasedReal]
 
 
 class HTable(Table):
+    """`HTable` is a subclass of `astropy.table.Table`, made to model Historical Astronomy tables
+    representing mathematical functions. Its argument column or columns are its index, while the
+    values should be on the first column. Columns are allowed to contain all kinds of `~numbers.Number`,
+    especially `~kanon.units.radices.BasedReal` numbers. `HTable` also provides additional historical
+    features and metadata.
 
-    _interpolator: Interpolator = TableAttribute(default=linear_interpolation)
+    See also: https://docs.astropy.org/en/stable/table/
 
-    def __init__(self, *args, index=None, symmetry: List[Symmetry] = [], **kwargs):
-        super().__init__(*args, **kwargs)
+    >>> table = HTable({"args": [1,2,3], "values": [5.1,3.9,4.3]}, index="args")
+    >>> table
+    <HTable length=3>
+    args  values
+    int64 float64
+    ----- -------
+        1     5.1
+        2     3.9
+        3     4.3
+    >>> table.loc[2]
+    <Row index=1>
+    args  values
+    int64 float64
+    ----- -------
+        2     3.9
+    >>> table.loc[2]["values"]
+    3.9
+
+    :param data: Data to initialize table.
+    :type data: Optional[Data Container]
+    :param names: Specify column names.
+    :type names: Optional[List[str]]
+    :param index: Columns considered as the indices.
+    :type index: Optional[Union[str, List[str]]]
+    :param units: List or dict of units to apply to columns.
+    :type units: Optional[List[Unit]]
+    :param dtype: Specify column data types.
+    :type dtype: Optional[List]
+    :param symmetry: Specify a list of `Symmetry` on this table.
+    :type symmetry: Optional[List[Symmetry]]
+    :param interpolate: Specify a custom interpolation method, default to `linear_interpolation`.
+    :type interpolate: Optional[Interpolator]
+
+    """
+
+    interpolate: Interpolator = TableAttribute(default=linear_interpolation)
+    """Interpolation method."""
+    symmetry: List[Symmetry] = TableAttribute(default=[])
+    """Table symmetries."""
+
+    def __init__(self,
+                 data=None,
+                 names: Optional[List[str]] = None,
+                 index: Optional[Union[str, List[str]]] = None,
+                 dtype: Optional[List] = None,
+                 units: Optional[List[Unit]] = None,
+                 *args, **kwargs
+                 ):
+
+        super().__init__(data=data, names=names, units=units, dtype=dtype, *args, **kwargs)
 
         if index:
             self.add_index(index)
 
-        self.symmetry = symmetry
         self.bounds = (float("-inf"), float("inf"))
-
-    @property
-    def interpolate(self) -> Interpolator:
-        return self._interpolator
-
-    @interpolate.setter
-    def interpolate(self, func: Interpolator):
-        self._interpolator = func
 
     def to_pandas(self, index=None, use_nullable_int=True, symmetry=True) -> pd.DataFrame:
         df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
+        if not self.indices:
+            raise ValueError("HTable should have an index, defining the function's arguments")
         if symmetry:
             for sym in self.symmetry:
                 df = df.pipe(sym)
         return df
 
-    def get(self, key: Number, with_unit=True) -> Number:
-        """Get a value from any keys based on interpolated data
+    def get(self, key: Number, with_unit=True) -> Union[Number, Quantity]:
+        """Get the value from any key based on interpolated data.
 
-        :param key: Any argument for an interpolated function
-        :type key: Number
+        :param key: Argument for an interpolated function
+        :type key: `~numbers.Number`
+        :param with_unit: Whether the result is represented as a Quantity or not. \
+        Defaults to `True`
+        :type with_unit: bool
         :raises IndexError: Key is out of bounds
         :return: Interpolated value
-        :rtype: NT
+        :rtype: `~numbers.Number`
         """
 
         df = self.to_pandas()
@@ -126,11 +177,9 @@ def read_table_dishas(requested_id: str) -> HTable:
         [args, entries],
         names=(res["argument1_name"], "Entries"),
         index=(res["argument1_name"]),
+        units=[unit_reader.get(arg_types[1]), unit_reader.get(entry_types[1])],
         dtype=[object, object]
     )
-
-    table.columns[0].unit = unit_reader.get(arg_types[1])
-    table.columns[1].unit = unit_reader.get(entry_types[1])
 
     return table
 
