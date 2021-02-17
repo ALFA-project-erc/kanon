@@ -22,7 +22,6 @@ IGNORE
 """
 
 import math
-import warnings
 from decimal import Decimal
 from fractions import Fraction
 from functools import cached_property, lru_cache
@@ -194,11 +193,11 @@ class BasedReal(Real, PreciseNumber):
                 self += (self.one() * self.sign) >> self.significant
             else:
                 raise ValueError(f"Illegal remainder value ({self.remainder}), should be a Decimal between [0.,1.[")
-        if self.base.factor_at_pos(len(self.left) - 1) > 1e+15 and self.remainder:
-            warnings.warn("""
-                        Integer part of this number exceeds floating point precision.
-                        Calculations made with this number as a float might return incorrect results.
-                        """)
+        # if self.base.factor_at_pos(len(self.left) - 1) > 1e+15 and self.remainder:
+        #     warnings.warn("""
+        #                 Integer part of this number exceeds floating point precision.
+        #                 Calculations made with this number as a float might return incorrect results.
+        #                 """)
         for x in self[:]:
             if isinstance(x, float):
                 raise IllegalFloatError(x)

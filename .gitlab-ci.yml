@@ -2,6 +2,8 @@ workflow:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ / \[no-ci\]/
       when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
     - when: always
 
 stages:
@@ -39,3 +41,17 @@ test:
     reports:
       junit: report.xml
       cobertura: coverage.xml
+
+test_notebooks:
+  stage: test
+  image: python:3.8.7
+  tags:
+    - docker_dio
+  allow_failure: true
+  only:
+    changes:
+      - kanon/**/*
+      - examples/**/*
+  script:
+    - pip install tox
+    - tox -e test_notebooks
