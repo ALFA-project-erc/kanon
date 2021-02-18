@@ -15,8 +15,6 @@ IGNORE:
     >>> import builtins
     >>> builtins.Sexagesimal = radix_registry["Sexagesimal"]
     >>> builtins.Historical = radix_registry["Historical"]
-    >>> Historical(1)
-    1 ;
 
 IGNORE
 """
@@ -41,7 +39,7 @@ from kanon.utils.looping_list import LoopingList
 from .errors import (EmptyStringException, IllegalBaseValueError,
                      IllegalFloatError, TooManySeparators)
 from .precision import (PreciseNumber, PrecisionMode, TruncatureMode,
-                        _with_context_precision, set_precision)
+                        set_precision)
 
 __all__ = ["RadixBase", "BasedReal", "radix_registry"]
 
@@ -952,7 +950,6 @@ class BasedReal(Real, PreciseNumber):
 
         return type(self)(q_res.left, right, remainder=r.decimal / denominator.decimal, sign=sign)
 
-    @_with_context_precision
     def __add__(self, other: "BasedReal") -> "BasedReal":
         """
         self + other
@@ -1067,7 +1064,6 @@ class BasedReal(Real, PreciseNumber):
             return self
         return -self
 
-    @_with_context_precision
     def __mul__(self, other: "BasedReal") -> "BasedReal":
         """
         self * other
@@ -1184,7 +1180,6 @@ class BasedReal(Real, PreciseNumber):
         """other % self"""
         return other % float(self)
 
-    @_with_context_precision
     def __truediv__(self, other: "BasedReal") -> "BasedReal":
         """
         self / other

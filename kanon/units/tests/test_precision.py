@@ -4,9 +4,8 @@ from typing import Type
 import pytest
 
 from kanon.units import BasedReal, Sexagesimal
-from kanon.units.precision import (CustomPrecisionError, PrecisionMode,
-                                   TruncatureMode, _with_context_precision,
-                                   set_precision)
+from kanon.units.precision import (PrecisionMode, TruncatureMode,
+                                   _with_context_precision, set_precision)
 
 Sexagesimal: Type[BasedReal]
 
@@ -30,7 +29,7 @@ class TestPrecision:
             self.equality(s1_ * s2, Sexagesimal(1))
             self.equality(s1_ / s2, Sexagesimal(0, remainder=Decimal("0.25")))
 
-        with set_precision(pmode=PrecisionMode.CUSTOM, custom_precision=3):
+        with set_precision(pmode=3):
             self.equality(s1 + s2, Sexagesimal((2,), (30, 0, 0), remainder=Decimal("0.1")))
             self.equality(s1 * s2, Sexagesimal((1,), (0, 0, 0), remainder=Decimal("0.2")))
             self.equality(s1 / s2, Sexagesimal((0,), (15, 0, 0), remainder=Decimal("0.05")))
@@ -39,19 +38,10 @@ class TestPrecision:
 
         with pytest.raises(NotImplementedError):
             with set_precision(pmode=PrecisionMode.FULL):
-                pass
+                s1 + s2
 
-        with pytest.raises(CustomPrecisionError) as errinfo:
-            with set_precision(custom_precision=5):
-                pass
-        assert "PrecisionMode.CUSTOM" in str(errinfo.value)
-        with pytest.raises(CustomPrecisionError) as errinfo:
-            with set_precision(pmode=PrecisionMode.CUSTOM):
-                pass
-        assert "Illegal value" in str(errinfo.value)
-
-        with pytest.raises(TypeError):
-            with set_precision(pmode=1):
+        with pytest.raises(ValueError):
+            with set_precision(pmode=-1):
                 pass
 
     def test_truncature_modes(self):
