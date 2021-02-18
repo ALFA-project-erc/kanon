@@ -44,6 +44,10 @@ class TestPrecision:
             with set_precision(pmode=-1):
                 pass
 
+        with pytest.raises(TypeError):
+            with set_precision(pmode="a"):
+                pass
+
     def test_truncature_modes(self):
         s1 = Sexagesimal("0;30,0,0,6")
         s2 = Sexagesimal(2)

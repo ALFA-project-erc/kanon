@@ -6,7 +6,6 @@
             "argument1": [
                 {
                     "value": [
-                        "00",
                         "01"
                     ],
                     "comment": "",
@@ -18,7 +17,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "02"
                     ],
                     "comment": "",
@@ -30,7 +28,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "03"
                     ],
                     "comment": "",
@@ -42,7 +39,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "04"
                     ],
                     "comment": "",
@@ -54,7 +50,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "05"
                     ],
                     "comment": "",
@@ -66,7 +61,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "06"
                     ],
                     "comment": "",
@@ -78,7 +72,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "07"
                     ],
                     "comment": "",
@@ -90,7 +83,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "08"
                     ],
                     "comment": "",
@@ -102,259 +94,7 @@
                 },
                 {
                     "value": [
-                        "00",
-                        "09"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "10"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "11"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "12"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "13"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "14"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "15"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "16"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "17"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "18"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "19"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "20"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "21"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "22"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "23"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "24"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "25"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "26"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "27"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "28"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
-                        "29"
-                    ],
-                    "comment": "",
-                    "suggested": false,
-                    "critical_apparatus": [
-                        "",
-                        ""
-                    ]
-                },
-                {
-                    "value": [
-                        "00",
+                        "09",
                         "30"
                     ],
                     "comment": "",
@@ -366,7 +106,237 @@
                 },
                 {
                     "value": [
-                        "00",
+                        "10"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "11"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "12"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "13"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "14"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "15"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "16"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "17"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "18"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "19"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "20"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "21"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "22"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "23"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "24"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "25"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "26"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "27"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "28"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "29"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
+                        "30"
+                    ],
+                    "comment": "",
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ]
+                },
+                {
+                    "value": [
                         "31"
                     ],
                     "comment": "",
@@ -378,7 +348,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "32"
                     ],
                     "comment": "",
@@ -390,7 +359,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "33"
                     ],
                     "comment": "",
@@ -402,7 +370,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "34"
                     ],
                     "comment": "",
@@ -414,7 +381,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "35"
                     ],
                     "comment": "",
@@ -426,7 +392,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "36"
                     ],
                     "comment": "",
@@ -438,7 +403,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "37"
                     ],
                     "comment": "",
@@ -450,7 +414,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "38"
                     ],
                     "comment": "",
@@ -462,7 +425,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "39"
                     ],
                     "comment": "",
@@ -474,7 +436,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "40"
                     ],
                     "comment": "",
@@ -486,7 +447,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "41"
                     ],
                     "comment": "",
@@ -498,7 +458,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "42"
                     ],
                     "comment": "",
@@ -510,7 +469,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "43"
                     ],
                     "comment": "",
@@ -522,7 +480,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "44"
                     ],
                     "comment": "",
@@ -534,7 +491,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "45"
                     ],
                     "comment": "",
@@ -546,7 +502,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "46"
                     ],
                     "comment": "",
@@ -558,7 +513,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "47"
                     ],
                     "comment": "",
@@ -570,7 +524,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "48"
                     ],
                     "comment": "",
@@ -582,7 +535,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "49"
                     ],
                     "comment": "",
@@ -594,7 +546,6 @@
                 },
                 {
                     "value": [
-                        "00",
                         "50"
                     ],
                     "comment": "",

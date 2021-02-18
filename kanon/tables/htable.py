@@ -85,12 +85,10 @@ class HTable(Table):
         if index:
             self.add_index(index)
 
-        self.bounds = (float("-inf"), float("inf"))
-
     def to_pandas(self, index=None, use_nullable_int=True, symmetry=True) -> pd.DataFrame:
+        if not self.indices and not index:
+            raise IndexError("HTable should have an index, defining the function's arguments")
         df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
-        if not self.indices:
-            raise ValueError("HTable should have an index, defining the function's arguments")
         if symmetry:
             for sym in self.symmetry:
                 df = df.pipe(sym)
@@ -116,13 +114,9 @@ class HTable(Table):
         except KeyError:
             pass
 
-        if self.bounds[0] < key < self.bounds[1]:
-            df.index = df.index.map(float)
+        df.index = df.index.map(float)
 
-            return self.interpolate(df, key) * unit
-
-        else:
-            raise NotImplementedError
+        return self.interpolate(df, key) * unit
 
 
 DISHAS_REQUEST_URL = "https://dishas.obspm.fr/elastic-query?index=table_content&hits=true&id={}"
@@ -144,9 +138,9 @@ def read_table_dishas(requested_id: str) -> HTable:
         negative = array[0][0] == "-"
         return Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
 
-    def read_intsexag_array(array: List[str]) -> Union[Sexagesimal, int]:
+    def read_intsexag_array(array: List[str]) -> Sexagesimal:
         if len(array) == 1:
-            return int(array[0])
+            return Sexagesimal.from_int(int(array[0]))
         else:
             return (
                 read_sexag_array(array[1:]) >> len(array) - 1
@@ -166,12 +160,8 @@ def read_table_dishas(requested_id: str) -> HTable:
     arg_types = (res["argument1_type_of_number"], res["argument1_number_unit"])
     entry_types = (res["entry_type_of_number"], res["entry_number_unit"])
 
-    try:
-        args = [number_reader.get(arg_types[0], lambda x:x)(v["value"]) for v in values["args"]["argument1"]]
-        entries = [number_reader.get(entry_types[0], lambda x:x)(v["value"]) for v in values["entry"]]
-    except ValueError:
-        args = [v["value"] for v in values["args"]["argument1"]]
-        entries = [v["value"] for v in values["entry"]]
+    args = [number_reader.get(arg_types[0], lambda x:x)(v["value"]) for v in values["args"]["argument1"]]
+    entries = [number_reader.get(entry_types[0], lambda x:x)(v["value"]) for v in values["entry"]]
 
     table = HTable(
         [args, entries],

@@ -68,7 +68,7 @@ class Symmetry:
 
     def __post_init__(self):
         if self.symtype not in ("periodic", "mirror"):
-            raise TypeError
+            raise ValueError
         if self.source:
             if self.source[0] >= self.source[1]:
                 raise ValueError
@@ -98,9 +98,6 @@ class Symmetry:
             elif self.symtype == "periodic":
                 symdf.index = symdf.index.map(lambda x: 1 + x + symdf.index[-1] - symdf.index[0])
 
-            else:
-                raise ValueError
-
             if self.sign == -1 or self.offset:
                 symdf = symdf.applymap(apply)
 
@@ -108,10 +105,13 @@ class Symmetry:
 
         for t in self.targets:
             tdf = symdf.copy()
-            tdf.index = tdf.index.map(lambda x: t + x - tdf.index[0])
 
             if self.symtype == "mirror":
+                tdf.index = tdf.index.map(lambda x: tdf.index[-1] - x + t)
                 tdf = tdf[::-1]
+
+            else:
+                tdf.index = tdf.index.map(lambda x: t + x - tdf.index[0])
 
             if self.sign == -1 or self.offset:
                 tdf = tdf.applymap(apply)

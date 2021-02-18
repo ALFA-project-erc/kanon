@@ -11,8 +11,8 @@ from hypothesis import strategies as st
 from hypothesis.core import given
 
 from kanon.units import BasedReal, Historical, Sexagesimal
-from kanon.units.errors import (EmptyStringException, IllegalBaseValueError,
-                                IllegalFloatError, TooManySeparators)
+from kanon.units.radices import (EmptyStringException, IllegalBaseValueError,
+                                 IllegalFloatError, TooManySeparators)
 
 Sexagesimal: Type[BasedReal]
 Historical: Type[BasedReal]
@@ -58,10 +58,12 @@ class TestRadix:
             Sexagesimal("1;2;3")
 
         # From Sequence
-        with pytest.raises(IllegalBaseValueError):
+        with pytest.raises(IllegalBaseValueError) as err:
             Sexagesimal((-6, 3), ())
-        with pytest.raises(IllegalFloatError):
+        assert "should be in the range" in str(err.value)
+        with pytest.raises(IllegalFloatError) as err:
             Sexagesimal((0.3, 5), (6, 8))
+        assert "An illegal float" in str(err.value)
 
         # From multiple ints
         with pytest.raises(ValueError):
@@ -122,6 +124,8 @@ class TestRadix:
         assert s ** -1 == 1 / 5
         assert s ** 1 == s
         assert Sexagesimal(0) ** 1 == 0
+
+        assert s > 4
 
         assert (s / 1).equals(s)
         assert (s / -1).equals(-s)

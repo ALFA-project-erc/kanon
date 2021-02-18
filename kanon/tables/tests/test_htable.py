@@ -3,6 +3,7 @@ from typing import Tuple
 
 import hypothesis.strategies as st
 import numpy as np
+import pytest
 from hypothesis import assume
 from hypothesis.core import given
 
@@ -11,6 +12,17 @@ from kanon.tables.symmetries import Symmetry
 
 
 class TestHTable:
+
+    def test_init(self):
+
+        table = HTable({"a": [1, 2, 3, 4], "b": [5, 9, 12, 15]})
+        assert table[2]["b"] == 12
+
+        with pytest.raises(IndexError):
+            table.get(3)
+
+        table.add_index("b")
+        assert table.get(5) == 1
 
     gen_table_strategy = st.builds(
         HTable,
@@ -45,3 +57,6 @@ class TestHTable:
         fres = np.interp(key, [float(x) for x in tab.columns[0]], [float(x) for x in tab.columns[1]])
         sres = tab.get(key)
         assert isclose(fres, float(sres), abs_tol=1e9)
+
+        with pytest.raises(IndexError):
+            tab.get(tab[0]["A"] - 1)

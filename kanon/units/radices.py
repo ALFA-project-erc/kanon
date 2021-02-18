@@ -36,8 +36,6 @@ from astropy.units.quantity_helper.helpers import _d
 from kanon.utils.list_to_tuple import list_to_tuple
 from kanon.utils.looping_list import LoopingList
 
-from .errors import (EmptyStringException, IllegalBaseValueError,
-                     IllegalFloatError, TooManySeparators)
 from .precision import (PreciseNumber, PrecisionMode, TruncatureMode,
                         set_precision)
 
@@ -1337,3 +1335,52 @@ def _shift_helper(f, unit1, unit2):
 
 UFUNC_HELPERS[np.left_shift] = _shift_helper
 UFUNC_HELPERS[np.right_shift] = _shift_helper
+
+
+class BasedRealException(Exception):
+    pass
+
+
+class EmptyStringException(BasedRealException, ValueError):
+    pass
+
+
+class TooManySeparators(BasedRealException, ValueError):
+    pass
+
+
+class IllegalBaseValueError(BasedRealException, ValueError):
+    """
+    Raised when a value is not in the range of the specified base.
+
+    ```python
+    if not 0 <= val < radix[i]:
+        raise IllegalBaseValueError(radix, radix[i], val)
+    ```
+    """
+
+    def __init__(self, radix, base, num):
+        self.radix = radix
+        self.base = base
+        self.num = num
+
+    def __str__(self):
+        return f"An invalid value for ({self.radix.name}) was found \
+        ('{self.num}'); should be in the range [0,{self.base}])."
+
+
+class IllegalFloatError(BasedRealException, TypeError):
+    """
+    Raised when an expected int value is a float.
+
+    ```python
+    if isinstance(val, float):
+        raise IllegalFloatError(val)
+    ```
+    """
+
+    def __init__(self, num):
+        self.num = num
+
+    def __str__(self):
+        return f"An illegal float value was found ('{self.num}')"

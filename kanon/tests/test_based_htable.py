@@ -5,6 +5,7 @@ from typing import Tuple, Type
 import astropy.units as u
 import hypothesis.strategies as st
 import numpy as np
+import pytest
 import requests_mock
 from astropy.units.quantity import Quantity
 from astropy.utils.data import get_pkg_data_filename
@@ -30,9 +31,14 @@ class TestBasedHTable:
 
         assert table["Mean Argument of the Sun"].unit is u.degree
 
-        assert table.loc[Sexagesimal("0;1")] == table[0]
+        assert table.loc[Sexagesimal("1")] == table[0]
 
-        assert table.loc[Sexagesimal("0;3")][1] is Sexagesimal(6, 27, sign=-1)
+        assert table.loc[Sexagesimal("3")]["Entries"].equals(Sexagesimal(6, 27, sign=-1))
+
+        kwargs["mock"].get(DISHAS_REQUEST_URL.format(181), json={})
+
+        with pytest.raises(FileNotFoundError):
+            HTable.read(181, format="dishas")
 
     gen_table_strategy = st.builds(
         HTable,

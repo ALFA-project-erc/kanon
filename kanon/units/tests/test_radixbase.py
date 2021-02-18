@@ -6,7 +6,7 @@ from kanon.units import RadixBase, radix_registry
 class TestRadixBase:
 
     def test_bases(self):
-        test_radix = RadixBase([1], [2], "Test")
+        test_radix = RadixBase([1], [2], "Test", "a")
 
         assert "Test" in radix_registry
         assert radix_registry["Test"].base is test_radix
@@ -15,6 +15,9 @@ class TestRadixBase:
 
         with pytest.raises(ValueError):
             RadixBase([1], [2], "Sexagesimal")
+
+        with pytest.raises(ValueError):
+            RadixBase([11, 5], [2], "a", integer_separators=["a", "b", "c"])
 
         with pytest.raises(AssertionError):
             RadixBase([], [2], "n1")
@@ -31,3 +34,8 @@ class TestRadixBase:
 
         histo_base = radix_registry["Historical"].base
         assert histo_base[-2:1] == [10, 12, 30]
+
+        with pytest.raises(ValueError):
+            histo_base[5:]
+        with pytest.raises(ValueError):
+            histo_base[:3]

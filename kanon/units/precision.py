@@ -53,21 +53,22 @@ class PrecisionContext:
         self.__post_init__()
 
 
-_CONTEXT: PrecisionContext = PrecisionContext(pmode=PrecisionMode.SCI, tmode=TruncatureMode.NONE)
+__CONTEXT: PrecisionContext = PrecisionContext(pmode=PrecisionMode.SCI, tmode=TruncatureMode.NONE)
 
 
 def get_context() -> PrecisionContext:
-    return _CONTEXT
+    return __CONTEXT
 
 
 @contextmanager
 def set_precision(pmode: Optional[PrecisionMode] = None, tmode: Optional[TruncatureMode] = None):
-    current_ctx = astuple(_CONTEXT)
+    ctx = get_context()
+    current_ctx = astuple(ctx)
     try:
-        _CONTEXT.mutate(pmode, tmode)
-        yield _CONTEXT
+        ctx.mutate(pmode, tmode)
+        yield ctx
     finally:
-        _CONTEXT.mutate(*current_ctx)
+        ctx.mutate(*current_ctx)
 
 
 def _with_context_precision(func):
@@ -85,7 +86,7 @@ def _with_context_precision(func):
 
         value = value.resize(args[0]._get_significant(args[1]))
 
-        return _CONTEXT.tmode(value)
+        return get_context().tmode(value)
 
     return wrapper
 
@@ -114,7 +115,7 @@ class PreciseNumber(Number):
         raise NotImplementedError
 
     def _get_significant(self, other: "PreciseNumber") -> int:
-        return _CONTEXT._precisionfunc(self, other)
+        return get_context()._precisionfunc(self, other)
 
     def __init_subclass__(cls):
         cls.__add__ = _with_context_precision(cls.__add__)

@@ -7,6 +7,10 @@ from kanon.tables.symmetries import (OutOfBoundsOriginError,
 
 class TestSymmetry:
 
+    def test_init(self):
+        with pytest.raises(ValueError):
+            Symmetry("a")
+
     def test_symmetry_call(self):
         symmirror = Symmetry("mirror", sign=-1)
         symperiod = Symmetry("periodic")
@@ -40,3 +44,14 @@ class TestSymmetry:
 
         sym = Symmetry("periodic", source=(1, 2), targets=[5])
         assert sym(df).index[-1] == 6
+
+    def test_mirror_multi_targets(self):
+        sym = Symmetry("mirror", targets=[10, 15])
+        df = pd.DataFrame({"a": [2, 3, 5], "b": [7, 6, 9]}).set_index("a")
+
+        res = df.pipe(sym)
+
+        assert len(res) == 9
+
+        assert list(res.index) == [2, 3, 5, 10, 12, 13, 15, 17, 18]
+        assert list(res["b"]) == [7, 6, 9, 9, 6, 7, 9, 6, 7]
