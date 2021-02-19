@@ -159,7 +159,7 @@ def ndigit_for_radix(radix: int) -> int:
     return int(np.ceil(np.log10(radix)))
 
 
-class BasedReal(Real, PreciseNumber):
+class BasedReal(PreciseNumber, Real):
     """
     Abstract class allowing to represent a value in a specific `RadixBase`.
     Each time a new `RadixBase` object is recorded, a new class inheriting from BasedReal
@@ -218,7 +218,6 @@ class BasedReal(Real, PreciseNumber):
         return count != 0
 
     @list_to_tuple
-    @lru_cache(maxsize=None, typed=True)
     def __new__(cls, *args, remainder=Decimal(0.0), sign=1) -> "BasedReal":
         """Constructs a number with a given radix.
 
@@ -721,7 +720,7 @@ class BasedReal(Real, PreciseNumber):
             significant = self.significant
         n = self.resize(significant)
         if n.remainder >= 0.5:
-            with set_precision(pmode=PrecisionMode.MAX, tmode=TruncatureMode.NONE):
+            with set_precision(pmode=PrecisionMode.MAX, tmode=TruncatureMode.NONE, recording=False):
                 n += type(self)(1, sign=self.sign) >> significant
         return n.truncate(significant)
 
@@ -909,17 +908,11 @@ class BasedReal(Real, PreciseNumber):
 
         return value * self.sign
 
-    def division(self, other: "BasedReal", significant: int) -> "BasedReal":
-        """
-        Divide this BasedReal object with another
-
-        :param other: the other BasedReal object
-        :param significant: the number of desired significant positions
-        :return: the division of the two BasedReal objects
-        """
+    def _truediv(self, other: "BasedReal") -> "BasedReal":
+        max_significant = max(self.significant, other.significant)
 
         if self == 0:
-            return self.zero(significant=significant)
+            return self.zero(significant=max_significant)
         if other in (1, -1):
             return self * float(other)
         if other == 0:
@@ -927,7 +920,7 @@ class BasedReal(Real, PreciseNumber):
 
         sign = self.sign * other.sign
 
-        q_res = self.zero(significant)
+        q_res = self.zero(max_significant)
         right = list(q_res.right)
 
         numerator = abs(self)
@@ -937,7 +930,7 @@ class BasedReal(Real, PreciseNumber):
 
         q_res += q
 
-        for i in range(0, significant):
+        for i in range(0, max_significant):
             numerator = r * self.base.right[i]
             q, r = divmod(numerator, denominator)
             if q == self.base.right[i]:  # pragma: no cover
@@ -948,19 +941,7 @@ class BasedReal(Real, PreciseNumber):
 
         return type(self)(q_res.left, right, remainder=r.decimal / denominator.decimal, sign=sign)
 
-    def __add__(self, other: "BasedReal") -> "BasedReal":
-        """
-        self + other
-
-        >>> Sexagesimal('01, 21; 47, 25') + Sexagesimal('45; 32, 14, 22')
-        02,07 ; 19,39 |r0.4
-        """
-        if not isinstance(other, Number):
-            raise NotImplementedError
-
-        elif type(self) is not type(other):
-            return self + self.from_float(float(other), significant=self.significant)
-
+    def _add(self, other: "BasedReal") -> "BasedReal":
         if self.decimal == -other.decimal:
             return self.zero()
 
@@ -995,13 +976,32 @@ class BasedReal(Real, PreciseNumber):
 
         return type(self)(left, right, remainder=abs(remainder), sign=sign)
 
+    def __add__(self, other: "BasedReal") -> "BasedReal":
+        """
+        self + other
+
+        >>> Sexagesimal('01, 21; 47, 25') + Sexagesimal('45; 32, 14, 22')
+        02,07 ; 19,39 |r0.4
+        """
+        if not isinstance(other, Number):
+            raise NotImplementedError
+
+        elif type(self) is not type(other):
+            return self + self.from_float(float(other), significant=self.significant)
+
+        else:
+            return super().__add__(other)
+
     def __radd__(self, other) -> "BasedReal":
         """other + self"""
         return self + other
 
+    def _sub(self, other: "BasedReal") -> "BasedReal":
+        return self + -other
+
     def __sub__(self, other: "BasedReal") -> "BasedReal":
         """self - other"""
-        return self + -other
+        return super().__sub__(other)
 
     def __rsub__(self, other) -> "BasedReal":
         """other - self"""
@@ -1062,23 +1062,7 @@ class BasedReal(Real, PreciseNumber):
             return self
         return -self
 
-    def __mul__(self, other: "BasedReal") -> "BasedReal":
-        """
-        self * other
-
-        >>> Sexagesimal('01, 12; 04, 17') * Sexagesimal('7; 45, 55')
-        09,19 ; 39,15 |r0.7
-        """
-
-        if isinstance(other, UnitBase):
-            return BasedQuantity(self, unit=other)
-
-        elif not isinstance(other, Number):
-            raise NotImplementedError
-
-        elif type(self) is not type(other):
-            return self * self.from_float(other, self.significant)
-
+    def _mul(self, other: "BasedReal") -> "BasedReal":
         if self in (1, -1):
             return other if self == 1 else -other
         if other in (1, -1):
@@ -1125,6 +1109,25 @@ class BasedReal(Real, PreciseNumber):
                      )
 
         return res
+
+    def __mul__(self, other: "BasedReal") -> "BasedReal":
+        """
+        self * other
+
+        >>> Sexagesimal('01, 12; 04, 17') * Sexagesimal('7; 45, 55')
+        09,19 ; 39,15 |r0.7
+        """
+
+        if isinstance(other, UnitBase):
+            return BasedQuantity(self, unit=other)
+
+        elif not isinstance(other, Number):
+            raise NotImplementedError
+
+        elif type(self) is not type(other):
+            return self * self.from_float(other, self.significant)
+
+        return super().__mul__(other)
 
     def __rmul__(self, other):
         """other * self"""
@@ -1188,12 +1191,10 @@ class BasedReal(Real, PreciseNumber):
             return self * (other ** -1)
 
         elif type(self) is type(other):
-            return self.division(other, max(self.significant, other.significant))
+            return super().__truediv__(other)
 
         elif isinstance(other, Number):
             return self / self.from_float(float(other), significant=self.significant)
-        else:
-            raise NotImplementedError
 
     def __gt__(self, other: Number) -> bool:
         """self > other"""
