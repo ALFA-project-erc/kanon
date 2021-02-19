@@ -25,6 +25,7 @@ HTable (:class:`kanon.tables.htable.HTable`)
       ~HTable.mask
       ~HTable.masked
       ~HTable.meta
+      ~HTable.opposite
       ~HTable.read
       ~HTable.symmetry
       ~HTable.write
@@ -94,6 +95,7 @@ HTable (:class:`kanon.tables.htable.HTable`)
    .. autoattribute:: mask
    .. autoattribute:: masked
    .. autoattribute:: meta
+   .. autoattribute:: opposite
    .. autoattribute:: read
    .. autoattribute:: symmetry
    .. autoattribute:: write

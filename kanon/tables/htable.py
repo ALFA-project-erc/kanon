@@ -50,7 +50,7 @@ class HTable(Table):
     3.9
 
     :param data: Data to initialize table.
-    :type data: Optional[Data Container]
+    :type data: Optional[Data]
     :param names: Specify column names.
     :type names: Optional[List[str]]
     :param index: Columns considered as the indices.
@@ -59,10 +59,13 @@ class HTable(Table):
     :type units: Optional[List[Unit]]
     :param dtype: Specify column data types.
     :type dtype: Optional[List]
-    :param symmetry: Specify a list of `Symmetry` on this table.
+    :param symmetry: Specify a list of `~kanon.tables.Symmetry` on this table. Defaults to empty list.
     :type symmetry: Optional[List[Symmetry]]
-    :param interpolate: Specify a custom interpolation method, default to `linear_interpolation`.
+    :param interpolate: Specify a custom interpolation method,\
+    defaults to `~kanon.tables.interpolations.linear_interpolation`.
     :type interpolate: Optional[Interpolator]
+    :param opposite: Defines if the table values should be of the opposite sign. Defaults to False.
+    :type opposite: Optional[bool]
 
     """
 
@@ -70,6 +73,8 @@ class HTable(Table):
     """Interpolation method."""
     symmetry: List[Symmetry] = TableAttribute(default=[])
     """Table symmetries."""
+    opposite: bool = TableAttribute(default=False)
+    """Defines if the table values should be of the opposite sign."""
 
     def __init__(self,
                  data=None,
