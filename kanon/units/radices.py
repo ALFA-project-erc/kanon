@@ -11,12 +11,12 @@ BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
 >>> float(number) #doctest:+SKIP
 1261.979861111111
 
-IGNORE:
+.. testsetup::
+
     >>> import builtins
     >>> builtins.Sexagesimal = radix_registry["Sexagesimal"]
     >>> builtins.Historical = radix_registry["Historical"]
 
-IGNORE
 """
 
 import math
