@@ -1,7 +1,7 @@
 from numbers import Number
 from typing import Callable, Dict, List, Optional, Type, Union
 
-import astropy.units as u
+import numpy as np
 import pandas as pd
 from astropy.io import registry
 from astropy.table import Table
@@ -9,17 +9,12 @@ from astropy.table.table import TableAttribute
 from astropy.units import Quantity
 from astropy.units.core import Unit
 
-from kanon.units import Sexagesimal
-from kanon.units.radices import BasedReal
 from kanon.utils.types.dishas import NumberType, TableContent, UnitType
 
 from .interpolations import Interpolator, linear_interpolation
 from .symmetries import Symmetry
 
 __all__ = ["HTable"]
-
-
-Sexagesimal: Type[BasedReal]
 
 
 class HTable(Table):
@@ -88,7 +83,7 @@ class HTable(Table):
         super().__init__(data=data, names=names, units=units, dtype=dtype, *args, **kwargs)
 
         if index:
-            self.add_index(index)
+            self.add_index(index, unique=True)
 
     def to_pandas(self, index=None, use_nullable_int=True, symmetry=True) -> pd.DataFrame:
         if not self.indices and not index:
@@ -113,15 +108,34 @@ class HTable(Table):
         """
 
         df = self.to_pandas()
+
         unit = (self.columns[1].unit if with_unit else 1) or 1
         try:
-            return df.loc[float(key)][0] * unit
+            return df.loc[key][0] * unit
         except KeyError:
             pass
 
-        df.index = df.index.map(float)
-
         return self.interpolate(df, key) * unit
+
+    def apply(self, column: str, func: Callable) -> "HTable":
+        table = self.copy()
+        try:
+            table[column] = func(table[column])
+        except TypeError:
+            table[column] = np.vectorize(func)(table[column])
+        return table
+
+    def set_index(self, index: Union[str, List[str]], engine=None):
+        for c in self.colnames:
+            self.remove_indices(c)
+
+        self.add_index(index, unique=True, engine=engine)
+
+    def copy(self, set_index=None, copy_data=True) -> "HTable":
+        table: HTable = super().copy(copy_data=copy_data)
+        if set_index:
+            table.set_index(set_index)
+        return table
 
 
 DISHAS_REQUEST_URL = "https://dishas.obspm.fr/elastic-query?index=table_content&hits=true&id={}"
@@ -129,7 +143,12 @@ DISHAS_REQUEST_URL = "https://dishas.obspm.fr/elastic-query?index=table_content&
 
 def read_table_dishas(requested_id: str) -> HTable:
 
+    import astropy.units as u
     import requests
+
+    from kanon.units import BasedReal, Sexagesimal
+
+    Sexagesimal: Type[BasedReal]
 
     res: TableContent = requests.get(
         DISHAS_REQUEST_URL.format(int(requested_id)),
@@ -157,7 +176,7 @@ def read_table_dishas(requested_id: str) -> HTable:
         "integer and sexagesimal": read_intsexag_array
     }
 
-    unit_reader: Dict[UnitType, u.Unit] = {
+    unit_reader: Dict[UnitType, Unit] = {
         "degree": u.degree,
         "day": u.day
     }

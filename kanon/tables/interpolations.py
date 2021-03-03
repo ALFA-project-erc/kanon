@@ -14,10 +14,13 @@ Interpolator = Callable[[pd.DataFrame, Number], NT]
 def linear_interpolation(df: pd.DataFrame, key: Number) -> NT:
     """Linear interpolation
     """
+
+    if df.index.dtype == 'object' and isinstance(key, float):
+        key = type(df.index[0]).from_float(key, 4)
+
     try:
-        key_as_float = float(key)
-        low = df.truncate(after=key_as_float).iloc[-1]
-        high = df.truncate(before=key_as_float).iloc[0]
+        low = df.truncate(after=key).iloc[-1]
+        high = df.truncate(before=key).iloc[0]
 
         x = (low.name, low[0])
         y = (high.name, high[0])

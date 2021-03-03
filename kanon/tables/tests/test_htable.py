@@ -13,9 +13,11 @@ from kanon.tables.symmetries import Symmetry
 
 class TestHTable:
 
+    sample = {"a": [1, 2, 3, 4], "b": [5, 9, 12, 15]}
+
     def test_init(self):
 
-        table = HTable({"a": [1, 2, 3, 4], "b": [5, 9, 12, 15]})
+        table = HTable(self.sample)
         assert table[2]["b"] == 12
 
         with pytest.raises(IndexError):
@@ -60,3 +62,28 @@ class TestHTable:
 
         with pytest.raises(IndexError):
             tab.get(tab[0]["A"] - 1)
+
+    def test_apply(self):
+        tab = HTable(self.sample, index="a")
+
+        assert np.array_equal(
+            tab.apply("b", lambda x: x + 2)["b"],
+            np.add(tab["b"], np.array([2] * len(tab)))
+        )
+
+        tab_float = tab.apply("b", lambda x: x + 0.3)
+        assert tab_float["b"].dtype == np.dtype("float64")
+        tab_int = tab_float.apply("b", round)
+        assert tab_int["b"].dtype == np.dtype("int64")
+
+    def test_index(self):
+        tab = HTable(self.sample, index="a")
+
+        assert tab.loc[1]["b"] == 5
+        with pytest.raises(KeyError):
+            tab.loc[5]
+
+        new_tab = tab.copy(set_index="b")
+        assert new_tab.loc[5]["a"] == 1
+        with pytest.raises(KeyError):
+            new_tab.loc[1]

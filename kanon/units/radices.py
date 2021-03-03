@@ -750,7 +750,8 @@ class BasedReal(PreciseNumber, Real):
             raise TypeError
 
     @classmethod
-    def from_float(cls, floa: float, significant: int) -> "BasedReal":
+    def from_float(cls, floa: float, significant: int,
+                   remainder_threshold: float = 0.999999) -> "BasedReal":
         """
         Class method to produce a new BasedReal object from a floating number
 
@@ -771,12 +772,17 @@ class BasedReal(PreciseNumber, Real):
         right = [0] * significant
 
         factor = 1.0
-        for i in range(significant):
-            factor = cls.base.right[i]
-            value *= factor
-            position_value = int(value)
-            value -= position_value
-            right[i] = position_value
+        if value != 0:
+            for i in range(significant):
+                factor = cls.base.right[i]
+                value *= factor
+                if value - int(value) > remainder_threshold and value + 1 < factor:
+                    value = int(value) + 1
+                elif value - int(value) < 1 - remainder_threshold and any(x != 0 for x in right):
+                    value = int(value)
+                position_value = int(value)
+                value -= position_value
+                right[i] = position_value
 
         return cls(integer_part.left, tuple(right), remainder=Decimal(value), sign=-1 if floa < 0 else 1)
 
@@ -1266,9 +1272,6 @@ class BasedReal(PreciseNumber, Real):
     def __bool__(self):
         return self != 0
 
-    def __iter__(self):
-        raise TypeError
-
     def _set_remainder(self, remainder: Decimal) -> "BasedReal":
         return type(self)(self.left, self.right, sign=self.sign, remainder=remainder)
 
@@ -1281,7 +1284,14 @@ class BasedQuantity(Quantity):
             or isinstance(value, (Sequence, np.ndarray)) and not all(isinstance(v, BasedReal) for v in value)
         ):
             return Quantity(value, unit, **kwargs)
-        return super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
+
+        def _len(self):
+            del type(value).__len__
+            return 0
+
+        type(value).__len__ = _len
+        self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
+        return self
 
     def __lshift__(self, other):
         if isinstance(other, Number):
