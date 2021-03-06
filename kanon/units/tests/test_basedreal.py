@@ -3,7 +3,6 @@ import operator as op
 import warnings
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
-from typing import Type
 
 import hypothesis
 import pytest
@@ -13,9 +12,6 @@ from hypothesis.core import given
 from kanon.units import BasedReal, Historical, Sexagesimal
 from kanon.units.radices import (EmptyStringException, IllegalBaseValueError,
                                  IllegalFloatError, TooManySeparators)
-
-Sexagesimal: Type[BasedReal]
-Historical: Type[BasedReal]
 
 
 class TestRadix:
@@ -64,6 +60,10 @@ class TestRadix:
         with pytest.raises(IllegalFloatError) as err:
             Sexagesimal((0.3, 5), (6, 8))
         assert "An illegal float" in str(err.value)
+
+        # From BasedReal
+
+        assert Sexagesimal(Historical("3;15"), 1).equals(Sexagesimal("3;15"))
 
         # From multiple ints
         with pytest.raises(ValueError):
@@ -210,8 +210,8 @@ class TestRadix:
         if y != 0:
             self.biop_testing(x, y, op.truediv)
 
-    @given(st.integers(min_value=-1e15, max_value=1e15).map(Sexagesimal.from_int),
-           st.integers(min_value=-1e15, max_value=1e15).filter(lambda x: x != 0).map(Sexagesimal.from_int))
+    @given(st.integers(min_value=int(-1e15), max_value=int(1e15)).map(Sexagesimal.from_int),
+           st.integers(min_value=int(-1e15), max_value=int(1e15)).filter(lambda x: x != 0).map(Sexagesimal.from_int))
     def test_mod_integers(self, x, y):
         hypothesis.assume(int(x) % int(y) == float(x) % float(y))
         self.biop_testing(x, y, op.mod)

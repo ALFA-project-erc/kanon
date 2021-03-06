@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from numbers import Number
 from typing import List, Literal, Optional, Tuple
 
 import pandas as pd
 from pandas import DataFrame
+
+from kanon.utils.types.number_types import Real
 
 __all__ = ["Symmetry"]
 
@@ -51,7 +52,7 @@ class Symmetry:
     :type sign: Literal[-1, 1], optional
     :param source: Tuple representing the lower and upper bound to take the values from, \
     defaults to the whole DataFrame
-    :type source: Tuple[Number, Number], optional
+    :type source: Tuple[Real, Real], optional
     :param targets: List of keys where the symmetry are pasted, defaults to the end of \
     the DataFrame
     :type targets: List[int], optional
@@ -60,8 +61,8 @@ class Symmetry:
     symtype: Literal["periodic", "mirror"]
     offset: int = 0
     sign: Literal[-1, 1] = 1
-    source: Optional[Tuple[Number, Number]] = None
-    targets: Optional[List[Number]] = None
+    source: Optional[Tuple[Real, Real]] = None
+    targets: Optional[List[Real]] = None
 
     def __post_init__(self):
         if self.symtype not in ("periodic", "mirror"):
@@ -79,7 +80,7 @@ class Symmetry:
             if not (self.source[0] < df.index[-1] >= self.source[1]
                     and self.source[0] >= df.index[0] < self.source[1]):
                 raise OutOfBoundsOriginError
-            symdf = df.loc[self.source[0]:self.source[1]].copy()
+            symdf = df.loc[self.source[0]:self.source[1]].copy()  # type: ignore
         else:
             symdf = df.copy()
 

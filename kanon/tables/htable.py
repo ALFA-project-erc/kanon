@@ -1,5 +1,5 @@
-from numbers import Number
-from typing import Callable, Dict, List, Optional, Type, Union
+from typing import (Callable, Dict, Generic, List, Optional, Tuple, TypeVar,
+                    Union)
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,7 @@ from astropy.units import Quantity
 from astropy.units.core import Unit
 
 from kanon.utils.types.dishas import NumberType, TableContent, UnitType
+from kanon.utils.types.number_types import Real
 
 from .interpolations import Interpolator, linear_interpolation
 from .symmetries import Symmetry
@@ -17,10 +18,18 @@ from .symmetries import Symmetry
 __all__ = ["HTable"]
 
 
+T = TypeVar("T")
+
+
+class GenericTableAttribute(TableAttribute, Generic[T]):
+    def __get__(self, instance, owner) -> T:
+        return super().__get__(instance, owner)
+
+
 class HTable(Table):
     """`HTable` is a subclass of `astropy.table.Table`, made to model Historical Astronomy tables
     representing mathematical functions. Its argument column or columns are its index, while the
-    values should be on the first column. Columns are allowed to contain all kinds of `~numbers.Number`,
+    values should be on the first column. Columns are allowed to contain all kinds of `~numbers.Real`,
     especially `~kanon.units.radices.BasedReal` numbers. `HTable` also provides additional historical
     features and metadata.
 
@@ -47,7 +56,7 @@ class HTable(Table):
     :param data: Data to initialize table.
     :type data: Optional[Data]
     :param names: Specify column names.
-    :type names: Optional[List[str]]
+    :type names: Union[List[str], Tuple[str, ...]]
     :param index: Columns considered as the indices.
     :type index: Optional[Union[str, List[str]]]
     :param units: List or dict of units to apply to columns.
@@ -64,7 +73,7 @@ class HTable(Table):
 
     """
 
-    interpolate: Interpolator = TableAttribute(default=linear_interpolation)
+    interpolate = GenericTableAttribute[Interpolator](default=linear_interpolation)
     """Interpolation method."""
     symmetry: List[Symmetry] = TableAttribute(default=[])
     """Table symmetries."""
@@ -73,7 +82,7 @@ class HTable(Table):
 
     def __init__(self,
                  data=None,
-                 names: Optional[List[str]] = None,
+                 names: Optional[Union[List[str], Tuple[str, ...]]] = None,
                  index: Optional[Union[str, List[str]]] = None,
                  dtype: Optional[List] = None,
                  units: Optional[List[Unit]] = None,
@@ -94,17 +103,17 @@ class HTable(Table):
                 df = df.pipe(sym)
         return df
 
-    def get(self, key: Number, with_unit=True) -> Union[Number, Quantity]:
+    def get(self, key: Real, with_unit=True) -> Union[Real, Quantity]:
         """Get the value from any key based on interpolated data.
 
         :param key: Argument for an interpolated function
-        :type key: `~numbers.Number`
+        :type key: `~numbers.Real`
         :param with_unit: Whether the result is represented as a Quantity or not. \
         Defaults to `True`
         :type with_unit: bool
         :raises IndexError: Key is out of bounds
         :return: Interpolated value
-        :rtype: `~numbers.Number`
+        :rtype: `~numbers.Real`
         """
 
         df = self.to_pandas()
@@ -148,8 +157,6 @@ def read_table_dishas(requested_id: str) -> HTable:
 
     from kanon.units import BasedReal, Sexagesimal
 
-    Sexagesimal: Type[BasedReal]
-
     res: TableContent = requests.get(
         DISHAS_REQUEST_URL.format(int(requested_id)),
     ).json()
@@ -158,11 +165,11 @@ def read_table_dishas(requested_id: str) -> HTable:
             f'{requested_id} ID not found in DISHAS database')
     values = res["value_original"]
 
-    def read_sexag_array(array: List[str]) -> Sexagesimal:
+    def read_sexag_array(array: List[str]) -> BasedReal:
         negative = array[0][0] == "-"
         return Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
 
-    def read_intsexag_array(array: List[str]) -> Sexagesimal:
+    def read_intsexag_array(array: List[str]) -> BasedReal:
         if len(array) == 1:
             return Sexagesimal.from_int(int(array[0]))
         else:
@@ -170,7 +177,7 @@ def read_table_dishas(requested_id: str) -> HTable:
                 read_sexag_array(array[1:]) >> len(array) - 1
             ) + Sexagesimal.from_int(int(array[0][0]), len(array))
 
-    number_reader: Dict[NumberType, Callable[[List[str]], Number]] = {
+    number_reader: Dict[NumberType, Callable[[List[str]], Real]] = {
         "sexagesimal": read_sexag_array,
         "floating sexagesimal": read_sexag_array,
         "integer and sexagesimal": read_intsexag_array
@@ -181,17 +188,20 @@ def read_table_dishas(requested_id: str) -> HTable:
         "day": u.day
     }
 
-    arg_types = (res["argument1_type_of_number"], res["argument1_number_unit"])
-    entry_types = (res["entry_type_of_number"], res["entry_number_unit"])
+    arg_unit = res["argument1_number_unit"]
+    arg_reader = number_reader.get(res["argument1_type_of_number"], lambda x: x)
 
-    args = [number_reader.get(arg_types[0], lambda x:x)(v["value"]) for v in values["args"]["argument1"]]
-    entries = [number_reader.get(entry_types[0], lambda x:x)(v["value"]) for v in values["entry"]]
+    entry_unit = res["entry_number_unit"]
+    entry_reader = number_reader.get(res["entry_type_of_number"], lambda x: x)
+
+    args = [arg_reader(v["value"]) for v in values["args"]["argument1"]]
+    entries = [entry_reader(v["value"]) for v in values["entry"]]
 
     table = HTable(
         [args, entries],
         names=(res["argument1_name"], "Entries"),
         index=(res["argument1_name"]),
-        units=[unit_reader.get(arg_types[1]), unit_reader.get(entry_types[1])],
+        units=[unit_reader.get(arg_unit), unit_reader.get(entry_unit)],
         dtype=[object, object]
     )
 

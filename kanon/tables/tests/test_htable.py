@@ -30,7 +30,7 @@ class TestHTable:
         HTable,
         st.lists(
             st.tuples(
-                st.integers(min_value=-1e15, max_value=1e15),
+                st.integers(min_value=int(-1e15), max_value=int(1e15)),
                 st.floats(allow_nan=False, allow_infinity=False, width=16)
             ), min_size=1, unique_by=(lambda x: x[0])
         ).map(lambda x: list(zip(*sorted(x)))),

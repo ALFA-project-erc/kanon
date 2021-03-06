@@ -4,13 +4,13 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import partial, wraps
 from numbers import Number
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, SupportsFloat, Tuple
 
 __all__ = ["PrecisionMode", "TruncatureMode", "set_precision", "PrecisionContext", "PreciseNumber"]
 
 
 class FuncEnum(Enum):
-    def __call__(self, *args, **kwds) -> Number:
+    def __call__(self, *args, **kwds) -> "PreciseNumber":
         return self.value[0](*args, **kwds)
 
 
@@ -170,7 +170,7 @@ def _with_context_precision(func=None, symbol=None):
     return wrapper
 
 
-class PreciseNumber(Number):
+class PreciseNumber(Number, SupportsFloat):
 
     @property
     @abc.abstractmethod

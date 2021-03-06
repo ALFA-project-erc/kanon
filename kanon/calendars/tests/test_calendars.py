@@ -2,7 +2,8 @@ import hypothesis.strategies as st
 import pytest
 from hypothesis import given
 
-from kanon.units.calendars import ERA_REGISTRY, Calendar, Date, Era, Julian
+from kanon.calendars import ERA_REGISTRY, Calendar, Date, Era
+from kanon.calendars.calendars import Julian
 
 
 class TestCalendars:

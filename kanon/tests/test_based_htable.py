@@ -1,6 +1,6 @@
 import json
 from math import isclose
-from typing import Tuple, Type
+from typing import Tuple
 
 import astropy.units as u
 import hypothesis.strategies as st
@@ -13,9 +13,7 @@ from hypothesis.core import given
 
 from kanon.tables import HTable
 from kanon.tables.htable import DISHAS_REQUEST_URL
-from kanon.units import BasedReal, Sexagesimal
-
-Sexagesimal: Type[BasedReal]
+from kanon.units import Sexagesimal
 
 
 class TestBasedHTable:

@@ -3,6 +3,10 @@ from .radices import BasedReal, RadixBase, radix_registry
 __all__ = ["RadixBase", "BasedReal"]
 
 # Load all common radices
-for name, br in radix_registry.items():
-    locals()[name] = br
-    __all__.append(name)
+
+Sexagesimal = radix_registry["Sexagesimal"]
+FloatingSexagesimal = radix_registry["FloatingSexagesimal"]
+Historical = radix_registry["Historical"]
+HistoricalDecimal = radix_registry["HistoricalDecimal"]
+IntegerAndSexagesimal = radix_registry["IntegerAndSexagesimal"]
+Temporal = radix_registry["Temporal"]

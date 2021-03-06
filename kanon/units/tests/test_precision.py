@@ -1,17 +1,15 @@
 from dataclasses import asdict
 from decimal import Decimal
-from typing import Type
 
 import pytest
 
-from kanon.units import BasedReal, Sexagesimal
+from kanon.units import Sexagesimal
 from kanon.units.precision import (PreciseNumber, PrecisionContext,
                                    PrecisionMode, TruncatureMode,
                                    _with_context_precision, clear_records,
                                    get_context, get_records, set_context,
                                    set_precision, set_recording)
-
-Sexagesimal: Type[BasedReal]
+from kanon.units.radices import BasedReal
 
 
 class TestPrecision:
@@ -33,7 +31,7 @@ class TestPrecision:
                 set_context(ctx)
         set_context(current_ctx)
 
-    def equality(self, a: Sexagesimal, b: Sexagesimal):
+    def equality(self, a: BasedReal, b: BasedReal):
         assert a.equals(b), f"{a.truncate()},r:{a.remainder} != {b.truncate()},r:{b.remainder}"
 
     def test_precision_modes(self):

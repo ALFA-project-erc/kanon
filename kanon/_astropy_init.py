@@ -4,18 +4,18 @@ __all__ = ['__version__']
 
 # this indicates whether or not we are in the package's setup.py
 try:
-    _ASTROPY_SETUP_
+    _ASTROPY_SETUP_  # type: ignore
 except NameError:
     import builtins
-    builtins._ASTROPY_SETUP_ = False
+    _ASTROPY_SETUP_ = False
+    builtins._ASTROPY_SETUP_ = False  # type: ignore
 
 try:
     from .version import version as __version__
 except ImportError:
     __version__ = ''
 
-
-if not _ASTROPY_SETUP_:  # noqa
+if not _ASTROPY_SETUP_:  # type: ignore
     import os
     from warnings import warn
 

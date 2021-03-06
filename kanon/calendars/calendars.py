@@ -175,9 +175,11 @@ class Calendar(metaclass=abc.ABCMeta):
             if rem < m.days(leap):
                 month = i + 1
                 days = rem + 1
-                return Date(self, (year, month, days))
+                break
             else:
                 rem -= m.days(leap)
+
+        return Date(self, (year, month, int(days)))
 
     def __repr__(self) -> str:
         return f"Calendar({self.name})"

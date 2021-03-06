@@ -1,17 +1,18 @@
-from numbers import Number
 from typing import Callable, TypeVar
 
 import pandas as pd
 
+from kanon.utils.types.number_types import Real
+
 __all__ = ["Interpolator", "linear_interpolation"]
 
 
-NT = TypeVar("NT", bound=Number)
+NT = TypeVar("NT", bound=Real)
 
-Interpolator = Callable[[pd.DataFrame, Number], NT]
+Interpolator = Callable[[pd.DataFrame, Real], NT]
 
 
-def linear_interpolation(df: pd.DataFrame, key: Number) -> NT:
+def linear_interpolation(df: pd.DataFrame, key: Real) -> NT:
     """Linear interpolation
     """
 

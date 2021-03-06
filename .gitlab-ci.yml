@@ -35,6 +35,7 @@ test:
   script:
     - pip install .
     - pip install .[test]
+    - mypy
     - pytest --junitxml=report.xml -p "no:hypothesispytest" --pyargs kanon docs --cov kanon --cov-config=setup.cfg
     - coverage xml
   artifacts:

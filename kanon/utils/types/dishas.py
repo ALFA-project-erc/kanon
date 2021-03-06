@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Literal, Optional, TypedDict
 # flake8: noqa
 
 
+
 class OriginalValue(TypedDict):
     value: List[str]
     comment: str
@@ -16,72 +17,57 @@ SymmetryOperation = Literal["opposite", "identity", "addition", "substraction"]
 UnitType = Literal["degree", "day"]
 
 
+
+class TemplateArgs(TypedDict):
+    name: str
+    type: NumberType
+    unit: int
+    nsteps: int
+    ncells: int
+    decpos: int
+    subUnit: Optional[NumberType]
+    firstMonth: Optional[Any]
+
+class TemplateEntries(TypedDict):
+    name: str
+    type: NumberType
+    ncells: int
+    decpos: int
+    unit: int
+
 class Template(TypedDict):
 
     table_type: str
     readonly: bool
-    args: List[TypedDict("args", {
-        "name": str,
-        "type": NumberType,
-        "unit": int,
-        "nsteps": int,
-        "ncells": int,
-        "decpos": int,
-        "subUnit": Optional[NumberType],
-        "firstMonth": Optional[Any]
-    })]
-    entries: List[TypedDict("entries", {
-        "name": str,
-        "type": NumberType,
-        "ncells": int,
-        "decpos": int,
-        "unit": int
-    })]
+    args: List[TemplateArgs]
+    entries: List[TemplateEntries]
 
 
-class DSymmetry(TypedDict):
-    type: SymmetryType
-    parameter: str
-    sign: Literal[-1, 1]
-    displacement: str
-    source: List[str]
-    target: List[str]
-    direction: Literal[-1, 1]
-    effective_symmetry: TypedDict("effective_symmetry", {
-        "computeNewValue": List[SymmetryOperation],
-        "parameters": List[str]
-    })
+class Args(TypedDict):
+    argument1: List[str]
+    argument2: Optional[List[str]]
+class ValueFloat(TypedDict):
+    args: Args
+    entry: List[str]
+    template: Template
+
+class OriginalArgs(TypedDict):
+    argument1: List[OriginalValue]
+    argument2: Optional[List[OriginalValue]]
+class ValueOriginal(TypedDict):
+    args: OriginalArgs
+    entry: List[OriginalValue]
+    template: Template
+    symmetries: List
 
 
 class TableContent(TypedDict):
     argument1_number_of_steps: int
     argument2_number_of_steps: Optional[int]
     id: int
-    value_original: TypedDict("value_original", {
-        "args": TypedDict("args", {
-            "argument1": List[OriginalValue],
-            "argument2": Optional[List[OriginalValue]]
-        }),
-        "entry": List[OriginalValue],
-        "template": Template,
-        "symmetries": List[DSymmetry]
-    })
-    value_float: TypedDict("value_float", {
-        "args": TypedDict("args", {
-            "argument1": List[str],
-            "argument2": Optional[List[str]]
-        }),
-        "entry": List[str],
-        "template": Template
-    })
-    corrected_value_float: TypedDict("value_corrected", {
-        "args": TypedDict("args", {
-            "argument1": List[str],
-            "argument2": Optional[List[str]]
-        }),
-        "entry": List[str],
-        "template": Template
-    })
+    value_original: ValueOriginal
+    value_float: ValueFloat
+    corrected_value_float: ValueFloat
     edited_text: Dict
     entry_type_of_number: NumberType
     entry_number_unit: UnitType
