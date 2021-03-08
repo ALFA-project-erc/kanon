@@ -2,8 +2,8 @@ import hypothesis.strategies as st
 import pytest
 from hypothesis import given
 
-from kanon.calendars import ERA_REGISTRY, Calendar, Date, Era
-from kanon.calendars.calendars import Julian
+from kanon.calendars import ERA_REGISTRY, Calendar, Date
+from kanon.calendars.calendars import Era, Julian
 
 
 class TestCalendars:
@@ -11,7 +11,7 @@ class TestCalendars:
     def test_init(self):
         era = Era("test", 10)
 
-        era.days_from_jdn(20) == 10
+        era.days_from_epoch(20) == 10
 
         new_cal = Julian(era)
         assert new_cal.era == era
@@ -66,3 +66,7 @@ class TestCalendars:
 
         assert date.to_time().to_value("jd") == 1721058
         assert str(date) == "1 Ianuarius -1 A.D. in Julian"
+
+        date = Date(cal, (20, 3, 12))
+        assert (date + 1).jdn == date.jdn + 1
+        assert (date - 1).jdn == date.jdn - 1

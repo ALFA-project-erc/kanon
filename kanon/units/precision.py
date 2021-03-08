@@ -1,3 +1,88 @@
+"""The `precision` module is used when wanting to adjust `~kanon.units.radices.BasedReal`
+arithmetical operations behavior.
+All operations are made within a `PrecisionContext` rules, which indicate :
+
+- A `TruncatureMode`
+- A `PrecisionMode`
+- 4 `ArithmeticIdentifier`, (add, sub, mul, div)
+
+Default precision context is set to `TruncatureMode.NONE`, `PrecisionMode.SCI`, and all
+`ArithmeticIdentifier` as default.
+
+To set new precision rules you should use the `set_precision` context manager. In the example
+below, I set the precision so that the result significant number is 0 and that it should be
+truncated.
+
+>>> from kanon.units import Sexagesimal
+>>> a = Sexagesimal("1;50")
+>>> b = Sexagesimal("2;0")
+>>> a + b
+03 ; 50
+>>> with set_precision(tmode=TruncatureMode.TRUNC, pmode=0):
+...     a + b
+...
+03 ;
+
+If you want to use a specific algorithm for one of the arithmetical operations,
+you first need to define the algorithm with this signature :
+
+.. code:: python
+
+    Callable[[PreciseNumber, PreciseNumber], PreciseNumber]
+
+For example, a multiplication algorithm which is essentialy equivalent to ``a * round(b,0)``:
+
+>>> def test_mul(a: PreciseNumber, b: PreciseNumber) -> PreciseNumber:
+...     res = 0
+...     for i in range(int(round(b,0))):
+...         res += a
+...     return res
+
+Then you have to identify this algorithm with a unique string
+
+>>> test_mul_identifier = (test_mul, "TEST_MUL")
+
+You can now use this identifier to make multiplications use this algorithm
+
+>>> b * a
+03 ; 40
+>>> with set_precision(mul=test_mul_identifier):
+...     b * a
+04 ; 00
+
+All operations and their associated context are stored inside the `ContextPrecision` when
+the recording flag is set to ``True``. You can either set it to ``True`` inside of a
+`set_precision` context manager, or globally turn it on with `set_recording(True)`.
+Records are easily accessed through `get_records`, and can be cleared with `clear_records`.
+
+Let's try to record our operations.
+
+>>> set_recording(True)
+>>> get_records()
+[]
+>>> a + b
+03 ; 50
+>>> with set_precision(tmode=TruncatureMode.ROUND):
+...     a + Sexagesimal("2;5,30")
+03 ; 56
+>>> with set_precision(mul=test_mul_identifier):
+...     b * a
+04 ; 00
+>>> get_records()
+[{'args': (01 ; 50, 02 ; 00, '+', 03 ; 50), 'tmode': 'NONE', 'pmode': 'SCI', 'add': \
+'DEFAULT', 'sub': 'DEFAULT', 'mul': 'DEFAULT', 'div': 'DEFAULT'}, {'args': (01 ; 50, \
+02 ; 05,30, '+', 03 ; 56), 'tmode': 'ROUND', 'pmode': 'SCI', 'add': 'DEFAULT', 'sub': \
+'DEFAULT', 'mul': 'DEFAULT', 'div': 'DEFAULT'}, {'args': (02 ; 00, 01 ; 50, '*', 04 ; \
+00), 'tmode': 'NONE', 'pmode': 'SCI', 'add': 'DEFAULT', 'sub': 'DEFAULT', 'mul': \
+'TEST_MUL', 'div': 'DEFAULT'}]
+>>> clear_records()
+>>> set_recording(False)
+>>> a + b
+03 ; 50
+>>> get_records()
+[]
+"""
+
 import abc
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
@@ -6,7 +91,17 @@ from functools import partial, wraps
 from numbers import Number
 from typing import Callable, List, Optional, SupportsFloat, Tuple
 
-__all__ = ["PrecisionMode", "TruncatureMode", "set_precision", "PrecisionContext", "PreciseNumber"]
+__all__ = ["PrecisionMode",
+           "TruncatureMode",
+           "set_precision",
+           "PrecisionContext",
+           "PreciseNumber",
+           "get_context",
+           "set_context",
+           "set_recording",
+           "get_records",
+           "clear_records",
+           "ArithmeticIdentifier"]
 
 
 class FuncEnum(Enum):
@@ -66,7 +161,7 @@ class PrecisionContext:
                mul: Optional[ArithmeticIdentifier] = None,
                div: Optional[ArithmeticIdentifier] = None
                ):
-        self.pmode = pmode or self.pmode
+        self.pmode = self.pmode if pmode is None else pmode
         self.tmode = tmode or self.tmode
         self.recording = self.recording if recording is None else recording
         self.add = add or self.add

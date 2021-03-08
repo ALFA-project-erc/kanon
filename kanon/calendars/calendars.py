@@ -1,14 +1,40 @@
+"""
+To create a new `Calendar` you need to subclass it, then instanciate it with an `Era`.
+A `Calendar` subclass has to have a name, a list of `Month` and an intercalation
+method to be valid.
+
+>>> class NewCal(Calendar):
+...     _name = "My New Calendar"
+...     _months = [Month(31, 32, "FirstMonth"),
+...                Month(20, 22, "SecondMonth"),
+...                Month(50, name="ThirdMonth")]
+...     def intercalation(self, year: int) -> bool:
+...         return year % 7 == 0
+>>> my_era = Era("MyEra", 1234)
+>>> my_calendar = NewCal(my_era)
+>>> my_date = Date(my_calendar, (26, 3, 42))
+>>> str(my_date)
+'42 ThirdMonth 26 MyEra in My New Calendar'
+>>> my_date.jdn
+3851
+"""
+
 import abc
 from dataclasses import dataclass
 from functools import cached_property, lru_cache
-from typing import Callable, Dict, List, Optional, Tuple
+from numbers import Real as _Real
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from astropy.time import Time
+
+from kanon.utils.types.number_types import Real
 
 ERA_REGISTRY: Dict["Era", List["Calendar"]] = {}
 
 
 CALENDAR_REGISTRY: Dict[str, "Calendar"] = {}
+
+__all__ = ("Julian", "Byzantine", "Arabic", "Persian", "Egyptian", "Month", "Era")
 
 
 @dataclass(frozen=True)
@@ -19,7 +45,7 @@ class Era:
     def __post_init__(self):
         ERA_REGISTRY[self] = []
 
-    def days_from_jdn(self, jdn: float) -> float:
+    def days_from_epoch(self, jdn: float) -> float:
         return jdn - self.epoch
 
     def _register_new_calendar(self, calendar: "Calendar"):
@@ -54,15 +80,31 @@ class Date:
     def to_time(self) -> Time:
         return Time(self.jdn, format="jd")
 
+    def __add__(self, other: Union["Date", Real]) -> "Date":
+        if not isinstance(other, (Date, _Real)):
+            raise TypeError
+        jdn = other.jdn if isinstance(other, Date) else other
+        return self.calendar.from_julian_days(self.jdn + jdn)
+
+    def __sub__(self, other: Union["Date", Real]) -> "Date":
+        if not isinstance(other, (Date, _Real)):
+            raise TypeError
+        jdn = other.jdn if isinstance(other, Date) else other
+        return self.calendar.from_julian_days(self.jdn - jdn)
+
     def __str__(self):
         year, month, days = self.ymd
         return (
             f"{days} {self.calendar.months[month-1].name} "
-            f"{year} {self.calendar.era.name} in {self.calendar.__class__.__name__}"
+            f"{year} {self.calendar.era.name} in {self.calendar._name}"
         )
 
 
 class Calendar(metaclass=abc.ABCMeta):
+    """This abstract class defines calendar behaviors. You need to subclass this to
+    create a working `Calendar`. You have to define its `interpolation` method, its `_name`,
+    `_months` and maybe `_cycle`.
+    """
 
     registry: Dict[str, "Calendar"] = CALENDAR_REGISTRY
 
@@ -159,7 +201,7 @@ class Calendar(metaclass=abc.ABCMeta):
 
     @lru_cache
     def from_julian_days(self, jdn: float) -> Date:
-        year = int((jdn - self.era.epoch) * sum(self.cycle) // self.cycle_length) + 1
+        year = int((self.era.days_from_epoch(jdn)) * sum(self.cycle) // self.cycle_length) + 1
 
         rem = jdn - self.jdn_at_ymd(year, 1, 1)
         for y in range(year, year + self.cycle_length):

@@ -1,14 +1,25 @@
-Documentation
-=============
+******************************
+Welcome to Kanon documentation
+******************************
 
-This is the documentation for kanon.
+.. include:: ../README.rst
+
+More info
+_________
+
+Table of content
+================
 
 .. toctree::
   :maxdepth: 2
 
-  kanon/index.rst
+  tables/index.rst
+  units/index.rst
+  calendars/index.rst
 
-.. note:: The layout of this directory is simply a suggestion.  To follow
-          traditional practice, do *not* edit this page, but instead place
-          all documentation for the package inside ``kanon/``.
-          You can follow this practice or choose your own layout.
+Index and search
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
