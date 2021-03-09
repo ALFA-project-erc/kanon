@@ -11,7 +11,7 @@ class TestCalendars:
     def test_init(self):
         era = Era("test", 10)
 
-        era.days_from_epoch(20) == 10
+        assert era.days_from_epoch(20) == 10
 
         new_cal = Julian(era)
         assert new_cal.era == era
