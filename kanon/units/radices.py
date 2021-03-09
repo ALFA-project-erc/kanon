@@ -645,23 +645,23 @@ class BasedReal(PreciseNumber, _Real):
             remainder = Decimal(0)
             for _ in range(abs(i)):
                 tmp = []
-                next = Decimal(0)
+                nextn = Decimal(0)
                 if i > 0:
                     for idx, val in enumerate(result):
-                        v, rem = divmod(Decimal(next), 1)
+                        v, rem = divmod(Decimal(nextn), 1)
                         tmp.append(int(v))
-                        next = (val + rem) / radix[idx] * radix[idx + 1]
+                        nextn = (val + rem) / radix[idx] * radix[idx + 1]
                     remainder += rem
                     result = tmp
                 else:
                     for idx, val in enumerate(result[::-1]):
-                        v, rem = divmod(next, 1)
+                        v, rem = divmod(nextn, 1)
                         sv = 0
                         if idx > 0:
                             tmp[-1] += int(float((rem * radix[-idx])))
                             sv, tmp[-1] = divmod(tmp[-1], radix[-idx])
                         tmp.append(int(v + sv))
-                        next = Decimal(val) / radix[-idx - 1] * radix[- idx - 2]
+                        nextn = Decimal(val) / radix[-idx - 1] * radix[- idx - 2]
                     result = tmp[::-1]
 
             result = result[None if i < 0 else i: None if i > 0 else (i + 1) or None]
@@ -927,7 +927,7 @@ class BasedReal(PreciseNumber, _Real):
 
     def _truediv(self, _other: PreciseNumber) -> "BasedReal":
 
-        other = self._cast_same_type(_other)
+        other = cast(BasedReal, _other)
 
         max_significant = max(self.significant, other.significant)
 
@@ -963,7 +963,7 @@ class BasedReal(PreciseNumber, _Real):
 
     def _add(self, _other: PreciseNumber) -> "BasedReal":
 
-        other = self._cast_same_type(_other)
+        other = cast(BasedReal, _other)
 
         if self.decimal == -other.decimal:
             return self.zero()
@@ -1021,7 +1021,7 @@ class BasedReal(PreciseNumber, _Real):
 
     def _sub(self, _other: PreciseNumber) -> "BasedReal":
 
-        other = self._cast_same_type(_other)
+        other = cast(BasedReal, _other)
         return self + -other
 
     def __sub__(self, other) -> "BasedReal":
@@ -1089,7 +1089,7 @@ class BasedReal(PreciseNumber, _Real):
 
     def _mul(self, _other: PreciseNumber) -> "BasedReal":
 
-        other = self._cast_same_type(_other)
+        other = cast(BasedReal, _other)
 
         if self in (1, -1):
             return other if self == 1 else -other
@@ -1211,11 +1211,7 @@ class BasedReal(PreciseNumber, _Real):
         return other % float(self)
 
     def __truediv__(self, other) -> "BasedReal":
-        """
-        self / other
-        NB: To specify the precision of the result (i.e. its number of significant positions) you should use the
-        division method. By default it will take the maximum of significant places + 1
-        """
+        """self / other"""
         if isinstance(other, UnitBase):
             return self * (other ** -1)
 
@@ -1297,9 +1293,6 @@ class BasedReal(PreciseNumber, _Real):
 
     def _set_remainder(self, remainder: Decimal) -> "BasedReal":
         return type(self)(self.left, self.right, sign=self.sign, remainder=remainder)
-
-    def _cast_same_type(self, other) -> "BasedReal":
-        return cast(BasedReal, other)
 
 
 class BasedQuantity(Quantity):
