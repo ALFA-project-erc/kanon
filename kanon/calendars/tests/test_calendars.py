@@ -2,7 +2,7 @@ import hypothesis.strategies as st
 import pytest
 from hypothesis import given
 
-from kanon.calendars import ERA_REGISTRY, Calendar, Date
+from kanon.calendars import Calendar, Date
 from kanon.calendars.calendars import Era, Julian
 
 
@@ -16,7 +16,6 @@ class TestCalendars:
         new_cal = Julian(era)
         assert new_cal.era == era
         assert new_cal.name in Calendar.registry
-        assert era in ERA_REGISTRY
 
         assert new_cal.__repr__() == "Calendar(Julian test)"
 

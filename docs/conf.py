@@ -165,7 +165,7 @@ if setup_cfg.get('edit_on_github').lower() == 'true':
     extensions += ['sphinx_astropy.ext.edit_on_github']
 
     edit_on_github_project = setup_cfg['github_project']
-    edit_on_github_branch = "main"
+    edit_on_github_branch = "master"
 
     edit_on_github_source_root = ""
     edit_on_github_doc_root = "docs"
@@ -209,3 +209,6 @@ linkcheck_anchors = False
 #     nitpick_ignore.append((dtype, six.u(target)))
 
 intersphinx_mapping['pandas'] = ('https://pandas.pydata.org/pandas-docs/stable/', None)
+autodoc_type_aliases = {
+    'ArithmeticIdentifier': 'kanon.units.precision.ArithmeticIdentifier'
+}

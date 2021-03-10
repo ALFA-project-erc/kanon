@@ -20,7 +20,7 @@ method to be valid.
 """
 
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property, lru_cache
 from numbers import Real as _Real
 from typing import Callable, Dict, List, Optional, Tuple, Union
@@ -29,9 +29,6 @@ from astropy.time import Time
 
 from kanon.utils.types.number_types import Real
 
-ERA_REGISTRY: Dict["Era", List["Calendar"]] = {}
-
-
 CALENDAR_REGISTRY: Dict[str, "Calendar"] = {}
 
 __all__ = ("Julian", "Byzantine", "Arabic", "Persian", "Egyptian", "Month", "Era")
@@ -39,57 +36,104 @@ __all__ = ("Julian", "Byzantine", "Arabic", "Persian", "Egyptian", "Month", "Era
 
 @dataclass(frozen=True)
 class Era:
+    """
+    Dataclass defining an era.
+
+    >>> Era("A.D.", 1721424)
+    Era(name='A.D.', epoch=1721424)
+
+    :param name: Name of the era
+    :param days_ly: Start of the era in Julian Day Number
+    """
     name: str
     epoch: float
-
-    def __post_init__(self):
-        ERA_REGISTRY[self] = []
 
     def days_from_epoch(self, jdn: float) -> float:
         return jdn - self.epoch
 
-    def _register_new_calendar(self, calendar: "Calendar"):
-        ERA_REGISTRY[self].append(calendar)
-
 
 @dataclass(frozen=True)
 class Month:
+    """
+    Dataclass defining a `~kanon.calendars.Calendar`'s month.
+
+    >>> Month(28, 29, 'Februarius', ['February'])
+    Month(days_cy=28, days_ly=29, name='Februarius', variant=['February'])
+
+    :param days_cy: Number of days in a common year
+    :param days_ly: Number of days in a leap year, optional, defaults to `days_cy` value
+    :param name: Name of the month, optional, defaults to ""
+    :param variant: List of name variants of this month, optional
+    """
+
     days_cy: int
+
     days_ly: Optional[int] = None
     name: str = ""
     variant: Optional[List[str]] = None
 
-    def clone_new_leap(self, new_leap):
+    def _clone_new_leap(self, new_leap):
         return Month(self.days_cy, new_leap, self.name)
 
-    def days(self, leap=False):
+    def days(self, leap=False) -> int:
+        """Returns the month's number of days in common or leap year
+
+        :param leap: Is it a leap year, defaults to False
+        :rtype: int
+        """
         return self.days_ly if leap and self.days_ly else self.days_cy
 
 
 @dataclass
 class Date:
+    """
+    Dataclass defining a date.
+
+    >>> cal = Calendar.registry["Julian A.D."]
+    >>> date = Date(cal, (1,2,3))
+    >>> str(date)
+    '3 Februarius 1 A.D. in Julian'
+    >>> date.jdn
+    1721457
+    >>> str(date + 1)
+    '4 Februarius 1 A.D. in Julian'
+
+    .. rubric:: Attributes
+
+    .. autoattribute:: calendar
+    .. autoattribute:: ymd
+    .. autoattribute:: jdn
+    """
+    #: Calendar used in this date.
     calendar: "Calendar"
+    #: Year, month and days, expressed in the specified calendar.
     ymd: Tuple[int, int, int]
+    #: Date as a julian day number.
+    jdn: float = field(init=False)
 
     def __post_init__(self):
         self.jdn = self.calendar.jdn_at_ymd(*self.ymd)
 
     def to_calendar(self, cal: "Calendar") -> "Date":
+        """Express this date in another calendar.
+        """
         return cal.from_julian_days(self.jdn)
 
     def to_time(self) -> Time:
+        """Express this date as a `astropy.time.Time` object with ``jd`` format.
+        """
         return Time(self.jdn, format="jd")
 
     def __add__(self, other: Union["Date", Real]) -> "Date":
         if not isinstance(other, (Date, _Real)):
             raise TypeError
-        jdn = other.jdn if isinstance(other, Date) else other
+        jdn: Real = other.jdn if isinstance(other, Date) else other
         return self.calendar.from_julian_days(self.jdn + jdn)
 
     def __sub__(self, other: Union["Date", Real]) -> "Date":
         if not isinstance(other, (Date, _Real)):
             raise TypeError
-        jdn = other.jdn if isinstance(other, Date) else other
+        jdn: Real = other.jdn if isinstance(other, Date) else other
         return self.calendar.from_julian_days(self.jdn - jdn)
 
     def __str__(self):
@@ -116,15 +160,25 @@ class Calendar(metaclass=abc.ABCMeta):
 
     def __new__(cls, era: Era, variant: str = "",
                 months_mutation: Optional[Callable[[List[Month]], List[Month]]] = None):
+        """
+        :param era: Era used by this calendar.
+        :type era: Era
+        :param variant: Name of this variant, defaults to ""
+        :type variant: str, optional
+        :param months_mutation: Function transforming the Calendar class `months` list, defaults to None
+        :type months_mutation: Optional[Callable[[List[Month]], List[Month]]], optional
+        :raises ValueError: Raised when the calendar's name has already been used.
+        """
         self = super().__new__(cls)
         self._era = era
-
-        era._register_new_calendar(self)
 
         self._variant = variant
 
         if self.name in cls.registry:
-            raise ValueError(f"{self.name} already exists in the registry")
+            raise ValueError(
+                f"{self.name} already exists in the registry, you might want to"
+                "specify a variant name"
+            )
         cls.registry[self.name] = self
 
         self._months = (months_mutation or (lambda x: x))(self._months.copy())
@@ -132,14 +186,20 @@ class Calendar(metaclass=abc.ABCMeta):
 
     @property
     def name(self):
+        """Name of this calendar
+        """
         return f"{self._name} {self._era.name}" + (f" {self._variant}" if self._variant else "")
 
     @property
     def months(self):
+        """List of months
+        """
         return self._months
 
     @property
     def cycle(self):
+        """Cycle of common year and leap years (common, leap)
+        """
         return self._cycle
 
     @property
@@ -148,22 +208,32 @@ class Calendar(metaclass=abc.ABCMeta):
 
     @cached_property
     def common_year(self) -> int:
+        """Number of days in a common year
+        """
         return sum(m.days_cy for m in self.months)
 
     @cached_property
     def leap_year(self) -> int:
+        """Number of days in a leap year
+        """
         return sum(m.days(True) for m in self.months)
 
     @cached_property
     def cycle_length(self) -> int:
+        """Number of days in a leap cycle
+        """
         return self.cycle[0] * self.common_year + self.cycle[1] * self.leap_year
 
     @abc.abstractmethod
     def intercalation(self, year: int) -> bool:
+        """Is the specified year an intercalation year (leap)
+        """
         raise NotImplementedError
 
     @lru_cache
     def jdn_at_ymd(self, year: int, month: int, day: int) -> int:
+        """Julian day number at the specified date in ymd
+        """
         if 0 > month or month > len(self.months):
             raise ValueError(f"The month entered ({month}) is invalid 1..{len(self.months)}")
         mdn = self.months[month - 1].days(self.intercalation(year))
@@ -197,10 +267,14 @@ class Calendar(metaclass=abc.ABCMeta):
         return days + self.era.epoch
 
     def get_time(self, year: int, month: int, day: int) -> Time:
+        """`astropy.time.Time` object at the specified date in ymd
+        """
         return Time(self.jdn_at_ymd(year, month, day), format="jd")
 
     @lru_cache
     def from_julian_days(self, jdn: float) -> Date:
+        """Builds a `Date` object at the specified julian day number.
+        """
         year = int((self.era.days_from_epoch(jdn)) * sum(self.cycle) // self.cycle_length) + 1
 
         rem = jdn - self.jdn_at_ymd(year, 1, 1)
@@ -354,8 +428,8 @@ Julian(_anno_domini)
 
 
 def _leap_december(months):
-    months[1] = months[1].clone_new_leap(28)
-    months[-1] = months[-1].clone_new_leap(32)
+    months[1] = months[1]._clone_new_leap(28)
+    months[-1] = months[-1]._clone_new_leap(32)
     return months
 
 

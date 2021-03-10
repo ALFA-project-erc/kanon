@@ -41,6 +41,6 @@ Then we can convert this date in the Arabic Civil Hijra calendar :
 We have succesfully converted a date expressed in one calendar into another. And we see that its
 absolute date value (expressed in Julian Day Numbers) stays the same.
 """
-from .calendars import ERA_REGISTRY, Calendar, Date
+from .calendars import Calendar, Date
 
-__all__ = ("Calendar", "ERA_REGISTRY", "Date")
+__all__ = ("Calendar", "Date")

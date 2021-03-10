@@ -81,7 +81,15 @@ Let's try to record our operations.
 03 ; 50
 >>> get_records()
 []
+
+Types
+-----
+
+.. py:attribute:: ArithmeticIdentifier
+
+    :type: Tuple[Optional[Callable[[PreciseNumber, PreciseNumber], PreciseNumber]], str]
 """
+from __future__ import annotations
 
 import abc
 from contextlib import contextmanager
@@ -102,142 +110,6 @@ __all__ = ["PrecisionMode",
            "get_records",
            "clear_records",
            "ArithmeticIdentifier"]
-
-
-class FuncEnum(Enum):
-    def __call__(self, *args, **kwds) -> "PreciseNumber":
-        return self.value[0](*args, **kwds)
-
-
-class PrecisionMode(FuncEnum):
-    SCI = (lambda x, y: min(x.significant, y.significant), 0)  #: Following scientific notation
-    MAX = (lambda x, y: max(x.significant, y.significant), 1)  #: Using max significant
-    FULL = (lambda *_: (_ for _ in ()).throw(NotImplementedError), 2)  #: TODO Full calculation
-
-
-class TruncatureMode(FuncEnum):
-    NONE = (lambda x: x, 0)  #: No truncature
-    ROUND = (round, 1)  #: round()
-    TRUNC = (lambda x: x.truncate(), 2)  #: truncate()
-    CEIL = (lambda x: x.ceil(), 3)  #: ceil()
-    FLOOR = (lambda x: x.floor(), 4)  #: floor()
-
-
-ArithmeticIdentifier = Tuple[Optional[Callable[["PreciseNumber", "PreciseNumber"], "PreciseNumber"]], str]
-
-
-@dataclass
-class PrecisionContext:
-    pmode: PrecisionMode
-    tmode: TruncatureMode
-    add: ArithmeticIdentifier
-    sub: ArithmeticIdentifier
-    mul: ArithmeticIdentifier
-    div: ArithmeticIdentifier
-
-    recording: bool = False
-    stack: int = field(init=False, default=0)
-    _records: List = field(init=False, default_factory=list)
-
-    def __post_init__(self):
-        if type(self.tmode) is not TruncatureMode:
-            raise TypeError
-
-        if isinstance(self.pmode, int):
-            if self.pmode < 0:
-                raise ValueError("Precision cannot be negative")
-            self._precisionfunc = lambda *_: self.pmode
-        elif type(self.pmode) is PrecisionMode:
-            self._precisionfunc = self.pmode
-        else:
-            raise TypeError
-
-    def mutate(self,
-               pmode: Optional[PrecisionMode] = None,
-               tmode: Optional[TruncatureMode] = None,
-               recording: Optional[bool] = None,
-               add: Optional[ArithmeticIdentifier] = None,
-               sub: Optional[ArithmeticIdentifier] = None,
-               mul: Optional[ArithmeticIdentifier] = None,
-               div: Optional[ArithmeticIdentifier] = None
-               ):
-        self.pmode = self.pmode if pmode is None else pmode
-        self.tmode = tmode or self.tmode
-        self.recording = self.recording if recording is None else recording
-        self.add = add or self.add
-        self.sub = sub or self.sub
-        self.mul = mul or self.mul
-        self.div = div or self.div
-
-        self.__post_init__()
-
-    def freeze(self):
-        return {
-            "tmode": self.tmode.name,
-            "pmode": self.pmode.name if isinstance(self.pmode, PrecisionMode) else self.pmode,
-            "add": self.add[1],
-            "sub": self.sub[1],
-            "mul": self.mul[1],
-            "div": self.div[1]
-        }
-
-    def record(self, *args):
-        if self.recording:
-            self._records.append({"args": args, **self.freeze()})
-
-
-__CONTEXT = PrecisionContext(pmode=PrecisionMode.SCI, tmode=TruncatureMode.NONE,
-                             add=(None, "DEFAULT"), sub=(None, "DEFAULT"),
-                             mul=(None, "DEFAULT"), div=(None, "DEFAULT"))
-
-
-def get_context() -> PrecisionContext:
-    return __CONTEXT
-
-
-def set_context(context: PrecisionContext):
-    if get_context().stack > 0:
-        raise ValueError("You can't change context while inside a precision_context")
-    context.stack = 0
-    global __CONTEXT
-    __CONTEXT = context
-
-
-def set_recording(flag: bool):
-    ctx = get_context()
-    if ctx.stack > 0:
-        raise ValueError("You can't start recording while inside a precision_context,\
-            you should use recording=True instead")
-    ctx.recording = flag
-
-
-def get_records():
-    return get_context()._records
-
-
-def clear_records():
-    get_context()._records.clear()
-
-
-@contextmanager
-def set_precision(pmode: Optional[PrecisionMode] = None,
-                  tmode: Optional[TruncatureMode] = None,
-                  recording: Optional[bool] = None,
-                  add: Optional[ArithmeticIdentifier] = None,
-                  sub: Optional[ArithmeticIdentifier] = None,
-                  mul: Optional[ArithmeticIdentifier] = None,
-                  div: Optional[ArithmeticIdentifier] = None):
-    ctx = get_context()
-    current = asdict(ctx)
-    del current["_records"]
-    del current["stack"]
-    try:
-        ctx.stack += 1
-        ctx.mutate(pmode, tmode, recording, add, sub, mul, div)
-        yield asdict(ctx)
-    finally:
-        ctx.mutate(**current)
-        ctx.stack -= 1
 
 
 def _with_context_precision(func=None, symbol=None):
@@ -266,6 +138,8 @@ def _with_context_precision(func=None, symbol=None):
 
 
 class PreciseNumber(Number, SupportsFloat):
+    """Abstract class of numbers with `PrecisionContext` compatibility
+    """
 
     @property
     @abc.abstractmethod
@@ -330,6 +204,179 @@ class PreciseNumber(Number, SupportsFloat):
     @abc.abstractmethod
     def _truediv(self, other: "PreciseNumber") -> "PreciseNumber":
         raise NotImplementedError
+
+
+class FuncEnum(Enum):
+    def __call__(self, *args, **kwds) -> PreciseNumber:
+        return self.value[0](*args, **kwds)
+
+
+class PrecisionMode(FuncEnum):
+    """Enumeration of standard precision modes available.
+    You can also use a positive integer to indicate a precision at a constant significant number.
+    """
+    SCI = (lambda x, y: min(x.significant, y.significant), 0)  #: Following scientific notation
+    MAX = (lambda x, y: max(x.significant, y.significant), 1)  #: Using max significant
+    FULL = (lambda *_: (_ for _ in ()).throw(NotImplementedError), 2)  #: TODO Full calculation
+
+
+class TruncatureMode(FuncEnum):
+    """Enumeration of standard truncature modes available.
+    """
+    NONE = (lambda x: x, 0)  #: No truncature
+    ROUND = (round, 1)  #: round()
+    TRUNC = (lambda x: x.truncate(), 2)  #: truncate()
+    CEIL = (lambda x: x.ceil(), 3)  #: ceil()
+    FLOOR = (lambda x: x.floor(), 4)  #: floor()
+
+
+ArithmeticIdentifier = Tuple[Optional[Callable[[PreciseNumber, PreciseNumber], PreciseNumber]], str]
+
+
+@dataclass
+class PrecisionContext:
+    """Context containing `PreciseNumber` arithmetic rules.
+    """
+    #: Precision mode
+    pmode: PrecisionMode = PrecisionMode.SCI
+    #: Truncature mode
+    tmode: TruncatureMode = TruncatureMode.NONE
+    #: Addition `ArithmeticIdentifier`
+    add: ArithmeticIdentifier = (None, "DEFAULT")
+    #: Substraction `ArithmeticIdentifier`
+    sub: ArithmeticIdentifier = (None, "DEFAULT")
+    #: Multiplication `ArithmeticIdentifier`
+    mul: ArithmeticIdentifier = (None, "DEFAULT")
+    #: Division `ArithmeticIdentifier`
+    div: ArithmeticIdentifier = (None, "DEFAULT")
+    #: Recording mode
+    recording: bool = False
+
+    #: `set_precision` context stack
+    stack: int = field(init=False, default=0)
+    _records: List = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        if type(self.tmode) is not TruncatureMode:
+            raise TypeError
+
+        if isinstance(self.pmode, int):
+            if self.pmode < 0:
+                raise ValueError("Precision cannot be negative")
+            self._precisionfunc = lambda *_: self.pmode
+        elif type(self.pmode) is PrecisionMode:
+            self._precisionfunc = self.pmode
+        else:
+            raise TypeError
+
+    def mutate(self,
+               pmode: Optional[PrecisionMode] = None,
+               tmode: Optional[TruncatureMode] = None,
+               recording: Optional[bool] = None,
+               add: Optional[ArithmeticIdentifier] = None,
+               sub: Optional[ArithmeticIdentifier] = None,
+               mul: Optional[ArithmeticIdentifier] = None,
+               div: Optional[ArithmeticIdentifier] = None
+               ):
+        """Mutates this `PrecisionContext` with new rules.
+        """
+        self.pmode = self.pmode if pmode is None else pmode
+        self.tmode = tmode or self.tmode
+        self.recording = self.recording if recording is None else recording
+        self.add = add or self.add
+        self.sub = sub or self.sub
+        self.mul = mul or self.mul
+        self.div = div or self.div
+
+        self.__post_init__()
+
+    def freeze(self):
+        """Returns a `Dict` containing this context rules
+        """
+        return {
+            "tmode": self.tmode.name,
+            "pmode": self.pmode.name if isinstance(self.pmode, PrecisionMode) else self.pmode,
+            "add": self.add[1],
+            "sub": self.sub[1],
+            "mul": self.mul[1],
+            "div": self.div[1]
+        }
+
+    def record(self, *args):
+        """Record an operation
+        """
+        if self.recording:
+            self._records.append({"args": args, **self.freeze()})
+
+
+__CONTEXT = PrecisionContext()
+
+
+def get_context() -> PrecisionContext:
+    """Returns current context
+    """
+    return __CONTEXT
+
+
+def set_context(context: PrecisionContext):
+    """Replace current `PrecisionContext`.
+
+    :raises ValueError: Raise if you set a new context while inside a `set_precision` \
+    context manager.
+    """
+    if get_context().stack > 0:
+        raise ValueError("You can't change context while inside a precision_context")
+    context.stack = 0
+    global __CONTEXT
+    __CONTEXT = context
+
+
+def set_recording(flag: bool):
+    """Set current `PrecisionContext` recording mode to `flag`.
+
+    :raises ValueError: Raise if you set recording while inside a `set_precision` \
+    context manager
+    """
+    ctx = get_context()
+    if ctx.stack > 0:
+        raise ValueError("You can't start recording while inside a precision_context,\
+            you should use recording=True instead")
+    ctx.recording = flag
+
+
+def get_records():
+    """Get current `PrecisionContext` records.
+    """
+    return get_context()._records
+
+
+def clear_records():
+    """Clear current `PrecisionContext` records.
+    """
+    get_context()._records.clear()
+
+
+@contextmanager
+def set_precision(pmode: Optional[PrecisionMode] = None,
+                  tmode: Optional[TruncatureMode] = None,
+                  recording: Optional[bool] = None,
+                  add: Optional[ArithmeticIdentifier] = None,
+                  sub: Optional[ArithmeticIdentifier] = None,
+                  mul: Optional[ArithmeticIdentifier] = None,
+                  div: Optional[ArithmeticIdentifier] = None):
+    """Mutates the current `PrecisionContext` with the specified rules.
+    """
+    ctx = get_context()
+    current = asdict(ctx)
+    del current["_records"]
+    del current["stack"]
+    try:
+        ctx.stack += 1
+        ctx.mutate(pmode, tmode, recording, add, sub, mul, div)
+        yield asdict(ctx)
+    finally:
+        ctx.mutate(**current)
+        ctx.stack -= 1
 
 
 class PrecisionError(Exception):
