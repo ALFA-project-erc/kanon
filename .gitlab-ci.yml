@@ -68,8 +68,7 @@ deploy:testpypi:
     - docker_dio
   when: manual
   only:
-    - release
-    - master
+    - tags
   script:
     - pip install twine build --upgrade
     - python -m build --sdist .
@@ -85,7 +84,7 @@ deploy:pypi:
     - docker_dio
   when: manual
   only:
-    - release
+    - tags
   script:
     - pip install twine build --upgrade
     - python -m build --sdist .
