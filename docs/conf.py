@@ -70,7 +70,7 @@ rst_epilog += """
 # -- Project information ------------------------------------------------------
 
 # This does not *have* to match the package name, but typically does
-project = setup_cfg['name']
+project = setup_cfg['real_name']
 author = setup_cfg['author']
 copyright = '{0}, {1}'.format(
     datetime.datetime.now().year, setup_cfg['author'])
@@ -79,8 +79,8 @@ copyright = '{0}, {1}'.format(
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-import_module(setup_cfg['name'])
-package = sys.modules[setup_cfg['name']]
+import_module(setup_cfg['real_name'])
+package = sys.modules[setup_cfg['real_name']]
 
 # The short X.Y version.
 version = package.__version__.split('-', 1)[0]
