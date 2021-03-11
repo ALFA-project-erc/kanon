@@ -30,6 +30,7 @@ class TestCalendars:
     def test_first_day(self):
         for cal in Calendar.registry.values():
             assert cal.jdn_at_ymd(1, 1, 1) == cal.era.epoch
+            assert Date(cal, (1, 1, 1)).days_from_epoch() == 0
 
     def test_from_julian(self):
         cal = Calendar.registry["Julian A.D."]

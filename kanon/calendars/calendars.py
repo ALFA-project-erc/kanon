@@ -119,6 +119,11 @@ class Date:
         """
         return cal.from_julian_days(self.jdn)
 
+    def days_from_epoch(self) -> float:
+        """Get number of days from the start of the calendar
+        """
+        return self.jdn - self.calendar.era.epoch
+
     def to_time(self) -> Time:
         """Express this date as a `astropy.time.Time` object with ``jd`` format.
         """
@@ -231,7 +236,7 @@ class Calendar(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @lru_cache
-    def jdn_at_ymd(self, year: int, month: int, day: int) -> int:
+    def jdn_at_ymd(self, year: int, month: int, day: int) -> float:
         """Julian day number at the specified date in ymd
         """
         if 0 > month or month > len(self.months):
