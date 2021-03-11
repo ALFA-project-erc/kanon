@@ -9,6 +9,7 @@ workflow:
 stages:
   - lint
   - test
+  - deploy
 
 lint:
   stage: lint
@@ -56,3 +57,36 @@ test_notebooks:
   script:
     - pip install tox
     - tox -e test_notebooks
+
+deploy:testpypi:
+  stage: deploy
+  image: python:3.8.7
+  variables:
+    TWINE_USERNAME: __token__
+    TWINE_PASSWORD: $TWINE_PASSWORD_TESTPYPI
+  tags:
+    - docker_dio
+  when: manual
+  only:
+    - release
+    - master
+  script:
+    - pip install twine build --upgrade
+    - python -m build --sdist .
+    - twine upload --repository testpypi dist/*
+
+deploy:pypi:
+  stage: deploy
+  image: python:3.8.7
+  variables:
+    TWINE_USERNAME: __token__
+    TWINE_PASSWORD: $TWINE_PASSWORD_PYPI
+  tags:
+    - docker_dio
+  when: manual
+  only:
+    - release
+  script:
+    - pip install twine build --upgrade
+    - python -m build --sdist .
+    - twine upload dist/*
