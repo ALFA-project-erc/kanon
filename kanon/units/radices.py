@@ -1004,7 +1004,7 @@ class BasedReal(PreciseNumber, _Real):
         self + other
 
         >>> Sexagesimal('01, 21; 47, 25') + Sexagesimal('45; 32, 14, 22')
-        02,07 ; 19,39 |r0.4
+        02,07 ; 19,39,22
         """
         if not np.isreal(other):
             raise NotImplementedError

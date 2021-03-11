@@ -68,6 +68,7 @@ class TestPrecision:
                 pass
 
     def test_truncature_modes(self):
+        get_context().mutate(pmode=PrecisionMode.SCI)
         s1 = Sexagesimal("0;30,0,0,6")
         s2 = Sexagesimal(2)
         with set_precision(tmode=TruncatureMode.ROUND):
@@ -98,6 +99,7 @@ class TestPrecision:
             self.equality(s1 * -s2, -Sexagesimal(1))
             self.equality(s1 / -s2, -Sexagesimal(0))
             self.equality(-s1 / Sexagesimal(1), -Sexagesimal(0))
+        get_context().mutate(pmode=PrecisionMode.MAX)
 
         with pytest.raises(TypeError):
             with set_precision(tmode=1):

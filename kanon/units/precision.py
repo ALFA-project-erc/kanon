@@ -6,7 +6,7 @@ All operations are made within a `PrecisionContext` rules, which indicate :
 - A `PrecisionMode`
 - 4 `ArithmeticIdentifier`, (add, sub, mul, div)
 
-Default precision context is set to `TruncatureMode.NONE`, `PrecisionMode.SCI`, and all
+Default precision context is set to `TruncatureMode.NONE`, `PrecisionMode.MAX`, and all
 `ArithmeticIdentifier` as default.
 
 To set new precision rules you should use the `set_precision` context manager. In the example
@@ -62,18 +62,18 @@ Let's try to record our operations.
 []
 >>> a + b
 03 ; 50
->>> with set_precision(tmode=TruncatureMode.ROUND):
+>>> with set_precision(tmode=TruncatureMode.ROUND, pmode=1):
 ...     a + Sexagesimal("2;5,30")
 03 ; 56
 >>> with set_precision(mul=test_mul_identifier):
 ...     b * a
 04 ; 00
 >>> get_records()
-[{'args': (01 ; 50, 02 ; 00, '+', 03 ; 50), 'tmode': 'NONE', 'pmode': 'SCI', 'add': \
+[{'args': (01 ; 50, 02 ; 00, '+', 03 ; 50), 'tmode': 'NONE', 'pmode': 'MAX', 'add': \
 'DEFAULT', 'sub': 'DEFAULT', 'mul': 'DEFAULT', 'div': 'DEFAULT'}, {'args': (01 ; 50, \
-02 ; 05,30, '+', 03 ; 56), 'tmode': 'ROUND', 'pmode': 'SCI', 'add': 'DEFAULT', 'sub': \
+02 ; 05,30, '+', 03 ; 56), 'tmode': 'ROUND', 'pmode': 1, 'add': 'DEFAULT', 'sub': \
 'DEFAULT', 'mul': 'DEFAULT', 'div': 'DEFAULT'}, {'args': (02 ; 00, 01 ; 50, '*', 04 ; \
-00), 'tmode': 'NONE', 'pmode': 'SCI', 'add': 'DEFAULT', 'sub': 'DEFAULT', 'mul': \
+00), 'tmode': 'NONE', 'pmode': 'MAX', 'add': 'DEFAULT', 'sub': 'DEFAULT', 'mul': \
 'TEST_MUL', 'div': 'DEFAULT'}]
 >>> clear_records()
 >>> set_recording(False)
@@ -238,7 +238,7 @@ class PrecisionContext:
     """Context containing `PreciseNumber` arithmetic rules.
     """
     #: Precision mode
-    pmode: PrecisionMode = PrecisionMode.SCI
+    pmode: PrecisionMode = PrecisionMode.MAX
     #: Truncature mode
     tmode: TruncatureMode = TruncatureMode.NONE
     #: Addition `ArithmeticIdentifier`
