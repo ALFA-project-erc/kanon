@@ -1255,19 +1255,19 @@ class BasedReal(PreciseNumber, _Real):
                 and self.sign == other.sign
                 and self.remainder == other.remainder)
 
-    def __ne__(self, other: object) -> bool:
+    def __ne__(self, other) -> bool:
         """self != other"""
         return not self == other
 
-    def __ge__(self, other: "BasedReal") -> bool:
+    def __ge__(self, other) -> bool:
         """self >= other"""
         return self == other or self > other
 
-    def __lt__(self, other: "BasedReal") -> bool:
+    def __lt__(self, other) -> bool:
         """self < other"""
         return not self >= other
 
-    def __le__(self, other: "BasedReal") -> bool:
+    def __le__(self, other) -> bool:
         """self <= other"""
         return not self > other
 
@@ -1284,9 +1284,32 @@ class BasedReal(PreciseNumber, _Real):
             return int(self)
         return hash((self.left, self.right, self.sign, self.remainder))
 
-    def sqrt(self, precision=None):
-        raise NotImplementedError
-        # return type(self).from_float(math.sqrt(float(self)), self.significant)
+    def sqrt(self, iteration: Optional[int] = None) -> "BasedReal":
+        """Returns the square root, using Babylonian method
+
+        :param iteration: Number of iterations, defaults to the significant number
+        :type iteration: Optional[int], optional
+        """
+        if self.sign < 0:
+            raise ValueError("Square root domain error")
+
+        if self == 0:
+            return self
+
+        if iteration is None:
+            iteration = self._get_significant(self)
+
+        if self >= 1:
+            res = self.from_int(int(math.sqrt(float(self))))
+        else:
+            res = self.from_float(math.sqrt(float(self)), self.significant)
+            iteration = 0
+
+        for _ in range(iteration):
+            res += self / res
+            res /= 2
+
+        return res
 
     def __bool__(self):
         return self != 0

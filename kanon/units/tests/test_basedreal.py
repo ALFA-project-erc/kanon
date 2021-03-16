@@ -167,7 +167,7 @@ class TestRadix:
         a = float(operator(x, y))
         b: float = operator(fx, fy)
         try:
-            abstol = 1e-11 if a and b else 1e-09
+            abstol = 1e-09 if a and b else 1e-11
             assert m.isclose(a, b.real, abs_tol=abstol)
             a = float(operator(x, fy))
             b = float(operator(fx, y))
@@ -228,3 +228,16 @@ class TestRadix:
         assert (h << 1).equals(Historical("116r 10s 10; 30"))
 
         assert Historical("1s 3; 36, 58").__str__() == "1s 03 ; 36,58"
+
+    def test_sqrt(self):
+
+        assert Sexagesimal(9).sqrt().equals(Sexagesimal(3))
+
+        assert Sexagesimal("12;15").sqrt(5) == 3.5
+
+        with pytest.raises(ValueError):
+            Sexagesimal("-5").sqrt()
+
+    @given(st.from_type(Sexagesimal).filter(lambda x: x > 0))
+    def test_sqrt_hypo(self, n):
+        assert m.isclose(float(n.sqrt(5)), m.sqrt(float(n)))
