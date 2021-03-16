@@ -1,5 +1,5 @@
 .. image:: https://gitlab.obspm.fr/lgauffier/kanon/badges/master/pipeline.svg
-    :target: https://gitlab.obspm.fr/lgauffier/kanon/-/commits/master
+    :target: https://gitlab.obspm.fr/lgauffier/kanon/-/pipelines
     :alt: Gitlab Pipeline Status
 .. image:: https://gitlab.obspm.fr/lgauffier/kanon/badges/master/coverage.svg
     :target: https://gitlab.obspm.fr/lgauffier/kanon/-/commits/master
@@ -7,12 +7,16 @@
 .. image:: https://readthedocs.org/projects/kanon/badge/?version=latest
     :target: https://kanon.readthedocs.io/en/latest/?badge=latest
     :alt: Docs status
+.. image:: https://img.shields.io/pypi/v/kanonpy
+    :target: https://pypi.org/project/kanonpy/
+    :alt: Kanon Pypi
 .. image:: https://shields.io/badge/python-v3.8-blue
     :target: https://www.python.org/downloads/release/python-380/
     :alt: Python 3.8
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org
     :alt: Powered by Astropy Badge
+
 
 --------
 
