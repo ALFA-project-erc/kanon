@@ -241,3 +241,19 @@ class TestRadix:
     @given(st.from_type(Sexagesimal).filter(lambda x: x > 0))
     def test_sqrt_hypo(self, n):
         assert m.isclose(float(n.sqrt(5)), m.sqrt(float(n)))
+
+    @given(
+        st.integers(-20, 20),
+        st.integers(-20, 20),
+        st.integers(-2, 2).filter(lambda x: x != 0)
+    )
+    def test_range(self, start: int, stop: int, step: int):
+        based_range = Sexagesimal.range(start, stop, step)
+        normal_range = range(start, stop, step)
+
+        assert list(normal_range) == [int(x) for x in based_range]
+
+        based_range_stop = Sexagesimal.range(stop)
+        normal_range_stop = range(stop)
+
+        assert list(normal_range_stop) == [int(x) for x in based_range_stop]

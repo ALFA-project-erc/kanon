@@ -1,10 +1,12 @@
-from typing import (Callable, Dict, Generic, List, Optional, Tuple, TypeVar,
-                    Union)
+from functools import partial
+from typing import (Callable, Dict, Generic, List, Literal, Optional, Tuple,
+                    TypeVar, Union)
 
 import numpy as np
 import pandas as pd
 from astropy.io import registry
 from astropy.table import Table
+from astropy.table.operations import join
 from astropy.table.table import TableAttribute
 from astropy.units import Quantity
 from astropy.units.core import Unit
@@ -92,11 +94,15 @@ class HTable(Table):
         super().__init__(data=data, names=names, units=units, dtype=dtype, *args, **kwargs)
 
         if index:
-            self.add_index(index, unique=True)
+            self.set_index(index)
 
-    def to_pandas(self, index=None, use_nullable_int=True, symmetry=True) -> pd.DataFrame:
+    def _check_index(self, index=None):
         if not self.indices and not index:
             raise IndexError("HTable should have an index, defining the function's arguments")
+        return self.primary_key[0]
+
+    def to_pandas(self, index=None, use_nullable_int=True, symmetry=True) -> pd.DataFrame:
+        self._check_index(index)
         df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
         if symmetry:
             for sym in self.symmetry:
@@ -124,14 +130,31 @@ class HTable(Table):
         except KeyError:
             pass
 
+        if isinstance(key, int):
+            key = float(key)
+
         return self.interpolate(df, key) * unit
 
-    def apply(self, column: str, func: Callable) -> "HTable":
+    def apply(self, column: str, func: Callable, new_name: Optional[str] = None) -> "HTable":
+        """
+        Applies a function on a column and returns the new `HTable`
+
+        :param column: Name of the column to be modified
+        :param func: Function applied to the column
+        :param new_name: New name for the modified column
+        :return: HTable with modified column
+        :rtype: HTable
+        """
+
         table = self.copy()
         try:
             table[column] = func(table[column])
         except TypeError:
             table[column] = np.vectorize(func)(table[column])
+
+        if new_name:
+            table.rename_columns([column], [new_name])
+
         return table
 
     def set_index(self, index: Union[str, List[str]], engine=None):
@@ -140,11 +163,63 @@ class HTable(Table):
 
         self.add_index(index, unique=True, engine=engine)
 
+    @property
+    def values_column(self) -> str:
+        """
+        Column representing the values
+        """
+        self._check_index()
+
+        set_val = set(self.colnames) - set(self.primary_key)
+        assert len(set_val) == 1, f"Values should be in 1 column, not {len(set_val)}"
+
+        return list(set_val)[0]
+
     def copy(self, set_index=None, copy_data=True) -> "HTable":
         table: HTable = super().copy(copy_data=copy_data)
         if set_index:
             table.set_index(set_index)
         return table
+
+    def populate(self, array: list, method: Literal["mask", "interpolate"] = "mask") -> "HTable":
+
+        key = self._check_index()
+
+        right = {key: array}
+
+        if method == "interpolate":
+            right[self.values_column] = [self.get(x) for x in array]
+
+        table: HTable = join(self, right, join_type='outer')
+
+        table.set_index(key)
+
+        return table
+
+    def diff(self, n=1, prepend: List = [], append: List = [], new_name: Optional[str] = None) -> "HTable":
+        """Applies `np.diff` on this table's column values to calculate the n-th difference.
+        By default, it will prepend the first value.
+
+        :return: HTable with n-th difference values.
+        :rtype: HTable
+        """
+
+        cat = prepend + append
+        if len(cat) > n or n > len(cat) > 0:
+            raise ValueError(f"You must prepend or append exactly n ({n}) values or 0 values")
+
+        if len(cat) == 0:
+            prepend = [self[0][self.values_column]] * n
+
+        kwargs = {}
+        if prepend:
+            kwargs["prepend"] = prepend
+        if append:
+            kwargs["append"] = append
+
+        diff = partial(np.diff, n=n, **kwargs)
+
+        return self.apply(self.values_column, diff, new_name)
 
 
 DISHAS_REQUEST_URL = "https://dishas.obspm.fr/elastic-query?index=table_content&hits=true&id={}"

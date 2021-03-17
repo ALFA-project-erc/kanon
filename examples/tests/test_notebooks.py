@@ -26,7 +26,7 @@ class TestNotebooks:
         ({"OBLIQUITY": "0"}, ("0", "0")),
     ])
     def test_declination(self, params, result):
-        data: str = self.get_nb("declination", params).cells[-1].outputs[0].data["text/html"]
+        data: str = self.get_nb("declination", params).cells[6].outputs[0].data["text/html"]
         lines = data.split("<tr>")
         line5 = [li for li in lines if "<td>05 ;" in li][0]
         line90 = [li for li in lines if "<td>01,30 ;" in li][0]

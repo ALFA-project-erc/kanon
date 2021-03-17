@@ -25,7 +25,7 @@ from fractions import Fraction
 from functools import cached_property, lru_cache
 from numbers import Number
 from numbers import Real as _Real
-from typing import (Any, Dict, List, Literal, Optional, Sequence,
+from typing import (Any, Dict, Generator, List, Literal, Optional, Sequence,
                     SupportsFloat, Tuple, Type, cast, overload)
 
 import numpy as np
@@ -853,6 +853,27 @@ class BasedReal(PreciseNumber, _Real):
         :return: a unit number
         """
         return cls((1,), (0,) * significant)
+
+    @classmethod
+    @overload
+    def range(cls, stop: int) -> Generator["BasedReal", None, None]:
+        ...
+
+    @classmethod
+    @overload
+    def range(cls, start: int, stop: int, step=1) -> Generator["BasedReal", None, None]:
+        ...
+
+    @classmethod
+    def range(cls, *args, **kwargs) -> Generator["BasedReal", None, None]:
+        """
+        Range generator, equivalent to `range` builtin but yields `BasedReal` numbers.
+
+        :yield: `BasedReal` integers.
+        """
+        for i in range(*args, **kwargs):
+            yield cls.from_int(i)
+        return
 
     @classmethod
     def from_int(cls, value: int, significant=0) -> "BasedReal":
