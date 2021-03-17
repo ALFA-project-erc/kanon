@@ -182,6 +182,9 @@ class HTable(Table):
         return table
 
     def populate(self, array: list, method: Literal["mask", "interpolate"] = "mask") -> "HTable":
+        """
+        Populate a table with values from new keys contained in `array`.
+        """
 
         key = self._check_index()
 
