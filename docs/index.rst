@@ -16,6 +16,7 @@ Table of content
   tables/index.rst
   units/index.rst
   calendars/index.rst
+  examples.rst
 
 Index and search
 ==================

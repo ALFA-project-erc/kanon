@@ -26,7 +26,9 @@
 # be accessible, and the documentation will not build correctly.
 
 import datetime
+import glob
 import os
+import shutil
 import sys
 from importlib import import_module
 
@@ -212,3 +214,9 @@ intersphinx_mapping['pandas'] = ('https://pandas.pydata.org/pandas-docs/stable/'
 autodoc_type_aliases = {
     'ArithmeticIdentifier': 'kanon.units.precision.ArithmeticIdentifier'
 }
+
+extensions += ['nbsphinx']
+
+
+for file in glob.glob("../examples/*ipynb"):
+    shutil.copy2(file, "examples")
