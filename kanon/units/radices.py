@@ -206,7 +206,7 @@ class BasedReal(PreciseNumber, _Real):
         for x in self[:]:
             if isinstance(x, float):
                 raise IllegalFloatError(x)
-            elif not isinstance(x, int):
+            if not isinstance(x, int):
                 raise TypeError(f"{x} not an int")
         for i, s in enumerate(self[:]):
             if s < 0. or s >= self.base[i - len(self.left) + 1]:
@@ -271,12 +271,12 @@ class BasedReal(PreciseNumber, _Real):
         self.__sign = sign
         if np.all([isinstance(x, int) for x in args]):
             return cls.__new__(cls, args, (), remainder=remainder, sign=sign)
-        elif len(args) == 2:
+        if len(args) == 2:
             if isinstance(args[0], BasedReal):
-                if type(args[0]) is cls:
+                if isinstance(args[0], cls):
                     return args[0].resize(args[1])
-                return cls.base.type.from_decimal(args[0].decimal, args[1])
-            elif isinstance(args[0], tuple) and isinstance(args[1], tuple):
+                return cls.from_decimal(args[0].decimal, args[1])
+            if isinstance(args[0], tuple) and isinstance(args[1], tuple):
                 self.__left = args[0]
                 self.__right = args[1]
             else:
@@ -536,18 +536,18 @@ class BasedReal(PreciseNumber, _Real):
         if significant > self.significant:
             rem = type(self).from_decimal(self.sign * self.remainder, significant - self.significant)
             return type(self)(self.left, self.right + rem.right, remainder=rem.remainder, sign=self.sign)
-        elif significant >= 0:
+        if significant >= 0:
             remainder = type(self)(
                 (), self.right[significant:], remainder=self.remainder)
 
             return type(self)(self.left, self.right[:significant], remainder=remainder.decimal, sign=self.sign)
-        else:
-            raise NotImplementedError
+
+        raise NotImplementedError
 
     def __trunc__(self):
         return int(float(self.truncate(0)))
 
-    def truncate(self, n: Optional[int] = None) -> "BasedReal":
+    def truncate(self, significant: Optional[int] = None) -> "BasedReal":
         """
         Truncate this BasedReal object to the specified precision
 
@@ -562,27 +562,27 @@ class BasedReal(PreciseNumber, _Real):
         :param n: Desired significant positions
         :return: Truncated BasedReal
         """
-        if n is None:
-            n = self.significant
-        if n > self.significant:
+        if significant is None:
+            significant = self.significant
+        if significant > self.significant:
             return self
-        left = self.left if n >= 0 else self.left[:-n]
-        right = self.right[:n] if n >= 0 else ()
+        left = self.left if significant >= 0 else self.left[:-significant]
+        right = self.right[:significant] if significant >= 0 else ()
         return type(self)(left, right, sign=self.sign)
 
     def floor(self, significant: Optional[int] = None) -> "BasedReal":
         resized = self.resize(significant) if significant else self
         if resized.remainder == 0 or self.sign == 1:
             return resized.truncate()
-        else:
-            return resized._set_remainder(Decimal(0.5)).__round__()
+
+        return resized._set_remainder(Decimal(0.5)).__round__()
 
     def ceil(self, significant: Optional[int] = None) -> "BasedReal":
         resized = self.resize(significant) if significant else self
         if resized.remainder == 0 or self.sign == -1:
             return resized.truncate()
-        else:
-            return resized._set_remainder(Decimal(0.5)).__round__()
+
+        return resized._set_remainder(Decimal(0.5)).__round__()
 
     def minimize_precision(self) -> "BasedReal":
         """
@@ -671,15 +671,13 @@ class BasedReal(PreciseNumber, _Real):
                 remainder=remainder + self.remainder, sign=self.sign
             )
 
-        else:
+        offset = len(self.left) if i > 0 else len(self.left) - i
+        br_rem = self.from_decimal(self.remainder, max(0, offset - len(self[:])))
 
-            offset = len(self.left) if i > 0 else len(self.left) - i
-            br_rem = self.from_decimal(self.remainder, max(0, offset - len(self[:])))
+        left_right = (0,) * i + self[:] + br_rem.right
 
-            left_right = (0,) * i + self[:] + br_rem.right
-
-            left = left_right[:offset]
-            right = left_right[offset:-i if -i > offset else None]
+        left = left_right[:offset]
+        right = left_right[offset:-i if -i > offset else None]
 
         return type(self)(left, right, remainder=br_rem.remainder, sign=self.sign)
 
@@ -750,15 +748,15 @@ class BasedReal(PreciseNumber, _Real):
             start = key.start + len(self.left) - 1 if key.start is not None else None
             stop = key.stop + len(self.left) - 1 if key.stop is not None else None
             return array[start:stop:key.step]
-        elif isinstance(key, int):
+
+        if isinstance(key, int):
             if -len(self.left) < key <= 0:
                 return self.left[key - 1]
-            elif self.significant >= key > 0:
+            if self.significant >= key > 0:
                 return self.right[key - 1]
-            else:
-                raise IndexError
-        else:
-            raise TypeError
+            raise IndexError
+
+        raise TypeError
 
     @classmethod
     def from_float(cls, floa: float, significant: int,
@@ -873,7 +871,6 @@ class BasedReal(PreciseNumber, _Real):
         """
         for i in range(*args, **kwargs):
             yield cls.from_int(i)
-        return
 
     @classmethod
     def from_int(cls, value: int, significant=0) -> "BasedReal":
@@ -1030,11 +1027,10 @@ class BasedReal(PreciseNumber, _Real):
         if not np.isreal(other):
             raise NotImplementedError
 
-        elif type(self) is not type(other):
+        if type(self) is not type(other):
             return self + self.from_float(float(other), significant=self.significant)
 
-        else:
-            return super().__add__(other)
+        return super().__add__(other)
 
     def __radd__(self, other) -> "BasedReal":
         """other + self"""
@@ -1044,14 +1040,6 @@ class BasedReal(PreciseNumber, _Real):
 
         other = cast(BasedReal, _other)
         return self + -other
-
-    def __sub__(self, other) -> "BasedReal":
-        """self - other"""
-        return super().__sub__(other)
-
-    def __rsub__(self, other) -> "BasedReal":
-        """other - self"""
-        return other + -self
 
     def __rtruediv__(self, other):
         """other / self"""
@@ -1082,10 +1070,6 @@ class BasedReal(PreciseNumber, _Real):
     def __rpow__(self, base):
         """base ** self"""
         return self.from_float(float(base), self.significant) ** self
-
-    def conjugate(self):  # pragma: no cover
-        """(x+y*i).conjugate() returns (x-y*i)."""
-        return self
 
     def __neg__(self) -> "BasedReal":
         """-self"""
@@ -1170,10 +1154,10 @@ class BasedReal(PreciseNumber, _Real):
         if isinstance(other, UnitBase):
             return BasedQuantity(self, unit=other)
 
-        elif not np.isreal(other) or not isinstance(other, SupportsFloat):
+        if not np.isreal(other) or not isinstance(other, SupportsFloat):
             raise NotImplementedError
 
-        elif type(self) is not type(other):
+        if type(self) is not type(other):
             return self * self.from_float(float(other), self.significant)
 
         return super().__mul__(other)
@@ -1201,19 +1185,20 @@ class BasedReal(PreciseNumber, _Real):
                 fdiv, mod = divmod(qself, qother)
                 return self.from_int(fdiv, min_significant), self.from_int(mod, min_significant
                                                                            ) >> max_significant
+
+            fdiv = math.floor(self.decimal / other.decimal)
+            if fdiv == self.decimal / other.decimal:
+                mod = Decimal(0)
             else:
-                fdiv = math.floor(self.decimal / other.decimal)
-                if fdiv == self.decimal / other.decimal:
-                    mod = Decimal(0)
-                else:
-                    mod = self.decimal % other.decimal + 0 if self.sign == other.sign else other.decimal
-                return self.from_int(
-                    fdiv, min_significant
-                ), self.from_decimal(mod, min_significant)
-        elif np.isreal(other):
+                mod = self.decimal % other.decimal + 0 if self.sign == other.sign else other.decimal
+            return self.from_int(
+                fdiv, min_significant
+            ), self.from_decimal(mod, min_significant)
+
+        if np.isreal(other):
             return divmod(self, self.from_float(float(other), self.significant))
-        else:
-            raise NotImplementedError
+
+        raise NotImplementedError
 
     def __floordiv__(self, other) -> "BasedReal":  # type: ignore
         """self // other"""
@@ -1236,11 +1221,10 @@ class BasedReal(PreciseNumber, _Real):
         if isinstance(other, UnitBase):
             return self * (other ** -1)
 
-        elif type(self) is type(other):
+        if type(self) is type(other):
             return super().__truediv__(other)
 
-        else:
-            return self / self.from_float(float(other), significant=self.significant)
+        return self / self.from_float(float(other), significant=self.significant)
 
     def __gt__(self, other) -> bool:
         """self > other"""
@@ -1332,9 +1316,6 @@ class BasedReal(PreciseNumber, _Real):
 
         return res
 
-    def __bool__(self):
-        return self != 0
-
     def _set_remainder(self, remainder: Decimal) -> "BasedReal":
         return type(self)(self.left, self.right, sign=self.sign, remainder=remainder)
 
@@ -1348,7 +1329,7 @@ class BasedQuantity(Quantity):
         ):
             return Quantity(value, unit, **kwargs)
 
-        def _len(self):
+        def _len(_):
             del type(value).__len__
             return 0
 
@@ -1379,8 +1360,7 @@ class BasedQuantity(Quantity):
                 UFUNC_HELPERS[vfunc] = lambda *_: ([None, None], unit)
                 return vfunc(vect(self))
             return _new_func
-        else:
-            return vect(self)
+        return vect(self)
 
     def __round__(self, significant: Optional[int] = None):
         return self.__getattr__("__round__")(significant)
@@ -1434,6 +1414,7 @@ class IllegalBaseValueError(BasedRealException, ValueError):
     """
 
     def __init__(self, radix, base, num):
+        super().__init__()
         self.radix = radix
         self.base = base
         self.num = num
@@ -1454,6 +1435,7 @@ class IllegalFloatError(BasedRealException, TypeError):
     """
 
     def __init__(self, num):
+        super().__init__()
         self.num = num
 
     def __str__(self):

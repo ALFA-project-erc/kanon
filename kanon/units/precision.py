@@ -257,14 +257,14 @@ class PrecisionContext:
     _records: List = field(init=False, default_factory=list)
 
     def __post_init__(self):
-        if type(self.tmode) is not TruncatureMode:
+        if not isinstance(self.tmode, TruncatureMode):
             raise TypeError
 
         if isinstance(self.pmode, int):
             if self.pmode < 0:
                 raise ValueError("Precision cannot be negative")
             self._precisionfunc = lambda *_: self.pmode
-        elif type(self.pmode) is PrecisionMode:
+        elif isinstance(self.pmode, PrecisionMode):
             self._precisionfunc = self.pmode
         else:
             raise TypeError
