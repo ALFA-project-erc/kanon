@@ -35,7 +35,7 @@ class TestHTable:
             st.tuples(
                 st.integers(min_value=int(-1e15), max_value=int(1e15)),
                 st.floats(allow_nan=False, allow_infinity=False, width=16)
-            ), min_size=1, unique_by=(lambda x: x[0])
+            ), min_size=2, unique_by=(lambda x: x[0])
         ).map(lambda x: list(zip(*sorted(x)))),
         names=st.just(("A", "B")),
         index=st.just("A")
@@ -62,9 +62,6 @@ class TestHTable:
         fres = np.interp(key, [float(x) for x in tab.columns[0]], [float(x) for x in tab.columns[1]])
         sres = tab.get(key)
         assert isclose(fres, float(sres), abs_tol=1e9)
-
-        with pytest.raises(IndexError):
-            tab.get(tab[0]["A"] - 1)
 
     def test_apply(self):
         tab = self.make_sample_table()

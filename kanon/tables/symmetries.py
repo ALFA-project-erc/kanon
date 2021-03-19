@@ -127,11 +127,9 @@ class OutOfBoundsOriginError(IndexError):
     Catches applying on a DataFrame a symmetry with source values outside
     the DataFrame bounds
     """
-    pass
 
 
 class OverlappingSymmetryError(ValueError):
     """
     Catches applying on a DataFrame a symmetry with overlapping results
     """
-    pass

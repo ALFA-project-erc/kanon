@@ -124,11 +124,7 @@ class HTable(Table):
 
         df = self.to_pandas()
 
-        unit = (self.columns[1].unit if with_unit else 1) or 1
-        try:
-            return df.loc[key][0] * unit
-        except KeyError:
-            pass
+        unit = (self.columns[self.values_column].unit if with_unit else 1) or 1
 
         if isinstance(key, int):
             key = float(key)
@@ -223,6 +219,26 @@ class HTable(Table):
         diff = partial(np.diff, n=n, **kwargs)
 
         return self.apply(self.values_column, diff, new_name)
+
+
+def join_multiple(*tables, keys=None, join_type='inner',
+                  uniq_col_name='{col_name}_{table_name}',
+                  table_names=['1', '2'], metadata_conflicts='silent',
+                  join_funcs=None) -> Table:
+    """
+    `astropy.table.join` but with more than one table, iteratively from left to right.
+    """
+
+    _join = partial(join, keys=keys, join_type=join_type,
+                    uniq_col_name=uniq_col_name,
+                    table_names=table_names, metadata_conflicts=metadata_conflicts,
+                    join_funcs=join_funcs)
+
+    new_table = _join(*tables[:2])
+    for t in tables[2:]:
+        new_table = _join(new_table, t)
+
+    return new_table
 
 
 DISHAS_REQUEST_URL = "https://dishas.obspm.fr/elastic-query?index=table_content&hits=true&id={}"

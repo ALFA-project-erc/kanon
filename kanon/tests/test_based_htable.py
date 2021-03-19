@@ -44,7 +44,7 @@ class TestBasedHTable:
             st.tuples(
                 st.from_type(Sexagesimal).map(lambda x: x.resize(2).truncate()),
                 st.from_type(Sexagesimal).map(lambda x: x.resize(2).truncate())
-            ), min_size=1, unique_by=(lambda x: x[0])
+            ), min_size=2, max_size=7, unique_by=(lambda x: x[0])
         ).map(lambda x: list(zip(*sorted(x)))),
         names=st.just(("A", "B")),
         index=st.just("A"),
