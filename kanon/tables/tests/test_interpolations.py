@@ -60,3 +60,18 @@ class TestInterpolations:
         with pytest.raises(ValueError) as err:
             df.pipe(distributed_interpolation, direction="unknown")
         assert "unknown" in str(err.value)
+
+        from kanon.units import Sexagesimal
+        df = pd.DataFrame([Sexagesimal(5)] + [np.nan] * 8 + [Sexagesimal(45)], list(range(6, 16)))
+
+        convex = df.pipe(distributed_interpolation, direction="convex")
+        assert list(convex[0]) == [5, 9, 13, 17, 21, 25, 30, 35, 40, 45]
+
+        df = pd.DataFrame([Sexagesimal("0;0,5")] + [np.nan] * 8 + [Sexagesimal("0;0,45")],
+                          list(range(6, 16)))
+
+        convex = df.pipe(distributed_interpolation, direction="convex")
+        assert list(convex[0]) == [
+            Sexagesimal.from_int(x).shift(2) for x in [5, 9, 13, 17, 21, 25, 30, 35, 40, 45]
+        ]
+        assert convex.index[0].dtype == 'int64'

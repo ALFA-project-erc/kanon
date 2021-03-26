@@ -1,6 +1,7 @@
 from functools import wraps
 from typing import Callable, Literal, Tuple
 
+import numpy as np
 import pandas as pd
 from scipy.interpolate import lagrange
 
@@ -109,6 +110,14 @@ def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "co
     if pd.isna(df.iloc[-1][0]) or pd.isna(df.iloc[0][0]):
         raise ValueError("The DataFrame must start and end with non nan values")
 
+    if based_values := df.iloc[0].dtypes == 'object':
+
+        based_type = type(df.iloc[0][0])
+
+        max_sig = max(df.iloc[0][0].significant, df.iloc[-1][0].significant)
+        df.iloc[0][0] = df.iloc[0][0].subunit_quantity(max_sig)
+        df.iloc[-1][0] = df.iloc[-1][0].subunit_quantity(max_sig)
+
     lower: Tuple[Real, Real] = df.iloc[0][0]
     upper: Tuple[Real, Real] = df.iloc[-1][0]
 
@@ -122,5 +131,8 @@ def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "co
         r += 1 if direction == "convex" else -1
 
         df.loc[idx] = lower
+
+    if based_values:
+        df.loc[:] = np.vectorize(lambda x: based_type.from_int(x).shift(max_sig))(df.iloc[:])
 
     return df

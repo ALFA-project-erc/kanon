@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from astropy.io import registry
 from astropy.table import Row, Table
+from astropy.table.column import Column
 from astropy.table.operations import join
 from astropy.table.table import TableAttribute
 from astropy.units import Quantity
@@ -210,7 +211,7 @@ class HTable(Table):
 
         slice_bounds = slice(*(bounds or (None, None)))
 
-        filltab = self.loc[slice_bounds]
+        filltab: HTable = self.loc[slice_bounds]
 
         if isinstance(filltab, Row):
             return self.copy()
@@ -259,11 +260,11 @@ class HTable(Table):
             for idx, data in df.iloc[1:-1].iterrows():
                 filltab.loc[idx][filltab.values_column] = data[filltab.values_column]
 
-        if not bounds:
-            return filltab
-
         tab_copy = self.copy()
         tab_copy.loc[slice_bounds] = filltab
+
+        if not np.ma.is_masked(tab_copy[tab_copy.values_column]):
+            tab_copy[filltab.values_column] = Column(tab_copy[filltab.values_column])
 
         return tab_copy
 
