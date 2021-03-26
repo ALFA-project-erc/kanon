@@ -121,8 +121,11 @@ class TestRadix:
         assert not s.equals("5")
         assert s.to_fraction() == Fraction(5)
 
+        assert 5 / s == 1
+
         assert s ** -1 == 1 / 5
         assert s ** 1 == s
+        assert 1 ** s == 1
         assert Sexagesimal(0) ** 1 == 0
 
         assert s > 4
@@ -133,6 +136,11 @@ class TestRadix:
             s / 0
 
         assert Sexagesimal("1,0;2,30,1").subunit_quantity(1) == 3602
+
+        assert 5 % Sexagesimal(2) == 1
+        assert 5 // Sexagesimal(2) == 2
+
+        assert divmod(Sexagesimal(5), 3) == divmod(5, 3)
 
     def test_shift(self):
         s = Sexagesimal("20, 1, 2, 30; 0")
@@ -233,6 +241,8 @@ class TestRadix:
     def test_sqrt(self):
 
         assert Sexagesimal(9).sqrt().equals(Sexagesimal(3))
+
+        assert Sexagesimal(0).sqrt() == 0
 
         assert Sexagesimal("12;15").sqrt(5) == 3.5
 

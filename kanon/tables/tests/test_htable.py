@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from astropy.table import setdiff
+from astropy.table.operations import join
 from hypothesis import assume
 from hypothesis.core import given
 
-from kanon.tables.htable import HTable
+from kanon.tables.htable import HTable, join_multiple
 from kanon.tables.symmetries import Symmetry
 
 
@@ -140,3 +141,10 @@ class TestHTable:
         with pytest.raises(ValueError) as err:
             tab.fill("not a method", (2, 4))
         assert str(err.value) == "Incorrect fill method"
+
+    def test_join_multiple(self):
+        data = [HTable({"a": x, "b": x}) for x in [[1, 2, 3], [8, 10, 13], [435, 13, 3.5]]]
+        multiple_joined = join_multiple(*data, join_type="outer")
+        single_joined = join(join(data[0], data[1], join_type="outer"), data[2], join_type="outer")
+
+        assert len(setdiff(multiple_joined, single_joined)) == 0

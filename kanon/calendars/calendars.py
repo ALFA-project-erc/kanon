@@ -22,7 +22,6 @@ method to be valid.
 import abc
 from dataclasses import dataclass, field
 from functools import cached_property, lru_cache
-from numbers import Real as _Real
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from astropy.time import Time
@@ -130,14 +129,10 @@ class Date:
         return Time(self.jdn, format="jd")
 
     def __add__(self, other: Union["Date", Real]) -> "Date":
-        if not isinstance(other, (Date, _Real)):
-            raise TypeError
         jdn: Real = other.jdn if isinstance(other, Date) else other
         return self.calendar.from_julian_days(self.jdn + jdn)
 
     def __sub__(self, other: Union["Date", Real]) -> "Date":
-        if not isinstance(other, (Date, _Real)):
-            raise TypeError
         jdn: Real = other.jdn if isinstance(other, Date) else other
         return self.calendar.from_julian_days(self.jdn - jdn)
 

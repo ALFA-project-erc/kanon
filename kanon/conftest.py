@@ -43,10 +43,14 @@ def pytest_configure(config):
 def _hypothesis_sexagesimal_strategy():
     """We define hypothesis strategy to generate Sexagesimal values in tests
     """
+    from hypothesis import HealthCheck, settings
     from hypothesis.strategies import (builds, decimals, integers, lists,
                                        register_type_strategy, sampled_from)
 
     from kanon.units import Sexagesimal
+
+    settings.register_profile("def", suppress_health_check=(HealthCheck.too_slow,))
+    settings.load_profile("def")
 
     strat = builds(
         Sexagesimal,

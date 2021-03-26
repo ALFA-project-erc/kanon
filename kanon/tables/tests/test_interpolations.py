@@ -16,12 +16,18 @@ def build_dataframe():
 class TestInterpolations:
 
     @given(st.floats(allow_infinity=False, allow_nan=False, min_value=1, max_value=8))
-    def test_linear(self, key: float):
+    def test_linear_hypothesis(self, key: float):
         df = build_dataframe()
 
         np_interp = np.interp(key, np.array(df.index), np.array(df[0]))
 
         assert linear_interpolation(df, key) == np_interp
+
+    def test_linear(self):
+        df = build_dataframe()
+
+        assert linear_interpolation(df, -1) == 5.5
+        assert linear_interpolation(df, 9) == 18
 
     def test_quadratic(self):
         df = build_dataframe()
