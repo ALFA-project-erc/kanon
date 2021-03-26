@@ -3,7 +3,9 @@ from typing import Tuple
 
 import hypothesis.strategies as st
 import numpy as np
+import pandas as pd
 import pytest
+from astropy.table import setdiff
 from hypothesis import assume
 from hypothesis.core import given
 
@@ -13,7 +15,7 @@ from kanon.tables.symmetries import Symmetry
 
 class TestHTable:
 
-    sample = {"a": [1, 2, 3, 4], "b": [5, 9, 12, 15]}
+    sample = {"a": [1, 2, 3, 4, 5], "b": [5, 9, 12, 25, 26]}
 
     def make_sample_table(self, index="a"):
         return HTable(self.sample, index=index)
@@ -81,7 +83,7 @@ class TestHTable:
 
         assert tab.loc[1]["b"] == 5
         with pytest.raises(KeyError):
-            tab.loc[5]
+            tab.loc[6]
 
         new_tab = tab.copy(set_index="b")
         assert new_tab.loc[5]["a"] == 1
@@ -102,9 +104,39 @@ class TestHTable:
     def test_diff(self):
         tab = self.make_sample_table()
 
-        assert list(tab.diff()["b"]) == [0, 4, 3, 3]
-        assert list(tab.diff(prepend=[3])["b"]) == [2, 4, 3, 3]
-        assert list(tab.diff(append=[15])["b"]) == [4, 3, 3, 0]
+        assert list(tab.diff()["b"]) == [0, 4, 3, 13, 1]
+        assert list(tab.diff(prepend=[3])["b"]) == [2, 4, 3, 13, 1]
+        assert list(tab.diff(append=[24])["b"]) == [4, 3, 13, 1, -2]
 
         with pytest.raises(ValueError):
             tab.diff(prepend=[1, 1])
+
+    def test_fill(self):
+        tab = self.make_sample_table()
+
+        tab = tab.populate([i / 4 for i in range(4, 16)])
+
+        tab_filled = tab.fill("distributed_convex", (2, 4))
+        assert list(tab_filled.loc[3:4]["b"]) == [12, 15, 18, 21, 25]
+
+        tab_filled = tab.fill("distributed_concave", (2, 4))
+        assert list(tab_filled.loc[3:4]["b"]) == [12, 16, 19, 22, 25]
+
+        tab_unmasked = tab.filled(50)
+
+        assert len(setdiff(tab_unmasked, tab.fill("distributed_convex", (4, 5)).filled(50))) == 0
+        assert len(setdiff(tab_unmasked, tab.fill("distributed_convex", (3.5, 3.5)).filled(50))) == 0
+
+        def fill_50(df: pd.DataFrame):
+            df.iloc[1:-1] = 50
+            return df
+
+        assert len(setdiff(tab_unmasked, tab.fill(fill_50))) == 0
+
+        with pytest.raises(ValueError) as err:
+            tab.fill("distributed_convex", (2.5, 4))
+        assert str(err.value) == "First and last column must not be masked"
+
+        with pytest.raises(ValueError) as err:
+            tab.fill("not a method", (2, 4))
+        assert str(err.value) == "Incorrect fill method"

@@ -1,9 +1,11 @@
 import hypothesis.strategies as st
 import numpy as np
 import pandas as pd
+import pytest
 from hypothesis.core import given
 
-from kanon.tables.interpolations import (linear_interpolation,
+from kanon.tables.interpolations import (distributed_interpolation,
+                                         linear_interpolation,
                                          quadratic_interpolation)
 
 
@@ -26,3 +28,29 @@ class TestInterpolations:
 
         assert quadratic_interpolation(df, 1.25) == 4.7421875
         assert np.isclose(quadratic_interpolation(df, 10), 34)
+
+    def test_distributed(self):
+        df = pd.DataFrame([5] + [np.nan] * 8 + [45], list(range(6, 16)))
+
+        convex = df.pipe(distributed_interpolation, direction="convex")
+        assert list(convex[0]) == [5, 9, 13, 17, 21, 25, 30, 35, 40, 45]
+        concave = df.pipe(distributed_interpolation, direction="concave")
+        assert list(concave[0]) == [5, 10, 15, 20, 25, 29, 33, 37, 41, 45]
+
+        df = pd.DataFrame([5] + [np.nan] * 6 + [45], [i / 4 for i in range(8)])
+        concave = df.pipe(distributed_interpolation, direction="concave")
+        assert len(concave) == 8 and not np.isnan(concave[0]).any()
+
+        with pytest.raises(ValueError) as err:
+            df = pd.DataFrame([5] + [np.nan] * 8 + [45], list(range(6, 15)) + [31])
+            df.pipe(distributed_interpolation, direction="convex")
+        assert str(err.value) == "The DataFrame must have regular steps"
+
+        with pytest.raises(ValueError) as err:
+            df = pd.DataFrame([5] + [np.nan] * 9, list(range(6, 16)))
+            df.pipe(distributed_interpolation, direction="convex")
+        assert str(err.value) == "The DataFrame must start and end with non nan values"
+
+        with pytest.raises(ValueError) as err:
+            df.pipe(distributed_interpolation, direction="unknown")
+        assert "unknown" in str(err.value)

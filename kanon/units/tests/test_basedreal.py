@@ -162,17 +162,18 @@ class TestRadix:
             else:
                 assert not comp(s, xs)
 
-    def biop_testing(self, x, y, operator):
+    def biop_testing(self, x: BasedReal, y: BasedReal, operator):
         fx, fy = float(x), float(y)
         a = float(operator(x, y))
         b: float = operator(fx, fy)
         try:
             abstol = 1e-09 if a and b else 1e-11
             assert m.isclose(a, b.real, abs_tol=abstol)
-            a = float(operator(x, fy))
-            b = float(operator(fx, y))
+            a = float(operator(x, Sexagesimal.from_float(fy, x.significant, remainder_threshold=1)))
+            b = float(operator(Sexagesimal.from_float(fx, y.significant, remainder_threshold=1), y))
             assert m.isclose(a, b.real, abs_tol=abstol)
         except Exception as e:
+            hypothesis.note(f"{x.remainder} {y.remainder}")
             hypothesis.note(f"{operator.__name__}: {a} {b}")
             raise e
 

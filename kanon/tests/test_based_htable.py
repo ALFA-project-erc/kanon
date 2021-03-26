@@ -73,3 +73,8 @@ class TestBasedHTable:
         assert isinstance(value, Quantity)
         assert value.unit is u.degree
         assert isinstance(value.value, Sexagesimal)
+
+    @given(gen_table_strategy)
+    def test_loc_slice(self, tab: HTable):
+        sliced = tab.loc[tab["A"][1]:]
+        assert not isinstance(sliced, HTable) or len(sliced) == len(tab) - 1

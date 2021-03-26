@@ -1228,13 +1228,18 @@ class BasedReal(PreciseNumber, _Real):
 
     def __gt__(self, other) -> bool:
         """self > other"""
+        if not isinstance(other, Number):
+            return other <= self
         if isinstance(other, BasedReal):
             return self.decimal > other.decimal
+        other = cast(SupportsFloat, other)
         return float(self) > float(other)
 
     def __eq__(self, other) -> bool:
         """self == other"""
-        if type(self) is type(other):
+        if not isinstance(other, SupportsFloat):
+            return False
+        if isinstance(other, BasedReal):
             return self.decimal == other.decimal
         return float(self) == float(other)
 
@@ -1266,7 +1271,7 @@ class BasedReal(PreciseNumber, _Real):
 
     def __ge__(self, other) -> bool:
         """self >= other"""
-        return self == other or self > other
+        return self > other or self == other
 
     def __lt__(self, other) -> bool:
         """self < other"""

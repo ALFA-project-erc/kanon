@@ -5,7 +5,7 @@ from typing import (Callable, Dict, Generic, List, Literal, Optional, Tuple,
 import numpy as np
 import pandas as pd
 from astropy.io import registry
-from astropy.table import Table
+from astropy.table import Row, Table
 from astropy.table.operations import join
 from astropy.table.table import TableAttribute
 from astropy.units import Quantity
@@ -14,7 +14,8 @@ from astropy.units.core import Unit
 from kanon.utils.types.dishas import NumberType, TableContent, UnitType
 from kanon.utils.types.number_types import Real
 
-from .interpolations import Interpolator, linear_interpolation
+from .interpolations import (Interpolator, distributed_interpolation,
+                             linear_interpolation)
 from .symmetries import Symmetry
 
 __all__ = ["HTable"]
@@ -194,6 +195,77 @@ class HTable(Table):
         table.set_index(key)
 
         return table
+
+    def fill(self, method: Union[
+            Literal["distributed_convex", "distributed_concave"],
+            Callable[[pd.DataFrame], pd.DataFrame]],
+            bounds: Optional[Tuple[Real, Real]] = None) -> "HTable":
+        """Fill masked values within `bounds` with the specified `method`.
+
+        :param method: Method to use for filling masked values
+        :type method: Literal["distributed_convex", "distributed_concave"]
+        :param bounds: Tuple of arguments bounds, defaults to the whole table
+        :type bounds: Optional[Tuple[Real, Real]], optional
+        """
+
+        slice_bounds = slice(*(bounds or (None, None)))
+
+        filltab = self.loc[slice_bounds]
+
+        if isinstance(filltab, Row):
+            return self.copy()
+
+        valcol = filltab[filltab.values_column]
+
+        if valcol[0] is np.ma.masked or valcol[-1] is np.ma.masked:
+            raise ValueError("First and last column must not be masked")
+
+        if np.ma.masked not in valcol:
+            return self.copy()
+
+        upper = filltab[0]
+        lower = upper
+
+        fill_method: Callable
+
+        if method == "distributed_concave":
+            fill_method = partial(distributed_interpolation, direction="concave")
+        elif method == "distributed_convex":
+            fill_method = partial(distributed_interpolation, direction="convex")
+        elif callable(method):
+            fill_method = method
+        else:
+            raise ValueError("Incorrect fill method")
+
+        while upper != filltab[-1]:
+            for i in range(upper.index, len(filltab) - 1):
+                first_val = filltab.iloc[i][filltab.values_column]
+                second_val = filltab.iloc[i + 1][filltab.values_column]
+                if first_val is not np.ma.masked and second_val is np.ma.masked:
+                    lower = filltab.iloc[i]
+                elif first_val is np.ma.masked and second_val is not np.ma.masked:
+                    upper = filltab.iloc[i + 1]
+                    break
+            else:
+                break
+
+            interval = filltab.iloc[lower.index: upper.index + 1]
+
+            df = pd.DataFrame({filltab.values_column: interval[filltab.values_column]},
+                              index=interval[filltab.primary_key[0]])
+
+            df = df.pipe(fill_method)
+
+            for idx, data in df.iloc[1:-1].iterrows():
+                filltab.loc[idx][filltab.values_column] = data[filltab.values_column]
+
+        if not bounds:
+            return filltab
+
+        tab_copy = self.copy()
+        tab_copy.loc[slice_bounds] = filltab
+
+        return tab_copy
 
     def diff(self, n=1, prepend: List = [], append: List = [], new_name: Optional[str] = None) -> "HTable":
         """Applies `np.diff` on this table's column values to calculate the n-th difference.

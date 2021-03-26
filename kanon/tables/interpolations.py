@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable, Tuple
+from typing import Callable, Literal, Tuple
 
 import pandas as pd
 from scipy.interpolate import lagrange
@@ -84,3 +84,43 @@ def quadratic_interpolation(df: pd.DataFrame, key: Real) -> Real:
     poly = lagrange(list(values["x"]), list(values["y"]))
 
     return poly(key)
+
+
+# Whole DataFrame interpolation
+# Interpolates on every NaN value
+
+def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "concave"]):
+    """Applies distributed interpolation on a regular stepped indexed `DataFrame`.
+    Interpolates every inner rows betweend the first and the last.
+    """
+
+    df = df.copy()
+
+    index_diff = df.index.to_series().diff().iloc[1:].to_numpy()
+
+    step = index_diff[0]
+
+    if direction not in ("convex", "concave"):
+        raise ValueError(f"The interpolation direction must be either convex or concave, not {direction}")
+
+    if not (index_diff == step).all():
+        raise ValueError("The DataFrame must have regular steps")
+
+    if pd.isna(df.iloc[-1][0]) or pd.isna(df.iloc[0][0]):
+        raise ValueError("The DataFrame must start and end with non nan values")
+
+    lower: Tuple[Real, Real] = df.iloc[0][0]
+    upper: Tuple[Real, Real] = df.iloc[-1][0]
+
+    q, r = divmod(upper - lower, len(df) - 1)  # type: ignore
+
+    r = r if direction == "concave" else r - len(df) + 2
+
+    for idx, _ in df.iloc[1:-1].iterrows():
+        lower += q + (1 if r > 0 else 0)
+
+        r += 1 if direction == "convex" else -1
+
+        df.loc[idx] = lower
+
+    return df
