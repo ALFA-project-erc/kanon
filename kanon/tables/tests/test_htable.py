@@ -114,6 +114,7 @@ class TestHTable:
 
     def test_fill(self):
         tab = self.make_sample_table()
+        tab["b"] = tab["b"].astype("float64")
 
         tab = tab.populate([i / 4 for i in range(4, 16)])
 
@@ -129,8 +130,7 @@ class TestHTable:
         assert len(setdiff(tab_unmasked, tab.fill("distributed_convex", (3.5, 3.5)).filled(50))) == 0
 
         def fill_50(df: pd.DataFrame):
-            df.iloc[1:-1] = 50
-            return df
+            return df.fillna(50)
 
         assert len(setdiff(tab_unmasked, tab.fill(fill_50))) == 0
 

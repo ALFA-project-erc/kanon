@@ -1,4 +1,5 @@
 import json
+import math
 from math import isclose
 from typing import Tuple
 
@@ -78,3 +79,14 @@ class TestBasedHTable:
     def test_loc_slice(self, tab: HTable):
         sliced = tab.loc[tab["A"][1]:]
         assert not isinstance(sliced, HTable) or len(sliced) == len(tab) - 1
+
+    def test_based_fill(self):
+        sin_table = HTable([
+            list(Sexagesimal.range(91)),
+            [round(Sexagesimal.from_float(math.sin(x * math.pi / 180), 3)) for x in range(91)]
+        ], names=("Arg", "Val"), index="Arg")
+        sin_table_grid = sin_table[
+            [i for i in range(91) if i <= 60 and i % 12 == 0 or i > 60 and i % 6 == 0]
+        ]
+        sin_table_pop_euclidean = sin_table_grid.populate(list(Sexagesimal.range(91)))
+        sin_table_pop_euclidean.fill("distributed_convex")

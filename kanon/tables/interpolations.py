@@ -92,20 +92,13 @@ def quadratic_interpolation(df: pd.DataFrame, key: Real) -> Real:
 
 def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "concave"]):
     """Applies distributed interpolation on a regular stepped indexed `DataFrame`.
-    Interpolates every inner rows betweend the first and the last.
+    Interpolates on every unknown values (`np.nan` or `pd.NA`).
     """
 
     df = df.copy()
 
-    index_diff = df.index.to_series().diff().iloc[1:].to_numpy()
-
-    step = index_diff[0]
-
     if direction not in ("convex", "concave"):
         raise ValueError(f"The interpolation direction must be either convex or concave, not {direction}")
-
-    if not (index_diff == step).all():
-        raise ValueError("The DataFrame must have regular steps")
 
     if pd.isna(df.iloc[-1][0]) or pd.isna(df.iloc[0][0]):
         raise ValueError("The DataFrame must start and end with non nan values")
@@ -114,25 +107,50 @@ def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "co
 
         based_type = type(df.iloc[0][0])
 
-        max_sig = max(df.iloc[0][0].significant, df.iloc[-1][0].significant)
-        df.iloc[0][0] = df.iloc[0][0].subunit_quantity(max_sig)
-        df.iloc[-1][0] = df.iloc[-1][0].subunit_quantity(max_sig)
+        based_idx = df[~df.isna().any(axis=1)].index
 
-    lower: Tuple[Real, Real] = df.iloc[0][0]
-    upper: Tuple[Real, Real] = df.iloc[-1][0]
+        max_sig: int = df.loc[based_idx].applymap(lambda x: x.significant).max().iloc[0]
+        df.loc[based_idx] = df.loc[based_idx].applymap(lambda x: x.subunit_quantity(max_sig))
 
-    q, r = divmod(upper - lower, len(df) - 1)  # type: ignore
+        df = df.astype(float)
 
-    r = r if direction == "concave" else r - len(df) + 2
+    if df.isna().sum()[0] < len(df) - 2:
 
-    for idx, _ in df.iloc[1:-1].iterrows():
-        lower += q + (1 if r > 0 else 0)
+        def edges(x: pd.Series) -> float:
+            if np.isnan(x).sum() == 1:
+                return 1
+            return np.nan
 
-        r += 1 if direction == "convex" else -1
+        bounds = df.rolling(2, 1).apply(edges).dropna().index
 
-        df.loc[idx] = lower
+        for b in range(0, len(bounds), 2):
+            lower = df.index.get_loc(bounds[b]) - 1
+            upper = df.index.get_loc(bounds[b + 1]) + 1
+            df.iloc[lower:upper] = distributed_interpolation(df.iloc[lower:upper], direction=direction)
+
+    else:
+
+        index_diff = df.index.to_series().diff().iloc[1:].to_numpy()
+        step = index_diff[0]
+
+        if not (index_diff == step).all():
+            raise ValueError("The DataFrame must have regular steps")
+
+        first: Real = df.iloc[0][0]
+        last: Real = df.iloc[-1][0]
+
+        q, r = divmod(last - first, len(df) - 1)
+
+        r = r if direction == "concave" else r - len(df) + 2
+
+        for idx, _ in df.iloc[1:-1].iterrows():
+            first += q + (1 if r > 0 else 0)
+
+            r += 1 if direction == "convex" else -1
+
+            df.loc[idx] = first
 
     if based_values:
-        df.loc[:] = np.vectorize(lambda x: based_type.from_int(x).shift(max_sig))(df.iloc[:])
+        df.loc[:] = df.applymap(lambda x: based_type.from_int(int(x)).shift(max_sig))
 
     return df

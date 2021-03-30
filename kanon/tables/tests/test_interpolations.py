@@ -47,6 +47,10 @@ class TestInterpolations:
         concave = df.pipe(distributed_interpolation, direction="concave")
         assert len(concave) == 8 and not np.isnan(concave[0]).any()
 
+        df = pd.DataFrame([5] + [np.nan] * 6 + [45] + [np.nan] * 6 + [100], [i / 4 for i in range(15)])
+        concave = df.pipe(distributed_interpolation, direction="concave")
+        assert len(concave) == 15 and not np.isnan(concave[0]).any()
+
         with pytest.raises(ValueError) as err:
             df = pd.DataFrame([5] + [np.nan] * 8 + [45], list(range(6, 15)) + [31])
             df.pipe(distributed_interpolation, direction="convex")

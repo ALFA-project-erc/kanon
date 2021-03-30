@@ -685,7 +685,7 @@ class BasedReal(PreciseNumber, _Real):
     def subunit_quantity(self, i: int) -> int:
         """Convert this sexagesimal to the integer value from the specified fractional point.
 
-        >>> number = Sexagesimal("1,0;2,30,1")
+        >>> number = Sexagesimal("1,0;2,30")
 
         Amount of minutes in `number`
 
@@ -705,7 +705,7 @@ class BasedReal(PreciseNumber, _Real):
 
         res = 0
         factor = 1
-        for idx, v in enumerate(self[:i + 1][::-1]):
+        for idx, v in enumerate(self.resize(max(0, i + 1))[:i + 1][::-1]):
             res += v * factor
             factor *= self.base[i - idx]
         return self.sign * res

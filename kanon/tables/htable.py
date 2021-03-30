@@ -139,7 +139,7 @@ class HTable(Table):
 
         :param column: Name of the column to be modified
         :param func: Function applied to the column
-        :param new_name: New name for the modified column
+        :param new_name: New name for the modified column, optional
         :return: HTable with modified column
         :rtype: HTable
         """
@@ -202,6 +202,7 @@ class HTable(Table):
             Callable[[pd.DataFrame], pd.DataFrame]],
             bounds: Optional[Tuple[Real, Real]] = None) -> "HTable":
         """Fill masked values within `bounds` with the specified `method`.
+        To fill with a unique value, see `~HTable.filled`.
 
         :param method: Method to use for filling masked values
         :type method: Literal["distributed_convex", "distributed_concave"]
@@ -224,10 +225,7 @@ class HTable(Table):
         if np.ma.masked not in valcol:
             return self.copy()
 
-        upper = filltab[0]
-        lower = upper
-
-        fill_method: Callable
+        fill_method: Callable[[pd.DataFrame], pd.DataFrame]
 
         if method == "distributed_concave":
             fill_method = partial(distributed_interpolation, direction="concave")
@@ -238,33 +236,13 @@ class HTable(Table):
         else:
             raise ValueError("Incorrect fill method")
 
-        while upper != filltab[-1]:
-            for i in range(upper.index, len(filltab) - 1):
-                first_val = filltab.iloc[i][filltab.values_column]
-                second_val = filltab.iloc[i + 1][filltab.values_column]
-                if first_val is not np.ma.masked and second_val is np.ma.masked:
-                    lower = filltab.iloc[i]
-                elif first_val is np.ma.masked and second_val is not np.ma.masked:
-                    upper = filltab.iloc[i + 1]
-                    break
-            else:
-                break
-
-            interval = filltab.iloc[lower.index: upper.index + 1]
-
-            df = pd.DataFrame({filltab.values_column: interval[filltab.values_column]},
-                              index=interval[filltab.primary_key[0]])
-
-            df = df.pipe(fill_method)
-
-            for idx, data in df.iloc[1:-1].iterrows():
-                filltab.loc[idx][filltab.values_column] = data[filltab.values_column]
+        df = filltab.to_pandas().pipe(fill_method)
 
         tab_copy = self.copy()
-        tab_copy.loc[slice_bounds] = filltab
+        tab_copy.loc[slice_bounds] = HTable.from_pandas(df, index=True)
 
         if not np.ma.is_masked(tab_copy[tab_copy.values_column]):
-            tab_copy[filltab.values_column] = Column(tab_copy[filltab.values_column])
+            tab_copy[tab_copy.values_column] = Column(tab_copy[filltab.values_column])
 
         return tab_copy
 
