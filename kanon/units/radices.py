@@ -3,19 +3,19 @@ In this module we define RadixBase and BasedReal.
 RadixBase is the basis of the way we work with different radices.
 BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
 
->>> from kanon.units import RadixBase, radix_registry
->>> RadixBase([20, 5, 18], [24, 60], "example_radix", ["","u ","sep "]) #doctest:+SKIP
->>> number = radix_registry["ExampleRadix"]((8, 12, 3, 1), (23, 31)) #doctest:+SKIP
->>> number #doctest:+SKIP
-08 12u 3sep 01 ; 23,31
->>> float(number) #doctest:+SKIP
-1261.979861111111
-
 .. testsetup::
 
     >>> import builtins
     >>> builtins.Sexagesimal = radix_registry["Sexagesimal"]
     >>> builtins.Historical = radix_registry["Historical"]
+
+>>> from kanon.units import RadixBase, radix_registry
+>>> example_base = RadixBase([20, 5, 18], [24, 60], "example_base", [" ","u ","sep "])
+>>> number = radix_registry["ExampleBase"]((8, 12, 3, 1), (23, 31))
+>>> number
+08 12u 3sep 01 ; 23,31
+>>> float(number)
+15535.979861111111
 
 """
 
@@ -425,7 +425,7 @@ class BasedReal(PreciseNumber, _Real):
             if i > 0:
                 res += self.base.integer_separators[i - len(self.left)]
             num = str(self.left[i])
-            digit = ndigit_for_radix(self.base.left[i])
+            digit = ndigit_for_radix(self.base.left[i - len(self.left)])
             res += "0" * (digit - len(num)) + num
 
         res += " ; "

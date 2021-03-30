@@ -236,7 +236,7 @@ class TestRadix:
         assert (h >> 2).equals(Historical("1s 3; 36, 58, 45"))
         assert (h << 1).equals(Historical("116r 10s 10; 30"))
 
-        assert Historical("1s 3; 36, 58").__str__() == "1s 03 ; 36,58"
+        assert Historical("1s 3; 36, 58").__str__() == "01s 03 ; 36,58"
 
     def test_sqrt(self):
 
