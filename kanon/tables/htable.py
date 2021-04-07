@@ -220,7 +220,7 @@ class HTable(Table):
         valcol = filltab[filltab.values_column]
 
         if valcol[0] is np.ma.masked or valcol[-1] is np.ma.masked:
-            raise ValueError("First and last column must not be masked")
+            raise ValueError("First and last rows must not be masked")
 
         if np.ma.masked not in valcol:
             return self.copy()
@@ -271,6 +271,24 @@ class HTable(Table):
 
         return self.apply(self.values_column, diff, new_name)
 
+    def plot2d(self, *args, **kwargs):
+        """
+        Plot this `HTable` with the argument column as X and values column as Y.
+        Uses the same arguments as `matplotlib.pyplot.plot`.
+        """
+
+        assert len(self.primary_key) == 1, "plot2d is only valid with single argument tables"
+
+        from matplotlib import pyplot as plt
+
+        x: Column = self[self.primary_key[0]]
+        y: Column = self[self.values_column]
+
+        plt.xlabel(f"{x.name} ({x.unit})" if x.unit else x.name)
+        plt.ylabel(f"{y.name} ({y.unit})" if y.unit else y.name)
+
+        return plt.plot(x, y, *args, **kwargs)
+
 
 def join_multiple(*tables, keys=None, join_type='inner',
                   uniq_col_name='{col_name}_{table_name}',
@@ -315,12 +333,10 @@ def read_table_dishas(requested_id: str) -> HTable:
         return Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
 
     def read_intsexag_array(array: List[str]) -> BasedReal:
+        integer = int(array[0])
         if len(array) == 1:
-            return Sexagesimal.from_int(int(array[0]))
-        else:
-            return (
-                read_sexag_array(array[1:]) >> len(array) - 1
-            ) + Sexagesimal.from_int(int(array[0][0]), len(array))
+            return Sexagesimal.from_int(integer)
+        return integer + (read_sexag_array(array[1:]) >> len(array) - 1)
 
     number_reader: Dict[NumberType, Callable[[List[str]], Real]] = {
         "sexagesimal": read_sexag_array,

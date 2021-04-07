@@ -136,7 +136,7 @@ class TestHTable:
 
         with pytest.raises(ValueError) as err:
             tab.fill("distributed_convex", (2.5, 4))
-        assert str(err.value) == "First and last column must not be masked"
+        assert str(err.value) == "First and last rows must not be masked"
 
         with pytest.raises(ValueError) as err:
             tab.fill("not a method", (2, 4))
@@ -148,3 +148,9 @@ class TestHTable:
         single_joined = join(join(data[0], data[1], join_type="outer"), data[2], join_type="outer")
 
         assert len(setdiff(multiple_joined, single_joined)) == 0
+
+    def test_plot(self):
+        tab = self.make_sample_table()
+        plot = tab.plot2d('.')
+        assert len(plot) == 1
+        assert plot[0].get_marker() == '.'

@@ -26,9 +26,18 @@ class TestNotebooks:
         ({"OBLIQUITY": "0"}, ("0", "0")),
     ])
     def test_declination(self, params, result):
-        data: str = self.get_nb("declination", params).cells[8].outputs[0].data["text/html"]
+        data: str = self.get_nb("declination", params).cells[7].outputs[0].data["text/html"]
         lines = data.split("<tr>")
         line5 = [li for li in lines if "<td>05 ;" in li][0]
         line90 = [li for li in lines if "<td>01,30 ;" in li][0]
         assert repr(Sexagesimal(result[0])).strip() in line5
         assert repr(Sexagesimal(result[1])).strip() in line90
+
+    @pytest.mark.parametrize("params,result", [
+        ({"OBLIQUITY": "23;51,20"}, ("00 ; 18,40", "-03 ; 01,20")),
+        ({"OBLIQUITY": "0"}, ("15,10,10 ; 16,40", "15,18,03 ; 17,20")),
+    ])
+    def test_ptolemy_viz(self, params, result):
+        output = "".join(o["text"] for o in self.get_nb("ptolemy_viz", params).cells[9].outputs)
+        assert f"mean : {result[0]}" in output
+        assert f"mean : {result[1]}" in output
