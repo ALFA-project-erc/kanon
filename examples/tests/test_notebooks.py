@@ -34,8 +34,8 @@ class TestNotebooks:
         assert repr(Sexagesimal(result[1])).strip() in line90
 
     @pytest.mark.parametrize("params,result", [
-        ({"OBLIQUITY": "23;51,20"}, ("00 ; 18,40", "-03 ; 01,20")),
-        ({"OBLIQUITY": "0"}, ("15,10,10 ; 16,40", "15,18,03 ; 17,20")),
+        ({"OBLIQUITY": "23;51,20"}, ("0.3111", "-3.0222")),
+        ({"OBLIQUITY": "0"}, ("54610.2778", "55083.2889")),
     ])
     def test_ptolemy_viz(self, params, result):
         output = "".join(o["text"] for o in self.get_nb("ptolemy_viz", params).cells[9].outputs)
