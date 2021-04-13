@@ -885,7 +885,7 @@ class BasedReal(PreciseNumber, _Real):
         :return: a new BasedReal object
         """
 
-        if not isinstance(value, int):
+        if not np.issubdtype(type(value), np.integer):
             raise TypeError(f"Argument {value} is not an int")
 
         base = cls.base

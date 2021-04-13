@@ -97,7 +97,8 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import partial, wraps
 from numbers import Number
-from typing import Callable, List, Optional, SupportsFloat, Tuple
+from typing import (Callable, List, Optional, SupportsFloat, SupportsRound,
+                    Tuple)
 
 __all__ = ["PrecisionMode",
            "TruncatureMode",
@@ -117,15 +118,15 @@ def _with_context_precision(func=None, symbol=None):
         return partial(_with_context_precision, symbol=symbol)
 
     @wraps(func)
-    def wrapper(*args, **kwargs) -> "PreciseNumber":
+    def wrapper(*args, **kwargs) -> "Truncable":
 
         with set_precision(recording=False):
-            value: "PreciseNumber" = func(*args, **kwargs)
+            value: "Truncable" = func(*args, **kwargs)
 
-        if len(args) != 2 or any(not isinstance(a, PreciseNumber) for a in args):
+        if len(args) != 2 or any(not isinstance(a, Truncable) for a in args):
             return value
 
-        if not isinstance(value, PreciseNumber):
+        if not isinstance(value, Truncable):
             raise TypeError
 
         value = value.resize(args[0]._get_significant(args[1]))
@@ -137,29 +138,32 @@ def _with_context_precision(func=None, symbol=None):
     return wrapper
 
 
-class PreciseNumber(Number, SupportsFloat):
+class Truncable(SupportsRound):
+
+    @abc.abstractmethod
+    def resize(self, significant: int) -> "Truncable":
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def truncate(self, significant: Optional[int] = None) -> "Truncable":
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def ceil(self, significant: Optional[int] = None) -> "Truncable":
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def floor(self, significant: Optional[int] = None) -> "Truncable":
+        raise NotImplementedError
+
+
+class PreciseNumber(Number, SupportsFloat, Truncable):
     """Abstract class of numbers with `PrecisionContext` compatibility
     """
 
     @property
     @abc.abstractmethod
     def significant(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def resize(self, significant: int) -> "PreciseNumber":
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def truncate(self, significant: Optional[int] = None) -> "PreciseNumber":
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def ceil(self, significant: Optional[int] = None) -> "PreciseNumber":
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def floor(self, significant: Optional[int] = None) -> "PreciseNumber":
         raise NotImplementedError
 
     def _get_significant(self, other: "PreciseNumber") -> int:

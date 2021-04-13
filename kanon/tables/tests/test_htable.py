@@ -79,6 +79,11 @@ class TestHTable:
         tab_int = tab_float.apply("b", round, "rounded")
         assert tab_int["rounded"].dtype == np.dtype("int64")
 
+        def tostr(x):
+            return f"{x}a"
+        tab_str = tab.apply("b", tostr)
+        assert tab_str["b"].dtype.char == "U"
+
     def test_index(self):
         tab = self.make_sample_table()
 

@@ -36,6 +36,8 @@ class TestBasedHTable:
 
         kwargs["mock"].get(DISHAS_REQUEST_URL.format(181), json={})
 
+        assert "Sexagesimal" in repr(table)
+
         with pytest.raises(FileNotFoundError):
             HTable.read(181, format="dishas")
 

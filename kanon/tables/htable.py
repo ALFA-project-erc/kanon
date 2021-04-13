@@ -6,12 +6,13 @@ import numpy as np
 import pandas as pd
 from astropy.io import registry
 from astropy.table import Row, Table
-from astropy.table.column import Column
 from astropy.table.operations import join
+from astropy.table.pprint import TableFormatter
 from astropy.table.table import TableAttribute
 from astropy.units import Quantity
 from astropy.units.core import Unit
 
+from kanon.tables.hcolumn import HColumn, _patch_dtype_info_name
 from kanon.utils.types.dishas import NumberType, TableContent, UnitType
 from kanon.utils.types.number_types import Real
 
@@ -28,6 +29,11 @@ T = TypeVar("T")
 class GenericTableAttribute(TableAttribute, Generic[T]):
     def __get__(self, instance, owner) -> T:
         return super().__get__(instance, owner)
+
+
+class HTableFormatter(TableFormatter):
+
+    _pformat_col = _patch_dtype_info_name(TableFormatter._pformat_col, 1)
 
 
 class HTable(Table):
@@ -76,6 +82,9 @@ class HTable(Table):
     :type opposite: Optional[bool]
 
     """
+
+    Column = HColumn
+    TableFormatter = HTableFormatter
 
     interpolate = GenericTableAttribute[Interpolator](default=linear_interpolation)
     """Interpolation method."""
@@ -147,7 +156,7 @@ class HTable(Table):
         table = self.copy()
         try:
             table[column] = func(table[column])
-        except TypeError:
+        except (TypeError, AttributeError, ValueError):
             table[column] = np.vectorize(func)(table[column])
 
         if new_name:
@@ -191,7 +200,7 @@ class HTable(Table):
         if method == "interpolate":
             right[self.values_column] = [self.get(x) for x in array]
 
-        table: HTable = join(self, right, join_type='outer')
+        table: HTable = join(self, HTable(right), join_type='outer')
 
         table.set_index(key)
 
@@ -242,7 +251,7 @@ class HTable(Table):
         tab_copy.loc[slice_bounds] = HTable.from_pandas(df, index=True)
 
         if not np.ma.is_masked(tab_copy[tab_copy.values_column]):
-            tab_copy[tab_copy.values_column] = Column(tab_copy[filltab.values_column])
+            tab_copy[tab_copy.values_column] = HColumn(tab_copy[filltab.values_column])
 
         return tab_copy
 
@@ -281,8 +290,8 @@ class HTable(Table):
 
         from matplotlib import pyplot as plt
 
-        x: Column = self[self.primary_key[0]]
-        y: Column = self[self.values_column]
+        x: HColumn = self[self.primary_key[0]]
+        y: HColumn = self[self.values_column]
 
         plt.xlabel(f"{x.name} ({x.unit})" if x.unit else x.name)
         plt.ylabel(f"{y.name} ({y.unit})" if y.unit else y.name)
