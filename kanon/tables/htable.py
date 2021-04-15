@@ -1,6 +1,6 @@
 from functools import partial
 from typing import (Callable, Dict, Generic, List, Literal, Optional, Tuple,
-                    TypeVar, Union)
+                    TypeVar, Union, cast)
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,8 @@ from astropy.units import Quantity
 from astropy.units.core import Unit
 
 from kanon.tables.hcolumn import HColumn, _patch_dtype_info_name
-from kanon.utils.types.dishas import NumberType, TableContent, UnitType
+from kanon.utils.types.dishas import (DSymmetry, NumberType, TableContent,
+                                      UnitType)
 from kanon.utils.types.number_types import Real
 
 from .interpolations import (Interpolator, distributed_interpolation,
@@ -319,7 +320,20 @@ def join_multiple(*tables, keys=None, join_type='inner',
     return new_table
 
 
-DISHAS_REQUEST_URL = "https://dishas.obspm.fr/elastic-query?index=table_content&hits=true&id={}"
+_dishas_fields = '","'.join([
+    "value_original",
+    "argument1_name",
+    "argument1_number_unit",
+    "argument1_significant_fractional_place",
+    "argument1_type_of_number",
+    "entry_significant_fractional_place",
+    "entry_number_unit",
+    "entry_type_of_number",
+    "symmetries",
+    "edited_text"
+])
+DISHAS_REQUEST_URL = f'https://dishas.obspm.fr/elastic-query\
+?index=table_content&hits=true&id={{}}&source=["{_dishas_fields}"]'
 
 
 def read_table_dishas(requested_id: str) -> HTable:
@@ -337,17 +351,17 @@ def read_table_dishas(requested_id: str) -> HTable:
             f'{requested_id} ID not found in DISHAS database')
     values = res["value_original"]
 
-    def read_sexag_array(array: List[str]) -> BasedReal:
-        negative = array[0][0] == "-"
-        return Sexagesimal(*(abs(int(v)) for v in array), sign=-1 if negative else 1)
+    def read_sexag_array(array: List[str], shift: int) -> BasedReal:
+        sign = -1 if array[0][0] == "-" else 1
+        return Sexagesimal(*(abs(int(v)) for v in array), sign=sign) >> shift
 
-    def read_intsexag_array(array: List[str]) -> BasedReal:
+    def read_intsexag_array(array: List[str], _: int) -> BasedReal:
         integer = int(array[0])
         if len(array) == 1:
             return Sexagesimal.from_int(integer)
-        return integer + (read_sexag_array(array[1:]) >> len(array) - 1)
+        return integer + (read_sexag_array(array[1:], 0) >> len(array) - 1)
 
-    number_reader: Dict[NumberType, Callable[[List[str]], Real]] = {
+    number_reader: Dict[NumberType, Callable[[List[str], int], Real]] = {
         "sexagesimal": read_sexag_array,
         "floating sexagesimal": read_sexag_array,
         "integer and sexagesimal": read_intsexag_array
@@ -359,20 +373,41 @@ def read_table_dishas(requested_id: str) -> HTable:
     }
 
     arg_unit = res["argument1_number_unit"]
-    arg_reader = number_reader.get(res["argument1_type_of_number"], lambda x: x)
+    arg_shift = int(res["argument1_significant_fractional_place"])
+    arg_reader = number_reader.get(res["argument1_type_of_number"], lambda x, _: x)
 
     entry_unit = res["entry_number_unit"]
-    entry_reader = number_reader.get(res["entry_type_of_number"], lambda x: x)
+    entry_shift = int(res["entry_significant_fractional_place"])
+    entry_reader = number_reader.get(res["entry_type_of_number"], lambda x, _: x)
 
-    args = [arg_reader(v["value"]) for v in values["args"]["argument1"]]
-    entries = [entry_reader(v["value"]) for v in values["entry"]]
+    args = [arg_reader(v["value"], arg_shift) for v in values["args"]["argument1"]]
+    entries = [entry_reader(v["value"], entry_shift) for v in values["entry"]]
+
+    symmetry_raw = res["symmetries"]
+
+    def build_sym(data: DSymmetry) -> Symmetry:
+        symmetry = Symmetry(data["symtype"], data["offset"], sign=data["sign"])
+
+        if source_data := data["source"]:
+            source = tuple(arg_reader(v, arg_shift) for v in source_data)
+            assert len(source) == 2
+            symmetry.source = cast(Tuple[Real, Real], source)
+
+        if target_data := data["target"]:
+            symmetry.targets = [arg_reader(v, arg_shift) for v in target_data]
+
+        return symmetry
+
+    symmetries = [build_sym(sym) for sym in symmetry_raw]
 
     table = HTable(
         [args, entries],
         names=(res["argument1_name"], "Entries"),
         index=(res["argument1_name"]),
         units=[unit_reader.get(arg_unit), unit_reader.get(entry_unit)],
-        dtype=[object, object]
+        dtype=[object, object],
+        symmetry=symmetries,
+        meta=res["edited_text"]
     )
 
     return table

@@ -16,6 +16,8 @@ class TestNotebooks:
     @pytest.mark.parametrize("params,result", [
         ({"year": 1327, "month": 7, "day": 3}, "1,47;18,49"),
         ({"year": 1691, "month": 9, "day": 9}, "2,55;31,33"),
+        ({"year": 998, "month": 10, "day": 2}, "03,13;25,33"),
+        ({"year": 1998, "month": 2, "day": 10}, "05,34;29,06"),
     ])
     def test_sun_true_position(self, params, result):
         data = self.get_nb("sun_true_position", params).cells[-1].outputs[0].data["text/latex"]

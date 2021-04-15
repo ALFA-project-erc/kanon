@@ -21,6 +21,9 @@ class TestBasedHTable:
 
     @requests_mock.Mocker(kw="mock")
     def test_read(self, **kwargs):
+
+        kwargs["mock"].get(requests_mock.ANY, json={})
+
         path = get_pkg_data_filename('data/table_content-180.json')
         with open(path, "r") as f:
             content = json.load(f)
@@ -29,12 +32,21 @@ class TestBasedHTable:
         table: HTable = HTable.read(180, format="dishas")
 
         assert table["Mean Argument of the Sun"].unit is u.degree
+        assert table["Mean Argument of the Sun"].basedtype is Sexagesimal
+        assert table["Entries"].significant == 2
 
-        assert table.loc[Sexagesimal("1")] == table[0]
+        assert table.loc[Sexagesimal(1)] == table[0]
 
-        assert table.loc[Sexagesimal("3")]["Entries"].equals(Sexagesimal(6, 27, sign=-1))
+        assert table.loc[Sexagesimal(3)]["Entries"].equals(Sexagesimal("-00 ; 06,27"))
 
-        kwargs["mock"].get(DISHAS_REQUEST_URL.format(181), json={})
+        assert table.loc[Sexagesimal(3)]["Entries"].equals(table.get(Sexagesimal(3), with_unit=False))
+
+        assert len(table.symmetry) == 1
+        sym = table.symmetry[0]
+
+        assert table.get(1) == -table.get(37)
+
+        assert sym.symtype == "mirror"
 
         assert "Sexagesimal" in repr(table)
 

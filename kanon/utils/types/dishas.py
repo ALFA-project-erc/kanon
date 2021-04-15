@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Literal, Optional, TypedDict
 # flake8: noqa
 
 
-
 class OriginalValue(TypedDict):
     value: List[str]
     comment: str
@@ -17,7 +16,6 @@ SymmetryOperation = Literal["opposite", "identity", "addition", "substraction"]
 UnitType = Literal["degree", "day"]
 
 
-
 class TemplateArgs(TypedDict):
     name: str
     type: NumberType
@@ -28,12 +26,14 @@ class TemplateArgs(TypedDict):
     subUnit: Optional[NumberType]
     firstMonth: Optional[Any]
 
+
 class TemplateEntries(TypedDict):
     name: str
     type: NumberType
     ncells: int
     decpos: int
     unit: int
+
 
 class Template(TypedDict):
 
@@ -43,17 +43,30 @@ class Template(TypedDict):
     entries: List[TemplateEntries]
 
 
+class DSymmetry(TypedDict):
+    symtype: SymmetryType
+    offset: int
+    sign: Literal[-1, 1]
+    source: Optional[List[List[str]]]
+    target: Optional[List[List[str]]]
+
+
 class Args(TypedDict):
     argument1: List[str]
     argument2: Optional[List[str]]
+
+
 class ValueFloat(TypedDict):
     args: Args
     entry: List[str]
     template: Template
 
+
 class OriginalArgs(TypedDict):
     argument1: List[OriginalValue]
     argument2: Optional[List[OriginalValue]]
+
+
 class ValueOriginal(TypedDict):
     args: OriginalArgs
     entry: List[OriginalValue]
@@ -93,3 +106,4 @@ class TableContent(TypedDict):
     mean_motion: Optional[Any]
     kibana_name: str
     kibana_id: str
+    symmetries: List[DSymmetry]
