@@ -1,22 +1,21 @@
 ******************************
 Welcome to Kanon documentation
 ******************************
-
+.. currentmodule:: kanon.units.radices
 .. include:: ../README.rst
-
-More info
-_________
 
 Table of content
 ================
 
 .. toctree::
+  :caption: Documentation
   :maxdepth: 2
 
   tables/index.rst
   units/index.rst
   calendars/index.rst
-  examples.rst
+
+.. include:: examples.rst
 
 Index and search
 ==================

@@ -1,3 +1,17 @@
+"""
+Common interpolation methods are defined in this module.
+
+There are 2 types of interpolation functions :
+
+Single-Point Interpolators, which interpolate on a single value
+    `linear_interpolation`
+
+    `quadratic_interpolation`
+
+Whole Interpolators, which interpolate on every `NaN` value
+    `distributed_interpolation`
+"""
+
 from functools import wraps
 from typing import Callable, Literal, Tuple
 
@@ -7,7 +21,10 @@ from scipy.interpolate import lagrange
 
 from kanon.utils.types.number_types import Real
 
-__all__ = ["Interpolator", "linear_interpolation"]
+__all__ = ["Interpolator",
+           "linear_interpolation",
+           "quadratic_interpolation",
+           "distributed_interpolation"]
 
 
 Interpolator = Callable[[pd.DataFrame, Real], Real]
@@ -70,7 +87,7 @@ def linear_interpolation(df: pd.DataFrame, key: Real) -> Real:
 def quadratic_interpolation(df: pd.DataFrame, key: Real) -> Real:
     """Quadratic interpolation, from Lagrange
     Will prioritize taking 2 values before the keys and 1 after.
-    The `pd.DataFrame` needs at least 2 rows.
+    The `pd.DataFrame` needs at least 3 rows.
     """
 
     assert len(df) >= 3, "The DataFrame needs at least 3 rows"
@@ -91,8 +108,8 @@ def quadratic_interpolation(df: pd.DataFrame, key: Real) -> Real:
 # Interpolates on every NaN value
 
 def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "concave"]):
-    """Applies distributed interpolation on a regular stepped indexed `DataFrame`.
-    Interpolates on every unknown values (`np.nan` or `pd.NA`).
+    """Applies distributed interpolation on a `DataFrame` with a regularly stepped index.
+    Interpolates on every unknown values (`numpy.nan` or `pandas.NA`).
     """
 
     df = df.copy()

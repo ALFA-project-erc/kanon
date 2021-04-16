@@ -1,6 +1,6 @@
-Symmetry (:class:`kanon.tables.symmetries.Symmetry`)
-====================================================
+:mod:`kanon.tables.symmetries` --- Table symmetries
+===================================================
 
 .. currentmodule:: kanon.tables.symmetries
 
-.. autoclass:: kanon.tables.symmetries.Symmetry
+.. automodapi:: kanon.tables.symmetries

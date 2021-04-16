@@ -9,6 +9,8 @@ from astropy.table.column import ColumnInfo
 from kanon.units import BasedReal
 from kanon.units.precision import Truncable
 
+__all__ = ["HColumn", "HColumnInfo"]
+
 
 def _patch_dtype_info_name(func: Callable, col_arg: int):
     """
@@ -31,6 +33,9 @@ def _patch_dtype_info_name(func: Callable, col_arg: int):
 
 
 class HColumnInfo(ColumnInfo):
+    """
+    `~ColumnInfo` with `basedtype`
+    """
 
     attrs_from_parent = ColumnInfo.attrs_from_parent | {"basedtype"}
     attr_names = ColumnInfo.attr_names | {"basedtype"}
@@ -45,7 +50,8 @@ class HColumnInfo(ColumnInfo):
 
 class HColumn(Column, Truncable):
     """
-    `Column` subclass with better support of `BasedReal` values.
+    `~astropy.table.Column` subclass with better support of `~kanon.units.radices.BasedReal`
+    values.
     """
 
     info = HColumnInfo()

@@ -302,6 +302,10 @@ class Calendar(metaclass=abc.ABCMeta):
 
 
 class Julian(Calendar):
+    """
+    Defines the Julian Calendar.
+    https://en.wikipedia.org/wiki/Julian_calendar
+    """
     _name = "Julian"
     _months = [
         Month(31, 31, 'Ianuarius', ['January']),
@@ -325,6 +329,10 @@ class Julian(Calendar):
 
 
 class Arabic(Calendar):
+    """
+    Defines the Arabic Calendar.
+    https://en.wikipedia.org/wiki/Islamic_calendar
+    """
     _name = 'Arabic'
     _months = [
         Month(30, 30, 'Muḥarram'),
@@ -347,6 +355,10 @@ class Arabic(Calendar):
 
 
 class Byzantine(Calendar):
+    """
+    Defines the Byzantine Calendar.
+    https://en.wikipedia.org/wiki/Byzantine_calendar
+    """
     _name = "Byzantine/Syrian"
     _months = [
         Month(31, 31, 'Adhār'),
@@ -370,6 +382,10 @@ class Byzantine(Calendar):
 
 
 class Egyptian(Calendar):
+    """
+    Defines the Egyptian Calendar.
+    https://en.wikipedia.org/wiki/Egyptian_calendar
+    """
     _name = "Egyptian"
     _months = [
         Month(30, name='Thoth'),
@@ -392,6 +408,10 @@ class Egyptian(Calendar):
 
 
 class Persian(Calendar):
+    """
+    Defines the Persian Calendar.
+    https://en.wikipedia.org/wiki/Zoroastrian_calendar
+    """
     _name = "Persian"
     _months = [
         Month(30, name='Farwardīn'),

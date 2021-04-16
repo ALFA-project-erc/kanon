@@ -1,7 +1,6 @@
-Interpolations (:mod:`kanon.tables.interpolations`)
-===================================================
+:mod:`kanon.tables.interpolations` --- Interpolations
+=====================================================
 
 .. currentmodule:: kanon.tables.interpolations
 
-.. automodule:: kanon.tables.interpolations
-    :members:
+.. automodapi:: kanon.tables.interpolations

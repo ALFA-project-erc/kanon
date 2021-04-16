@@ -97,8 +97,7 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import partial, wraps
 from numbers import Number
-from typing import (Callable, List, Optional, SupportsFloat, SupportsRound,
-                    Tuple)
+from typing import Callable, List, Optional, Tuple
 
 __all__ = ["PrecisionMode",
            "TruncatureMode",
@@ -110,7 +109,8 @@ __all__ = ["PrecisionMode",
            "set_recording",
            "get_records",
            "clear_records",
-           "ArithmeticIdentifier"]
+           "ArithmeticIdentifier",
+           "Truncable"]
 
 
 def _with_context_precision(func=None, symbol=None):
@@ -138,7 +138,7 @@ def _with_context_precision(func=None, symbol=None):
     return wrapper
 
 
-class Truncable(SupportsRound):
+class Truncable:
 
     @abc.abstractmethod
     def resize(self, significant: int) -> "Truncable":
@@ -156,8 +156,12 @@ class Truncable(SupportsRound):
     def floor(self, significant: Optional[int] = None) -> "Truncable":
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def __round__(self, significant: Optional[int] = None) -> "Truncable":
+        raise NotImplementedError
 
-class PreciseNumber(Number, SupportsFloat, Truncable):
+
+class PreciseNumber(Number, Truncable):
     """Abstract class of numbers with `PrecisionContext` compatibility
     """
 
@@ -207,6 +211,10 @@ class PreciseNumber(Number, SupportsFloat, Truncable):
 
     @abc.abstractmethod
     def _truediv(self, other: "PreciseNumber") -> "PreciseNumber":
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __float__(self) -> float:
         raise NotImplementedError
 
 

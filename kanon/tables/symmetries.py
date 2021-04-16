@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 from kanon.utils.types.number_types import Real
 
-__all__ = ["Symmetry"]
+__all__ = ["Symmetry", "OutOfBoundsOriginError", "OverlappingSymmetryError"]
 
 
 @dataclass

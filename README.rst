@@ -27,19 +27,21 @@ ________________
 
 `units`
 
-- Define standard positional numeral systems
+- Define standard positional numeral systems (`BasedReal`)
 - Working arithmetics on those numbers
-- Specify custom precision and algorithms on arithmetical operations and keep a history of it
+- Set your own precision contexts and algorithms on arithmetical operations
+- Keep track of all operations
 
 `tables`
 
 - Build or import ancient astronomical tables
-- Perform basic operations on those tables
+- Perform arithmetical and statistical operations
+- Support for `BasedReal` values
 
 `calendars`
 
 - Define new calendar types
-- Convert dates between calendars
+- Date conversions
 
 How to use
 __________
@@ -91,4 +93,3 @@ Run tests with tox
 
     # mypy
     tox -e mypy
-
