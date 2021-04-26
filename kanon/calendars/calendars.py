@@ -254,30 +254,30 @@ class Calendar(metaclass=abc.ABCMeta):
         mdn = self.months[month - 1].days(self.intercalation(year))
         if day > mdn or day < 1:
             raise ValueError(f"The day entered ({day}) is invalid in {self.months[month-1].name} 1..{mdn}")
+        if year == 0:
+            raise ValueError("Year cannot be zero.")
 
         days = 0
 
         negative_year = year < 0
 
-        if negative_year:
-            year *= -1
-            year += 1
+        _year_calc = year if negative_year else year - 1
 
-        days += ((year - 1) // sum(self.cycle)) * self.cycle_length
+        days += (
+            abs(_year_calc) // sum(self.cycle)
+        ) * self.cycle_length
 
         days += sum(
             self.leap_year if self.intercalation(y) else self.common_year
-            for y in range(year - 1, year - 1 + (year - 1) % sum(self.cycle))
+            for y in range(_year_calc, _year_calc + abs(_year_calc) % sum(self.cycle))
         )
-        days += sum(
-            m.days(self.intercalation(year)) for m in self.months[:month - 1]
-        )
-
-        days = days + day - 1
 
         if negative_year:
             days *= -1
-            days -= 1
+
+        days += sum(
+            m.days(self.intercalation(year)) for m in self.months[:month - 1]
+        ) + day - 1
 
         return days + self.era.epoch
 
@@ -290,7 +290,9 @@ class Calendar(metaclass=abc.ABCMeta):
     def from_julian_days(self, jdn: float) -> Date:
         """Builds a `Date` object at the specified julian day number.
         """
-        year = int((self.era.days_from_epoch(jdn)) * sum(self.cycle) // self.cycle_length) + 1
+        year = int(self.era.days_from_epoch(jdn) * sum(self.cycle) // self.cycle_length) + 1
+        if year < 1:
+            year -= 1
 
         rem = jdn - self.jdn_at_ymd(year, 1, 1)
         for y in range(year, year + self.cycle_length):
@@ -303,12 +305,13 @@ class Calendar(metaclass=abc.ABCMeta):
 
         leap = self.intercalation(year)
         for i, m in enumerate(self.months):
-            if rem < m.days(leap):
+            ndays = m.days(leap)
+            if rem < ndays:
                 month = i + 1
                 days = rem + 1
                 break
             else:
-                rem -= m.days(leap)
+                rem -= ndays
 
         return Date(self, (year, month, int(days)))
 
@@ -340,6 +343,8 @@ class Julian(Calendar):
     _cycle = (3, 1)
 
     def intercalation(self, year: int) -> bool:
+        if year < 0:
+            year += 1
         return year % 4 == 0
 
 

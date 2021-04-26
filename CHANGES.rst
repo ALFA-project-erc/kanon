@@ -1,3 +1,8 @@
+0.1.2
+=====
+
+- Fixed calendars not able to process JDN below their era epoch.
+
 0.0.1
 =====
 

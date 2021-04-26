@@ -26,6 +26,8 @@ class TestCalendars:
             new_cal.jdn_at_ymd(1, 50, 1)
         with pytest.raises(ValueError):
             new_cal.jdn_at_ymd(1, 1, 50)
+        with pytest.raises(ValueError):
+            new_cal.jdn_at_ymd(0, 1, 10)
 
     def test_first_day(self):
         for cal in Calendar.registry.values():
@@ -37,6 +39,8 @@ class TestCalendars:
         days = cal.jdn_at_ymd(2, 1, 1)
 
         assert cal.from_julian_days(days).jdn == days
+        assert cal.from_julian_days(640234).jdn == 640234
+        assert cal.from_julian_days(cal.era.epoch - 1).jdn == cal.era.epoch - 1
 
     @given(st.integers(1, 10000), st.integers(1, 12), st.integers(1, 28))
     def test_dates_hypothesis(self, y: int, m: int, d: int):
@@ -70,3 +74,9 @@ class TestCalendars:
         date = Date(cal, (20, 3, 12))
         assert (date + 1).jdn == date.jdn + 1
         assert (date - 1).jdn == date.jdn - 1
+
+    def test_jdn_at_ymd(self):
+        cal = Calendar.registry["Julian A.D."]
+
+        assert cal.jdn_at_ymd(-1, 12, 31) + 1 == cal.jdn_at_ymd(1, 1, 1)
+        assert cal.jdn_at_ymd(-2, 12, 31) + 1 == cal.jdn_at_ymd(-1, 1, 1)
