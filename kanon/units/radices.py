@@ -264,7 +264,7 @@ class BasedReal(PreciseNumber, _Real):
         """
         if cls is BasedReal:
             raise TypeError("Can't instanciate abstract class BasedReal")
-        self = super().__new__(cls)
+        self: BasedReal = super().__new__(cls)
         self.__left = ()
         self.__right = ()
         self.__remainder = remainder
@@ -364,7 +364,7 @@ class BasedReal(PreciseNumber, _Real):
     @cached_property
     def decimal(self) -> Decimal:
         """
-        This `BasedReal` converted as a ~decimal.Decimal
+        This `BasedReal` converted as a `~decimal.Decimal`
 
         >>> Sexagesimal((1,2,3), (15,36)).decimal
         Decimal('3723.26')
@@ -397,9 +397,9 @@ class BasedReal(PreciseNumber, _Real):
         significant: Optional[int] = None,
     ) -> "BasedReal":
         """
-        :param fraction: a Fraction object
-        :param significant: signifcant precision desired
-        :return: a BasedReal object computed from a Fraction
+        :param fraction: a `~fractions.Fraction` object
+        :param significant: significant precision desired
+        :return: a `BasedReal` object computed from a Fraction
         """
 
         if not isinstance(fraction, Fraction):
@@ -448,7 +448,7 @@ class BasedReal(PreciseNumber, _Real):
     @classmethod
     def _from_string(cls, string: str) -> "BasedReal":
         """
-        Instantiate a BasedReal object from a string
+        Parses and instantiate a `BasedReal` object from a string
 
         >>> Sexagesimal('1, 12; 4, 25')
         01,12 ; 04,25
@@ -457,8 +457,8 @@ class BasedReal(PreciseNumber, _Real):
         >>> Sexagesimal('0 ; 4, 45')
         00 ; 04,45
 
-        :param string: String representation of the number
-        :return: a new instance of BasedReal
+        :param string: `str` representation of the number
+        :return: a new instance of `BasedReal`
         """
 
         if not isinstance(string, str):
@@ -513,7 +513,7 @@ class BasedReal(PreciseNumber, _Real):
 
     def resize(self, significant: int) -> "BasedReal":
         """
-        Resizes and returns a new BasedReal object to the specified precision
+        Resizes and returns a new `BasedReal` object to the specified precision
 
         >>> n = Sexagesimal('02, 02; 07, 23, 55, 11, 51, 21, 36')
         >>> n
@@ -529,7 +529,7 @@ class BasedReal(PreciseNumber, _Real):
         02,02 ; 07,23,55,11,51,21,36
 
         :param significant: Number of desired significant positions
-        :return: Resized BasedReal
+        :return: Resized `BasedReal`
         """
         if significant == self.significant:
             return self

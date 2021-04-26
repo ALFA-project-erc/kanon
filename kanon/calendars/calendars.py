@@ -159,7 +159,7 @@ class Calendar(metaclass=abc.ABCMeta):
     _cycle: Tuple[int, int] = (1, 0)
 
     def __new__(cls, era: Era, variant: str = "",
-                months_mutation: Optional[Callable[[List[Month]], List[Month]]] = None):
+                months_mutation: Optional[Callable[[List[Month]], List[Month]]] = None) -> "Calendar":
         """
         :param era: Era used by this calendar.
         :type era: Era
@@ -169,7 +169,7 @@ class Calendar(metaclass=abc.ABCMeta):
         :type months_mutation: Optional[Callable[[List[Month]], List[Month]]], optional
         :raises ValueError: Raised when the calendar's name has already been used.
         """
-        self = super().__new__(cls)
+        self: Calendar = super().__new__(cls)
         self._era = era
 
         self._variant = variant
@@ -185,42 +185,57 @@ class Calendar(metaclass=abc.ABCMeta):
         return self
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Name of this calendar
+
+        :rtype: str
         """
         return f"{self._name} {self._era.name}" + (f" {self._variant}" if self._variant else "")
 
     @property
-    def months(self):
+    def months(self) -> List[Month]:
         """List of months
+
+        :rtype: List[Month]
         """
         return self._months
 
     @property
-    def cycle(self):
+    def cycle(self) -> Tuple[int, int]:
         """Cycle of common year and leap years (common, leap)
+
+        :rtype: Tuple[int, int]
         """
         return self._cycle
 
     @property
-    def era(self):
+    def era(self) -> Era:
+        """
+        :rtype: Era
+        """
         return self._era
 
     @cached_property
     def common_year(self) -> int:
         """Number of days in a common year
+
+        :rtype: int
         """
         return sum(m.days_cy for m in self.months)
 
     @cached_property
     def leap_year(self) -> int:
         """Number of days in a leap year
+
+        :rtype: int
         """
         return sum(m.days(True) for m in self.months)
 
     @cached_property
     def cycle_length(self) -> int:
         """Number of days in a leap cycle
+
+        :rtype: int
         """
         return self.cycle[0] * self.common_year + self.cycle[1] * self.leap_year
 
