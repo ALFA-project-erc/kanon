@@ -67,13 +67,6 @@ class OriginalArgs(TypedDict):
     argument2: Optional[List[OriginalValue]]
 
 
-class ValueOriginal(TypedDict):
-    args: OriginalArgs
-    entry: List[OriginalValue]
-    template: Template
-    symmetries: List
-
-
 class SourceValueOriginal(TypedDict):
     args: OriginalArgs
     entry: List[OriginalValue]
