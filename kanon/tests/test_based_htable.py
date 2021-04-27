@@ -22,7 +22,7 @@ class TestBasedHTable:
     @requests_mock.Mocker(kw="mock")
     def test_read(self, **kwargs):
 
-        kwargs["mock"].get(requests_mock.ANY, json={})
+        kwargs["mock"].get(requests_mock.ANY, json={"error": "Non existing id"})
 
         path = get_pkg_data_filename('data/table_content-180.json')
         with open(path, "r") as f:

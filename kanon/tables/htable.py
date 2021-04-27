@@ -346,7 +346,7 @@ def read_table_dishas(requested_id: str) -> HTable:
     res: TableContent = requests.get(
         DISHAS_REQUEST_URL.format(int(requested_id)),
     ).json()
-    if not res:
+    if not res or "error" in res:
         raise FileNotFoundError(
             f'{requested_id} ID not found in DISHAS database')
     values = res["value_original"]

@@ -2,6 +2,8 @@
 =====
 
 - Fixed calendars not able to process JDN below their era epoch.
+- Fixed `HTable.read` with dishas format not correctly processing
+non existing id.
 
 0.0.1
 =====
