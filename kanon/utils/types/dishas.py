@@ -74,10 +74,21 @@ class ValueOriginal(TypedDict):
     symmetries: List
 
 
+class SourceValueOriginal(TypedDict):
+    args: OriginalArgs
+    entry: List[OriginalValue]
+
+
+class ValueOriginal(SourceValueOriginal):
+    template: Template
+    symmetries: List
+
+
 class TableContent(TypedDict):
     argument1_number_of_steps: int
     argument2_number_of_steps: Optional[int]
     id: int
+    source_value_original: SourceValueOriginal
     value_original: ValueOriginal
     value_float: ValueFloat
     corrected_value_float: ValueFloat

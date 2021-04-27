@@ -321,7 +321,7 @@ def join_multiple(*tables, keys=None, join_type='inner',
 
 
 _dishas_fields = '","'.join([
-    "value_original",
+    "source_value_original",
     "argument1_name",
     "argument1_number_unit",
     "argument1_significant_fractional_place",
@@ -349,7 +349,8 @@ def read_table_dishas(requested_id: str) -> HTable:
     if not res or "error" in res:
         raise FileNotFoundError(
             f'{requested_id} ID not found in DISHAS database')
-    values = res["value_original"]
+
+    values = res["source_value_original"]
 
     def read_sexag_array(array: List[str], shift: int) -> BasedReal:
         sign = -1 if array[0][0] == "-" else 1

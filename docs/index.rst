@@ -17,6 +17,12 @@ Table of content
 
 .. include:: examples.rst
 
+.. toctree::
+  :caption: More info
+  :maxdepth: 2
+
+  changes.rst
+
 Index and search
 ==================
 
