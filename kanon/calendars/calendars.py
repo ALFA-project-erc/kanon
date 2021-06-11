@@ -483,4 +483,4 @@ Byzantine(_anno_domini)
 # Persian Calendars
 _yazdigird = Era("Yazdigird", 1952063)
 Persian(_yazdigird, variant="Andarjah at the end")
-Persian(_yazdigird, variant="Andarjah after Ābān", months_mutation=lambda m: m[: -1] + [m[-1]] + m[8: -1])
+Persian(_yazdigird, variant="Andarjah after Ābān", months_mutation=lambda m: m[: 8] + [m[-1]] + m[8: -1])
