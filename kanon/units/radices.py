@@ -1360,16 +1360,16 @@ class BasedQuantity(Quantity):
         self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
         return self
 
-    def __mul__(self, other) -> "BasedQuantity":
+    def __mul__(self, other) -> "BasedQuantity":  # pragma: no cover
         return super().__mul__(other)
 
-    def __add__(self, other) -> "BasedQuantity":
+    def __add__(self, other) -> "BasedQuantity":  # pragma: no cover
         return super().__add__(other)
 
-    def __sub__(self, other) -> "BasedQuantity":
+    def __sub__(self, other) -> "BasedQuantity":  # pragma: no cover
         return super().__sub__(other)
 
-    def __truediv__(self, other) -> "BasedQuantity":
+    def __truediv__(self, other) -> "BasedQuantity":  # pragma: no cover
         return super().__truediv__(other)
 
     def __lshift__(self, other) -> "BasedQuantity":
