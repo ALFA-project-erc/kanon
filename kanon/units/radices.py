@@ -1400,8 +1400,8 @@ class BasedQuantity(Quantity):
     def __round__(self, significant: Optional[int] = None) -> "BasedQuantity":
         return self.__getattr__("__round__")(significant)
 
-    def __abs__(self) -> "BasedQuantity":
-        return self.__getattr__("__abs__")
+    def __abs__(self) -> "BasedQuantity":  # pragma: no cover
+        return self.__getattr__("__abs__")()
 
     def __quantity_subclass__(self, _):
         return type(self), True
