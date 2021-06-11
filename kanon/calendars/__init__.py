@@ -27,16 +27,16 @@ To start, let's try to build a `Date` of the 10th March 1324 from the Julian A.D
 >>> str(date)
 '10 Martius 1324 A.D. in Julian'
 >>> date.jdn
-2204719
+2204718
 
 Then we can convert this date in the Arabic Civil Hijra calendar :
 
 >>> arabic_civil_hijra = Calendar.registry["Arabic Civil Hijra"]
 >>> arabic_date = date.to_calendar(arabic_civil_hijra)
 >>> str(arabic_date)
-'14 Rabīʿ al-awwal 724 Civil Hijra in Arabic'
+'13 Rabīʿ al-awwal 724 Civil Hijra in Arabic'
 >>> arabic_date.jdn
-2204719
+2204718
 
 We have succesfully converted a date expressed in one calendar into another. And we see that its
 absolute date value (expressed in Julian Day Numbers) stays the same.

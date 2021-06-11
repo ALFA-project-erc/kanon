@@ -81,6 +81,10 @@ class TestCalendars:
         assert cal.jdn_at_ymd(-1, 12, 31) + 1 == cal.jdn_at_ymd(1, 1, 1)
         assert cal.jdn_at_ymd(-2, 12, 31) + 1 == cal.jdn_at_ymd(-1, 1, 1)
 
+        assert cal.jdn_at_ymd(61, 1, 1) == 1743339
+
+        assert cal.jdn_at_ymd(60, 12, 31) != cal.jdn_at_ymd(61, 1, 1)
+
     def test_persian(self):
         cal_normal = Calendar.registry["Persian Yazdigird Andarjah at the end"]
         cal_variant = Calendar.registry["Persian Yazdigird Andarjah after Ābān"]

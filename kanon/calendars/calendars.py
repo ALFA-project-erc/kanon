@@ -249,9 +249,12 @@ class Calendar(metaclass=abc.ABCMeta):
     def jdn_at_ymd(self, year: int, month: int, day: int) -> float:
         """Julian day number at the specified date in ymd
         """
+
+        is_leap = self.intercalation(year)
+
         if 0 > month or month > len(self.months):
             raise ValueError(f"The month entered ({month}) is invalid 1..{len(self.months)}")
-        mdn = self.months[month - 1].days(self.intercalation(year))
+        mdn = self.months[month - 1].days(is_leap)
         if day > mdn or day < 1:
             raise ValueError(f"The day entered ({day}) is invalid in {self.months[month-1].name} 1..{mdn}")
         if year == 0:
@@ -260,23 +263,25 @@ class Calendar(metaclass=abc.ABCMeta):
         days = 0
 
         negative_year = year < 0
-
         _year_calc = year if negative_year else year - 1
+
+        year_rem = abs(_year_calc) % sum(self.cycle)
+
+        days += sum(
+            self.leap_year if self.intercalation(y) else self.common_year
+            for y in (range(year - year_rem, year) if
+                      not negative_year else range(year, year + year_rem))
+        )
 
         days += (
             abs(_year_calc) // sum(self.cycle)
         ) * self.cycle_length
 
-        days += sum(
-            self.leap_year if self.intercalation(y) else self.common_year
-            for y in range(_year_calc, _year_calc + abs(_year_calc) % sum(self.cycle))
-        )
-
         if negative_year:
             days *= -1
 
         days += sum(
-            m.days(self.intercalation(year)) for m in self.months[:month - 1]
+            m.days(is_leap) for m in self.months[:month - 1]
         ) + day - 1
 
         return days + self.era.epoch
