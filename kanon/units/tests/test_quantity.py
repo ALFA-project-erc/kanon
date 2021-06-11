@@ -1,8 +1,14 @@
 import pytest
-from astropy.units import Quantity, arcminute, degree
+from astropy.units import Quantity
+from astropy.units import arcminute as _arcminute
+from astropy.units import degree as _degree
+from astropy.units.core import Unit
 
 from kanon.units import Sexagesimal
 from kanon.units.radices import BasedQuantity
+
+degree: Unit = _degree
+arcminute: Unit = _arcminute
 
 
 class TestQuantity:

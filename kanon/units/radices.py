@@ -26,10 +26,10 @@ from functools import cached_property, lru_cache
 from numbers import Number
 from numbers import Real as _Real
 from typing import (Any, Dict, Generator, List, Literal, Optional, Sequence,
-                    SupportsFloat, Tuple, Type, cast, overload)
+                    SupportsFloat, Tuple, Type, Union, cast, overload)
 
 import numpy as np
-from astropy.units.core import UnitBase, UnitTypeError
+from astropy.units.core import Unit, UnitBase, UnitTypeError
 from astropy.units.quantity import Quantity
 from astropy.units.quantity_helper.converters import UFUNC_HELPERS
 from astropy.units.quantity_helper.helpers import _d
@@ -1143,7 +1143,15 @@ class BasedReal(PreciseNumber, _Real):
 
         return res
 
-    def __mul__(self, other) -> "BasedReal":
+    @overload
+    def __mul__(self, other: Union[float, "BasedReal"]) -> "BasedReal":  # type: ignore
+        ...
+
+    @overload
+    def __mul__(self, other: Unit) -> "BasedQuantity":
+        ...
+
+    def __mul__(self, other):
         """
         self * other
 
@@ -1215,6 +1223,14 @@ class BasedReal(PreciseNumber, _Real):
     def __rmod__(self, other):
         """other % self"""
         return other % float(self)
+
+    @overload
+    def __truediv__(self, other: Number) -> "BasedReal":  # type: ignore
+        ...
+
+    @overload
+    def __truediv__(self, other: Unit) -> "BasedQuantity":
+        ...
 
     def __truediv__(self, other) -> "BasedReal":
         """self / other"""
@@ -1327,6 +1343,8 @@ class BasedReal(PreciseNumber, _Real):
 
 class BasedQuantity(Quantity):
 
+    value: BasedReal
+
     def __new__(cls, value, unit, **kwargs):
         if (
             not isinstance(value, BasedReal)
@@ -1342,12 +1360,24 @@ class BasedQuantity(Quantity):
         self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
         return self
 
-    def __lshift__(self, other):
+    def __mul__(self, other) -> "BasedQuantity":
+        return super().__mul__(other)
+
+    def __add__(self, other) -> "BasedQuantity":
+        return super().__add__(other)
+
+    def __sub__(self, other) -> "BasedQuantity":
+        return super().__sub__(other)
+
+    def __truediv__(self, other) -> "BasedQuantity":
+        return super().__truediv__(other)
+
+    def __lshift__(self, other) -> "BasedQuantity":
         if isinstance(other, Number):
             return super(Quantity, self).__lshift__(other)
         return super().__lshift__(other)
 
-    def __rshift__(self, other):
+    def __rshift__(self, other) -> "BasedQuantity":
         if isinstance(other, Number):
             return super(Quantity, self).__rshift__(other)
         return super().__rshift__(other)
@@ -1367,8 +1397,11 @@ class BasedQuantity(Quantity):
             return _new_func
         return vect(self)
 
-    def __round__(self, significant: Optional[int] = None):
+    def __round__(self, significant: Optional[int] = None) -> "BasedQuantity":
         return self.__getattr__("__round__")(significant)
+
+    def __abs__(self) -> "BasedQuantity":
+        return self.__getattr__("__abs__")
 
     def __quantity_subclass__(self, _):
         return type(self), True
