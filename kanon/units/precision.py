@@ -138,7 +138,7 @@ def _with_context_precision(func=None, symbol=None):
     return wrapper
 
 
-class Truncable:
+class Truncable(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def resize(self, significant: int) -> "Truncable":
