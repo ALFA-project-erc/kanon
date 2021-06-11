@@ -1376,7 +1376,6 @@ class BasedQuantity(Quantity):
 
 # here we define standard bases and automatically generate the corresponding BasedReal classes
 RadixBase([60], [60], "sexagesimal")
-RadixBase([60], [60], "floating_sexagesimal")
 RadixBase([10, 12, 30], [60], "historical", ["", "r ", "s "])
 RadixBase([10], [100], "historical_decimal")
 RadixBase([10], [60], "integer_and_sexagesimal")
