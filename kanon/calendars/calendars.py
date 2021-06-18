@@ -384,7 +384,7 @@ class Byzantine(Calendar):
     Defines the Byzantine Calendar.
     https://en.wikipedia.org/wiki/Byzantine_calendar
     """
-    _name = "Byzantine/Syrian"
+    _name = "Byzantine"
     _months = [
         Month(31, 31, 'Adhār'),
         Month(30, 30, 'Nisān'),
