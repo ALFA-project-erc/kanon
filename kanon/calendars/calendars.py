@@ -14,13 +14,13 @@ method to be valid.
 >>> my_calendar = NewCal(my_era)
 >>> my_date = Date(my_calendar, (26, 3, 42))
 >>> str(my_date)
-'42 ThirdMonth 26 MyEra in My New Calendar'
+'42 ThirdMonth 26 MyEra in My New Calendar 12:00'
 >>> my_date.jdn
-3851
+3851.0
 """
 
 import abc
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property, lru_cache
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -31,6 +31,35 @@ from kanon.utils.types.number_types import Real
 CALENDAR_REGISTRY: Dict[str, "Calendar"] = {}
 
 __all__ = ("Julian", "Byzantine", "Arabic", "Persian", "Egyptian", "Month", "Era")
+
+
+def hm_to_float(hours: int, minutes: int) -> float:
+    """Convert time in hours and minutes to a fraction of a day
+
+    :type hours: int
+    :type minutes: int
+    :rtype: float
+    """
+    if not (0 <= hours < 24 and 0 <= minutes < 60):
+        raise ValueError("Incorrect time")
+    return hours / 24 + minutes / 60 / 24
+
+
+def float_to_hm(fraction: float) -> Tuple[int, int]:
+    """Convert fraction of a day into hours and minutes
+
+    :type fraction: float
+    :rtype: float
+    """
+    if not (0 <= fraction < 1):
+        raise ValueError("Incorrect time")
+
+    time = fraction * 24
+
+    hours = int(time)
+    mins = int((time - int(time)) * 60)
+
+    return hours, mins
 
 
 @dataclass(frozen=True)
@@ -83,35 +112,60 @@ class Month:
         return self.days_ly if leap and self.days_ly else self.days_cy
 
 
-@dataclass
 class Date:
     """
     Dataclass defining a date.
 
     >>> cal = Calendar.registry["Julian A.D."]
-    >>> date = Date(cal, (1,2,3))
+    >>> date = Date(cal, (1,2,3), hm_to_float(13, 0))
     >>> str(date)
-    '3 Februarius 1 A.D. in Julian'
+    '3 Februarius 1 A.D. in Julian 13:00'
     >>> date.jdn
-    1721457
+    1721457.0416666667
     >>> str(date + 1)
-    '4 Februarius 1 A.D. in Julian'
+    '4 Februarius 1 A.D. in Julian 13:00'
 
     .. rubric:: Attributes
 
     .. autoattribute:: calendar
     .. autoattribute:: ymd
+    .. autoattribute:: frac
     .. autoattribute:: jdn
     """
-    #: Calendar used in this date.
-    calendar: "Calendar"
-    #: Year, month and days, expressed in the specified calendar.
-    ymd: Tuple[int, int, int]
-    #: Date as a julian day number.
-    jdn: float = field(init=False)
 
-    def __post_init__(self):
-        self.jdn = self.calendar.jdn_at_ymd(*self.ymd)
+    def __init__(self, calendar: "Calendar", ymd: Tuple[int, int, int], frac=0.5):
+        if not 0 <= frac < 1:
+            raise ValueError("Time must be in the range [0;1[")
+
+        self._calendar = calendar
+        self._ymd = ymd
+        self._frac = frac
+
+        self._jdn = calendar.jdn_at_ymd(*ymd) - 0.5 + frac
+
+    @property
+    def calendar(self) -> "Calendar":
+        """Calendar used in this date.
+        """
+        return self._calendar
+
+    @property
+    def ymd(self) -> Tuple[int, int, int]:
+        """Year, month and days, expressed in the specified calendar.
+        """
+        return self._ymd
+
+    @property
+    def frac(self) -> float:
+        """Fraction of day, 0.5 == 12:00
+        """
+        return self._frac
+
+    @property
+    def jdn(self) -> float:
+        """Date as a julian day number.
+        """
+        return self._jdn
 
     def to_calendar(self, cal: "Calendar") -> "Date":
         """Express this date in another calendar.
@@ -136,11 +190,16 @@ class Date:
         jdn: Real = other.jdn if isinstance(other, Date) else other
         return self.calendar.from_julian_days(self.jdn - jdn)
 
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, Date) and self.jdn == o.jdn
+
     def __str__(self):
         year, month, days = self.ymd
+        h, m = float_to_hm(self.frac)
         return (
             f"{days} {self.calendar.months[month-1].name} "
-            f"{year} {self.calendar.era.name} in {self.calendar._name}"
+            f"{year} {self.calendar.era.name} in {self.calendar._name} "
+            f"{'0' if h < 10 else ''}{h}:{'0' if m < 10 else ''}{m}"
         )
 
 
@@ -295,6 +354,11 @@ class Calendar(metaclass=abc.ABCMeta):
     def from_julian_days(self, jdn: float) -> Date:
         """Builds a `Date` object at the specified julian day number.
         """
+
+        time = jdn - int(jdn) + 0.5
+
+        jdn = int(jdn)
+
         year = int(self.era.days_from_epoch(jdn) * sum(self.cycle) // self.cycle_length) + 1
         if year < 1:
             year -= 1
@@ -318,7 +382,7 @@ class Calendar(metaclass=abc.ABCMeta):
             else:
                 rem -= ndays
 
-        return Date(self, (year, month, int(days)))
+        return Date(self, (year, month, int(days) + int(time)), time - int(time))
 
     def __repr__(self) -> str:
         return f"Calendar({self.name})"

@@ -1,9 +1,11 @@
+import math
+
 import hypothesis.strategies as st
 import pytest
 from hypothesis import given
 
 from kanon.calendars import Calendar, Date
-from kanon.calendars.calendars import Era, Julian
+from kanon.calendars.calendars import Era, Julian, float_to_hm, hm_to_float
 
 
 class TestCalendars:
@@ -64,16 +66,23 @@ class TestCalendars:
         date = Date(cal, (-4713, 1, 1))
 
         assert date.to_time().to_value("jd") == 0
-        assert str(date) == "1 Ianuarius -4713 A.D. in Julian"
+        assert str(date) == "1 Ianuarius -4713 A.D. in Julian 12:00"
 
         date = Date(cal, (-1, 1, 1))
 
         assert date.to_time().to_value("jd") == 1721058
-        assert str(date) == "1 Ianuarius -1 A.D. in Julian"
+        assert str(date) == "1 Ianuarius -1 A.D. in Julian 12:00"
 
         date = Date(cal, (20, 3, 12))
         assert (date + 1).jdn == date.jdn + 1
         assert (date - 1).jdn == date.jdn - 1
+
+        assert "13:30" in str(Date(cal, (1, 1, 1), hm_to_float(13, 30)))
+
+        with pytest.raises(ValueError) as err:
+            Date(cal, (1, 1, 1), -1)
+
+        assert "Time must be" in str(err)
 
     def test_jdn_at_ymd(self):
         cal = Calendar.registry["Julian A.D."]
@@ -91,3 +100,27 @@ class TestCalendars:
 
         assert len(cal_normal.months) == len(cal_variant.months)
         assert cal_normal.months[-1].name == cal_variant.months[8].name
+
+    def test_dates_fraction(self):
+        cal = Calendar.registry["Julian A.D."]
+
+        assert cal.from_julian_days(5000.6) != cal.from_julian_days(5000)
+
+        date = Date(cal, (5, 2, 3), 0.4)
+
+        assert math.isclose((date + 1).frac, 0.4)
+
+        assert (date + 1).ymd == (5, 2, 4)
+
+    def test_time_convert(self):
+        assert float_to_hm(hm_to_float(12, 30)) == (12, 30)
+
+        with pytest.raises(ValueError) as err:
+            hm_to_float(-1, 5)
+
+        assert "Incorrect" in str(err)
+
+        with pytest.raises(ValueError) as err:
+            float_to_hm(2)
+
+        assert "Incorrect" in str(err)
