@@ -1,6 +1,6 @@
 from functools import partial
 from typing import (Callable, Dict, Generic, List, Literal, Optional, Tuple,
-                    TypeVar, Union, cast)
+                    TypeVar, Union, cast, overload)
 
 import numpy as np
 import pandas as pd
@@ -121,7 +121,19 @@ class HTable(Table):
                 df = df.pipe(sym)
         return df
 
-    def get(self, key: Real, with_unit=True) -> Union[Real, Quantity]:
+    @overload
+    def get(self, key: Union[Real, Quantity], with_unit: Literal[False]) -> Real:
+        ...
+
+    @overload
+    def get(self, key: Real, with_unit: Literal[True] = True) -> Union[Real, Quantity]:
+        ...
+
+    @overload
+    def get(self, key: Quantity, with_unit: Literal[True] = True) -> Quantity:
+        ...
+
+    def get(self, key: Union[Real, Quantity], with_unit=True):
         """Get the value from any key based on interpolated data.
 
         :param key: Argument for an interpolated function
@@ -138,10 +150,21 @@ class HTable(Table):
 
         unit = (self.columns[self.values_column].unit if with_unit else 1) or 1
 
-        if isinstance(key, int):
-            key = float(key)
+        val: Real
 
-        return self.interpolate(df, key) * unit
+        if isinstance(key, int):
+            val = float(key)
+
+        elif isinstance(key, Quantity):
+
+            val = key.to(self[self.primary_key[0]].unit).value
+            if isinstance(key, int):
+                val = float(key)
+
+        else:
+            val = key
+
+        return self.interpolate(df, val) * unit
 
     def apply(self, column: str, func: Callable, new_name: Optional[str] = None) -> "HTable":
         """
@@ -189,7 +212,7 @@ class HTable(Table):
             table.set_index(set_index)
         return table
 
-    def populate(self, array: list, method: Literal["mask", "interpolate"] = "mask") -> "HTable":
+    def populate(self, array: List[Real], method: Literal["mask", "interpolate"] = "mask") -> "HTable":
         """
         Populate a table with values from new keys contained in `array`.
         """

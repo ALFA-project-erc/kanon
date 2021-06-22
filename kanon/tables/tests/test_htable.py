@@ -1,12 +1,14 @@
 from math import isclose
 from typing import Tuple
 
+import astropy.units as u
 import hypothesis.strategies as st
 import numpy as np
 import pandas as pd
 import pytest
 from astropy.table import setdiff
 from astropy.table.operations import join
+from astropy.units.core import UnitConversionError
 from hypothesis import assume
 from hypothesis.core import given
 
@@ -159,3 +161,16 @@ class TestHTable:
         plot = tab.plot2d('.')
         assert len(plot) == 1
         assert plot[0].get_marker() == '.'
+
+    def test_get_with_quantity(self):
+        tab = self.make_sample_table()
+
+        tab["a"].unit = u.degree
+
+        assert tab.get(3) == 12
+        assert tab.get(3 * u.degree) == 12
+
+        assert tab.get(180 * u.arcmin) == 12
+
+        with pytest.raises(UnitConversionError):
+            assert tab.get(3 * u.deg_C)
