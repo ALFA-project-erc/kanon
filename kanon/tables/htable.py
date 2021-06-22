@@ -156,10 +156,7 @@ class HTable(Table):
             val = float(key)
 
         elif isinstance(key, Quantity):
-
             val = key.to(self[self.primary_key[0]].unit).value
-            if isinstance(key, int):
-                val = float(key)
 
         else:
             val = key
