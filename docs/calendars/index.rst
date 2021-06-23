@@ -6,6 +6,7 @@
 
 .. automodapi:: kanon.calendars
     :inherited-members:
+    :include-all-objects:
 
 .. automodapi:: kanon.calendars.calendars
     :inherited-members:

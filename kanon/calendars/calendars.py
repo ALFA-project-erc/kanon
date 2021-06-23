@@ -124,16 +124,17 @@ class Date:
     1721457.0416666667
     >>> str(date + 1)
     '4 Februarius 1 A.D. in Julian 13:00'
-
-    .. rubric:: Attributes
-
-    .. autoattribute:: calendar
-    .. autoattribute:: ymd
-    .. autoattribute:: frac
-    .. autoattribute:: jdn
     """
 
-    def __init__(self, calendar: "Calendar", ymd: Tuple[int, int, int], frac=0.5):
+    def __init__(self, calendar: "Calendar", ymd: Tuple[int, int, int], frac: float = 0.5):
+        """
+        :param calendar: Calendar used in this date.
+        :type calendar: Calendar
+        :param ymd: Year, month and days, expressed in the specified calendar.
+        :type ymd: Tuple[int, int, int]
+        :param frac: Fraction of day, 0.5 == 12:00, defaults to 0.5
+        :type frac: float, optional
+        """
         if not 0 <= frac < 1:
             raise ValueError("Time must be in the range [0;1[")
 
@@ -146,24 +147,32 @@ class Date:
     @property
     def calendar(self) -> "Calendar":
         """Calendar used in this date.
+
+        :rtype: Calendar
         """
         return self._calendar
 
     @property
     def ymd(self) -> Tuple[int, int, int]:
         """Year, month and days, expressed in the specified calendar.
+
+        :rtype: Tuple[int, int, int]
         """
         return self._ymd
 
     @property
     def frac(self) -> float:
         """Fraction of day, 0.5 == 12:00
+
+        :rtype: float
         """
         return self._frac
 
     @property
     def jdn(self) -> float:
         """Date as a julian day number.
+
+        :rtype: float
         """
         return self._jdn
 
@@ -209,6 +218,7 @@ class Calendar(metaclass=abc.ABCMeta):
     `_months` and maybe `_cycle`.
     """
 
+    #: Registry of all calendars
     registry: Dict[str, "Calendar"] = CALENDAR_REGISTRY
 
     _name: str
@@ -269,7 +279,8 @@ class Calendar(metaclass=abc.ABCMeta):
 
     @property
     def era(self) -> Era:
-        """
+        """Calendar era
+
         :rtype: Era
         """
         return self._era

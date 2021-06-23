@@ -1,3 +1,20 @@
+0.3.0
+_____
+
+*Bug Fixes*
+
+- Fixed `Persian Andarjah after Aban` months
+- Fixed incorrect behavior of `Calendar.jdn_at_ymd`
+
+*Features*
+
+- `FloatingSexagesimal` removed
+- `Byzantine/Syrian` calendar renamed `Byzantine`
+- `BasedQuantity` typing
+- Fraction of day support for `Date`
+- `HTable.get` now supports `key` of type `Quantity` with same unit as the table index
+
+
 0.2.0
 _____
 
