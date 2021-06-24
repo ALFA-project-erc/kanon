@@ -226,18 +226,6 @@ class TestRadix:
         self.biop_testing(x, y, op.mod)
         self.biop_testing(x, y, op.floordiv)
 
-    def test_mixed(self):
-
-        h = Historical("11r 7s 29; 45")
-
-        assert h == 4199.75
-
-        assert (h >> 1).equals(Historical("1r 1s 18; 58, 45"))
-        assert (h >> 2).equals(Historical("1s 3; 36, 58, 45"))
-        assert (h << 1).equals(Historical("116r 10s 10; 30"))
-
-        assert Historical("1s 3; 36, 58").__str__() == "01s 03 ; 36,58"
-
     def test_sqrt(self):
 
         assert Sexagesimal(9).sqrt().equals(Sexagesimal(3))
@@ -268,3 +256,21 @@ class TestRadix:
         normal_range_stop = range(stop)
 
         assert list(normal_range_stop) == [int(x) for x in based_range_stop]
+
+    def test_mixed_from_int(self):
+
+        assert Historical.from_int(60) == Historical("2s0")
+
+    @given(st.from_type(Historical),
+           st.from_type(Historical))
+    def test_operations_without_remainders_mixed(self, x, y):
+        x, y = x.truncate(), y.truncate()
+        fy = float(y)
+
+        for o in (op.mul, op.add, op.sub, op.pow):
+            if o == op.pow and (fy < 0 or fy > 10):
+                continue
+            self.biop_testing(x, y, o)
+
+        if y != 0:
+            self.biop_testing(x, y, op.truediv)

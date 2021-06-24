@@ -640,36 +640,7 @@ class BasedReal(PreciseNumber, _Real):
             return self
 
         if self.base.mixed:
-            result = [0] * (-i) + list(self[:]) + [0] * i
-            radix = self.base[-len(self.left) + min(0, i) + 1: len(self.right) + max(0, i) + 1]
-            remainder = Decimal(0)
-            for _ in range(abs(i)):
-                tmp = []
-                nextn = Decimal(0)
-                if i > 0:
-                    for idx, val in enumerate(result):
-                        v, rem = divmod(Decimal(nextn), 1)
-                        tmp.append(int(v))
-                        nextn = (val + rem) / radix[idx] * radix[idx + 1]
-                    remainder += rem
-                    result = tmp
-                else:
-                    for idx, val in enumerate(result[::-1]):
-                        v, rem = divmod(nextn, 1)
-                        sv = 0
-                        if idx > 0:
-                            tmp[-1] += int(float((rem * radix[-idx])))
-                            sv, tmp[-1] = divmod(tmp[-1], radix[-idx])
-                        tmp.append(int(v + sv))
-                        nextn = Decimal(val) / radix[-idx - 1] * radix[- idx - 2]
-                    result = tmp[::-1]
-
-            result = result[None if i < 0 else i: None if i > 0 else (i + 1) or None]
-            return type(self)(
-                result[:len(self.left) - i],
-                result[len(self.left) - i:],
-                remainder=remainder + self.remainder, sign=self.sign
-            )
+            raise NotImplementedError
 
         offset = len(self.left) if i > 0 else len(self.left) - i
         br_rem = self.from_decimal(self.remainder, max(0, offset - len(self[:])))
@@ -705,7 +676,7 @@ class BasedReal(PreciseNumber, _Real):
 
         res = 0
         factor = 1
-        for idx, v in enumerate(self.resize(max(0, i + 1))[:i + 1][::-1]):
+        for idx, v in enumerate(self.resize(max(0, i + 1))[i::-1]):
             res += v * factor
             factor *= self.base[i - idx]
         return self.sign * res
@@ -893,19 +864,17 @@ class BasedReal(PreciseNumber, _Real):
         value *= sign
 
         pos = 0
-        max_integer = 1
+        int_factor = 1
 
-        while value >= max_integer:
-            max_integer *= base.left[pos]
+        while value >= int_factor:
+            int_factor *= base.left[-1 - pos]
             pos += 1
 
         left = [0] * pos
 
-        int_factor = max_integer
-
         for i in range(pos):
-            int_factor //= base.left[i]
-            position_value = int(value / int_factor)
+            int_factor //= base.left[-pos + i]
+            position_value = value // int_factor
             value -= position_value * int_factor
             left[i] = position_value
 
@@ -947,13 +916,18 @@ class BasedReal(PreciseNumber, _Real):
 
         other = cast(BasedReal, _other)
 
+        if self.base.mixed:
+            return self.from_float(float(self) / float(other), self.significant)
+
         max_significant = max(self.significant, other.significant)
 
         if self == 0:
             return self.zero(significant=max_significant)
-        if other in (1, -1):
-            return self * float(other)
-        if other == 0:
+        elif other == 1:
+            return self
+        elif other == -1:
+            return -self
+        elif other == 0:
             raise ZeroDivisionError
 
         sign = self.sign * other.sign
@@ -1103,35 +1077,17 @@ class BasedReal(PreciseNumber, _Real):
         if self == 0 or other == 0:
             return self.zero()
 
-        sign = self.sign * other.sign
+        if self.base.mixed:
+            return self.from_float(float(self) * float(other), self.significant)
 
         max_right = max(self.significant, other.significant)
 
         va = self.resize(max_right)
         vb = other.resize(max_right)
 
-        numbers = [[0] * i + [fv * s for s in vb[:]][::-1]
-                   for i, fv in enumerate(va[::-1])]
+        res_int = int(va << max_right) * int(vb << max_right)
 
-        count: List[int] = [0] * max(len(x) for x in numbers) + [0]
-
-        for n in numbers:
-            for i, r in enumerate(n):
-                count[i] += r
-                factor = self.base[max_right - i]
-                c = count[i]
-                if c < 0 or c >= factor:
-                    count[i] = c % factor
-                    count[i + 1] += c // factor
-
-        while count[-1] != 0:
-            factor = self.base[max_right - len(count)]
-            c = count[-1]
-            count[-1] = c % factor
-            count.append(c // factor)
-
-        res = type(self)(*tuple(count[::-1]), sign=sign)
-        res = res >> 2 * max_right
+        res = self.from_int(res_int) >> 2 * max_right
 
         factor = self.base.factor_at_pos(max_right)
         vb_rem = vb.sign * vb.remainder / factor
@@ -1179,9 +1135,16 @@ class BasedReal(PreciseNumber, _Real):
 
         if type(self) is type(other):
 
-            min_significant = min(self.significant, other.significant)
+            if self.base.mixed:
+                res = divmod(float(self), float(other))
+                return (
+                    self.from_float(res[0], self.significant),
+                    self.from_float(res[1], self.significant)
+                )
+
+            max_sig = max(self.significant, other.significant)
             if self == 0:
-                zero = self.zero(min_significant)
+                zero = self.zero(max_sig)
                 return (zero, zero)
 
             max_significant = max(self.significant, other.significant)
@@ -1191,8 +1154,10 @@ class BasedReal(PreciseNumber, _Real):
                 qself = s_self.subunit_quantity(max_significant)
                 qother = s_other.subunit_quantity(max_significant)
                 fdiv, mod = divmod(qself, qother)
-                return self.from_int(fdiv, min_significant), self.from_int(mod, min_significant
-                                                                           ) >> max_significant
+                return (
+                    self.from_int(fdiv, max_sig),
+                    self.from_int(mod, max_sig) >> max_significant
+                )
 
             fdiv = math.floor(self.decimal / other.decimal)
             if fdiv == self.decimal / other.decimal:
@@ -1200,8 +1165,8 @@ class BasedReal(PreciseNumber, _Real):
             else:
                 mod = self.decimal % other.decimal + 0 if self.sign == other.sign else other.decimal
             return self.from_int(
-                fdiv, min_significant
-            ), self.from_decimal(mod, min_significant)
+                fdiv, max_sig
+            ), self.from_decimal(mod, max_sig)
 
         if np.isreal(other):
             return divmod(self, self.from_float(float(other), self.significant))
@@ -1458,7 +1423,7 @@ class IllegalBaseValueError(BasedRealException, ValueError):
 
     def __str__(self):
         return f"An invalid value for ({self.radix.name}) was found \
-        ('{self.num}'); should be in the range [0,{self.base}])."
+        ('{self.num}'); should be in the range [0,{self.base}[)."
 
 
 class IllegalFloatError(BasedRealException, TypeError):

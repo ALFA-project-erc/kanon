@@ -5,6 +5,7 @@ _____
 
 - Fixed `Persian Andarjah after Aban` months
 - Fixed incorrect behavior of `Calendar.jdn_at_ymd`
+- Fixed mixed base `BasedReal` arithmetic
 
 *Features*
 
