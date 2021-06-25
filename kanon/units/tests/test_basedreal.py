@@ -177,8 +177,8 @@ class TestRadix:
         try:
             abstol = 1e-09 if a and b else 1e-11
             assert m.isclose(a, b.real, abs_tol=abstol)
-            a = float(operator(x, Sexagesimal.from_float(fy, x.significant, remainder_threshold=1)))
-            b = float(operator(Sexagesimal.from_float(fx, y.significant, remainder_threshold=1), y))
+            a = float(operator(x, type(x).from_float(fy, x.significant, remainder_threshold=1)))
+            b = float(operator(type(x).from_float(fx, y.significant, remainder_threshold=1), y))
             assert m.isclose(a, b.real, abs_tol=abstol)
         except Exception as e:
             hypothesis.note(f"{x.remainder} {y.remainder}")
@@ -257,9 +257,9 @@ class TestRadix:
 
         assert list(normal_range_stop) == [int(x) for x in based_range_stop]
 
-    def test_mixed_from_int(self):
-
+    def test_mixed_misc(self):
         assert Historical.from_int(60) == Historical("2s0")
+        assert divmod(Historical(5), Historical("1s26;3")) == (0, 5)
 
     @given(st.from_type(Historical),
            st.from_type(Historical))

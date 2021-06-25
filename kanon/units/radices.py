@@ -371,11 +371,7 @@ class BasedReal(PreciseNumber, _Real):
 
         :rtype: Decimal
         """
-        value = Decimal()
-        factor = Decimal(1)
-        for i in range(len(self.left)):
-            value += factor * self.left[-i - 1]
-            factor *= self.base.left[i]
+        value = Decimal(abs(int(self)))
         factor = Decimal(1)
         for i in range(self.significant):
             factor *= self.base.right[i]
@@ -1092,10 +1088,15 @@ class BasedReal(PreciseNumber, _Real):
         factor = self.base.factor_at_pos(max_right)
         vb_rem = vb.sign * vb.remainder / factor
         va_rem = va.sign * va.remainder / factor
-        res += float(va.truncate().decimal * vb_rem
-                     + vb.truncate().decimal * va_rem
-                     + va_rem * vb_rem
-                     )
+
+        rem = (
+            va.truncate().decimal * vb_rem
+            + vb.truncate().decimal * va_rem
+            + va_rem * vb_rem
+        )
+
+        if rem:
+            res += float(rem)
 
         return res
 
