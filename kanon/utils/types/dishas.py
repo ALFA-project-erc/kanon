@@ -10,7 +10,7 @@ class OriginalValue(TypedDict):
     critical_apparatus: List[str]
 
 
-NumberType = Literal["sexagesimal", "floating sexagesimal", "integer and sexagesimal"]
+NumberType = Literal["sexagesimal", "floating sexagesimal", "integer and sexagesimal", "historical"]
 SymmetryType = Literal["mirror", "periodic"]
 SymmetryOperation = Literal["opposite", "identity", "addition", "substraction"]
 UnitType = Literal["degree", "day"]

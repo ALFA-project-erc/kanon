@@ -21,6 +21,11 @@ Sexagesimal        Sexagesimal
 01,58,16,39,14,38,27,52 ;
 """
 
+from astropy.io import registry
+
 from .htable import HTable
+from .htable_reader import read_table_dishas
 
 __all__ = ["HTable"]
+
+registry.register_reader("dishas", HTable, read_table_dishas)

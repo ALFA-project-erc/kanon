@@ -13,7 +13,7 @@ from astropy.utils.data import get_pkg_data_filename
 from hypothesis.core import given
 
 from kanon.tables import HTable
-from kanon.tables.htable import DISHAS_REQUEST_URL
+from kanon.tables.htable_reader import DISHAS_REQUEST_URL
 from kanon.units import Sexagesimal
 
 
