@@ -1,3 +1,14 @@
+0.3.1
+_____
+
+*Bug Fixes*
+
+- Fixed `BasedReal.__pow__` with negative values raised to fractional power
+
+*Features*
+
+- `HTable.read` accepts DISHAS `Historical` columns
+
 0.3.0
 _____
 

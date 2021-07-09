@@ -1016,13 +1016,18 @@ class BasedReal(PreciseNumber, _Real):
         return other / float(self)
 
     def __pow__(self, exponent):
-        """self**exponent; should promote to float or complex when necessary."""
+        """self**exponent
+        Negative numbers cannot be raised to a non-integer power
+        """
         res = self.one(self.significant)
 
         if exponent == 0:
             return res
         if self == 0:
             return self
+
+        if self < 0 and int(exponent) != exponent:
+            raise ValueError("Negative BasedReal cannot be raised to a non-integer power")
 
         int_exp = int(exponent)
         f_exp = float(exponent - int_exp)
@@ -1033,7 +1038,7 @@ class BasedReal(PreciseNumber, _Real):
         else:
             for _ in range(0, -int_exp):
                 res /= self
-        res *= (float(self) ** f_exp).real
+        res *= float(self) ** f_exp
 
         return res
 
