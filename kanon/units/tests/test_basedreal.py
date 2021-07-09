@@ -130,7 +130,7 @@ def test_misc():
     assert Sexagesimal(0) ** 1 == 0
 
     with pytest.raises(ValueError):
-        Sexagesimal(-5) ** 2.5
+        (-Sexagesimal(5)) ** 2.5
 
     assert s > 4
 
