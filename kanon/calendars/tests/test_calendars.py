@@ -84,6 +84,8 @@ class TestCalendars:
 
         assert "Time must be" in str(err)
 
+        assert Date(cal, (2021, 7, 1), 0.2) + 0 == Date(cal, (2021, 7, 1), 0.2)
+
     def test_jdn_at_ymd(self):
         cal = Calendar.registry["Julian A.D."]
 

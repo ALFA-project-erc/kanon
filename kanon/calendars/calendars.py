@@ -366,9 +366,9 @@ class Calendar(metaclass=abc.ABCMeta):
         """Builds a `Date` object at the specified julian day number.
         """
 
-        time = jdn - int(jdn) + 0.5
+        time = (jdn - 0.5) % 1
 
-        jdn = int(jdn)
+        jdn = round(jdn)
 
         year = int(self.era.days_from_epoch(jdn) * sum(self.cycle) // self.cycle_length) + 1
         if year < 1:
@@ -393,7 +393,7 @@ class Calendar(metaclass=abc.ABCMeta):
             else:
                 rem -= ndays
 
-        return Date(self, (year, month, int(days) + int(time)), time - int(time))
+        return Date(self, (year, month, int(days)), time)
 
     def __repr__(self) -> str:
         return f"Calendar({self.name})"

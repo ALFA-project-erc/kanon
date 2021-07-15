@@ -1,3 +1,10 @@
+0.3.2
+_____
+
+*Bug Fixes*
+
+- Fixed `Date` not working with non default frac on month bounds
+
 0.3.1
 _____
 
