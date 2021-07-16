@@ -39,11 +39,13 @@ class TestHTable:
         st.lists(
             st.tuples(
                 st.integers(min_value=int(-1e15), max_value=int(1e15)),
-                st.floats(allow_nan=False, allow_infinity=False, width=16)
-            ), min_size=2, unique_by=(lambda x: x[0])
+                st.floats(allow_nan=False, allow_infinity=False, width=16),
+            ),
+            min_size=2,
+            unique_by=(lambda x: x[0]),
         ).map(lambda x: list(zip(*sorted(x)))),
         names=st.just(("A", "B")),
-        index=st.just("A")
+        index=st.just("A"),
     )
 
     @given(gen_table_strategy)
@@ -56,15 +58,23 @@ class TestHTable:
         df = tab.to_pandas()
         assert df["B"].iloc[0] == df["B"].iloc[len(tab)]
 
-    @given(gen_table_strategy.flatmap(
-        lambda x: st.tuples(st.floats(
-            min_value=float(min(x["A"])),
-            max_value=float(max(x["A"])),
-            allow_nan=False
-        ), st.just(x))))
+    @given(
+        gen_table_strategy.flatmap(
+            lambda x: st.tuples(
+                st.floats(
+                    min_value=float(min(x["A"])),
+                    max_value=float(max(x["A"])),
+                    allow_nan=False,
+                ),
+                st.just(x),
+            )
+        )
+    )
     def test_interpolation(self, hypo: Tuple[float, HTable]):
         key, tab = hypo
-        fres = np.interp(key, [float(x) for x in tab.columns[0]], [float(x) for x in tab.columns[1]])
+        fres = np.interp(
+            key, [float(x) for x in tab.columns[0]], [float(x) for x in tab.columns[1]]
+        )
         sres = tab.get(key)
         assert isclose(fres, float(sres), abs_tol=1e9)
 
@@ -73,7 +83,7 @@ class TestHTable:
 
         assert np.array_equal(
             tab.apply("b", lambda x: x + 2)["b"],
-            np.add(tab["b"], np.array([2] * len(tab)))
+            np.add(tab["b"], np.array([2] * len(tab))),
         )
 
         tab_float = tab.apply("b", lambda x: x + 0.3)
@@ -83,6 +93,7 @@ class TestHTable:
 
         def tostr(x):
             return f"{x}a"
+
         tab_str = tab.apply("b", tostr)
         assert tab_str["b"].dtype.char == "U"
 
@@ -133,8 +144,20 @@ class TestHTable:
 
         tab_unmasked = tab.filled(50)
 
-        assert len(setdiff(tab_unmasked, tab.fill("distributed_convex", (4, 5)).filled(50))) == 0
-        assert len(setdiff(tab_unmasked, tab.fill("distributed_convex", (3.5, 3.5)).filled(50))) == 0
+        assert (
+            len(
+                setdiff(tab_unmasked, tab.fill("distributed_convex", (4, 5)).filled(50))
+            )
+            == 0
+        )
+        assert (
+            len(
+                setdiff(
+                    tab_unmasked, tab.fill("distributed_convex", (3.5, 3.5)).filled(50)
+                )
+            )
+            == 0
+        )
 
         def fill_50(df: pd.DataFrame):
             return df.fillna(50)
@@ -150,17 +173,21 @@ class TestHTable:
         assert str(err.value) == "Incorrect fill method"
 
     def test_join_multiple(self):
-        data = [HTable({"a": x, "b": x}) for x in [[1, 2, 3], [8, 10, 13], [435, 13, 3.5]]]
+        data = [
+            HTable({"a": x, "b": x}) for x in [[1, 2, 3], [8, 10, 13], [435, 13, 3.5]]
+        ]
         multiple_joined = join_multiple(*data, join_type="outer")
-        single_joined = join(join(data[0], data[1], join_type="outer"), data[2], join_type="outer")
+        single_joined = join(
+            join(data[0], data[1], join_type="outer"), data[2], join_type="outer"
+        )
 
         assert len(setdiff(multiple_joined, single_joined)) == 0
 
     def test_plot(self):
         tab = self.make_sample_table()
-        plot = tab.plot2d('.')
+        plot = tab.plot2d(".")
         assert len(plot) == 1
-        assert plot[0].get_marker() == '.'
+        assert plot[0].get_marker() == "."
 
     def test_get_with_quantity(self):
         tab = self.make_sample_table()

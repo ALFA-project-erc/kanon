@@ -21,10 +21,12 @@ from scipy.interpolate import lagrange
 
 from kanon.utils.types.number_types import Real
 
-__all__ = ["Interpolator",
-           "linear_interpolation",
-           "quadratic_interpolation",
-           "distributed_interpolation"]
+__all__ = [
+    "Interpolator",
+    "linear_interpolation",
+    "quadratic_interpolation",
+    "distributed_interpolation",
+]
 
 
 Interpolator = Callable[[pd.DataFrame, Real], Real]
@@ -48,9 +50,10 @@ def _interpolation_decorator(func):
     This decorator automatically casts the key in the correct type and returns the result
     if the key is in the DataFrame
     """
+
     @wraps(func)
     def wrapper(df: pd.DataFrame, key: Real) -> Real:
-        if df.index.dtype == 'object' and isinstance(key, float):
+        if df.index.dtype == "object" and isinstance(key, float):
             key = type(df.index[0]).from_float(key, df.index[0].significant)
         if key in df.index:
             return df.loc[key][0]
@@ -107,7 +110,10 @@ def quadratic_interpolation(df: pd.DataFrame, key: Real) -> Real:
 # Whole DataFrame interpolation
 # Interpolates on every NaN value
 
-def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "concave"]):
+
+def distributed_interpolation(
+    df: pd.DataFrame, direction: Literal["convex", "concave"]
+):
     """Applies distributed interpolation on a `DataFrame` with a regularly stepped index.
     Interpolates on every unknown values (`numpy.nan` or `pandas.NA`).
     """
@@ -115,19 +121,23 @@ def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "co
     df = df.copy()
 
     if direction not in ("convex", "concave"):
-        raise ValueError(f"The interpolation direction must be either convex or concave, not {direction}")
+        raise ValueError(
+            f"The interpolation direction must be either convex or concave, not {direction}"
+        )
 
     if pd.isna(df.iloc[-1][0]) or pd.isna(df.iloc[0][0]):
         raise ValueError("The DataFrame must start and end with non nan values")
 
-    if based_values := df.iloc[0].dtypes == 'object':
+    if based_values := df.iloc[0].dtypes == "object":
 
         based_type = type(df.iloc[0][0])
 
         based_idx = df[~df.isna().any(axis=1)].index
 
         max_sig: int = df.loc[based_idx].applymap(lambda x: x.significant).max().iloc[0]
-        df.loc[based_idx] = df.loc[based_idx].applymap(lambda x: x.subunit_quantity(max_sig))
+        df.loc[based_idx] = df.loc[based_idx].applymap(
+            lambda x: x.subunit_quantity(max_sig)
+        )
 
         df = df.astype(float)
 
@@ -143,7 +153,9 @@ def distributed_interpolation(df: pd.DataFrame, direction: Literal["convex", "co
         for b in range(0, len(bounds), 2):
             lower = df.index.get_loc(bounds[b]) - 1
             upper = df.index.get_loc(bounds[b + 1]) + 1
-            df.iloc[lower:upper] = distributed_interpolation(df.iloc[lower:upper], direction=direction)
+            df.iloc[lower:upper] = distributed_interpolation(
+                df.iloc[lower:upper], direction=direction
+            )
 
     else:
 

@@ -1,6 +1,15 @@
 from functools import partial
-from typing import (Callable, Generic, List, Literal, Optional, Tuple, TypeVar,
-                    Union, overload)
+from typing import (
+    Callable,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
 
 import numpy as np
 import pandas as pd
@@ -14,8 +23,11 @@ from astropy.units.core import Unit
 from kanon.tables.hcolumn import HColumn, _patch_dtype_info_name
 from kanon.utils.types.number_types import Real
 
-from .interpolations import (Interpolator, distributed_interpolation,
-                             linear_interpolation)
+from .interpolations import (
+    Interpolator,
+    distributed_interpolation,
+    linear_interpolation,
+)
 from .symmetries import Symmetry
 
 __all__ = ["HTable"]
@@ -91,26 +103,34 @@ class HTable(Table):
     opposite: bool = TableAttribute(default=False)
     """Defines if the table values should be of the opposite sign."""
 
-    def __init__(self,
-                 data=None,
-                 names: Optional[Union[List[str], Tuple[str, ...]]] = None,
-                 index: Optional[Union[str, List[str]]] = None,
-                 dtype: Optional[List] = None,
-                 units: Optional[List[Unit]] = None,
-                 *args, **kwargs
-                 ):
+    def __init__(
+        self,
+        data=None,
+        names: Optional[Union[List[str], Tuple[str, ...]]] = None,
+        index: Optional[Union[str, List[str]]] = None,
+        dtype: Optional[List] = None,
+        units: Optional[List[Unit]] = None,
+        *args,
+        **kwargs,
+    ):
 
-        super().__init__(data=data, names=names, units=units, dtype=dtype, *args, **kwargs)
+        super().__init__(
+            data=data, names=names, units=units, dtype=dtype, *args, **kwargs
+        )
 
         if index:
             self.set_index(index)
 
     def _check_index(self, index=None):
         if not self.indices and not index:
-            raise IndexError("HTable should have an index, defining the function's arguments")
+            raise IndexError(
+                "HTable should have an index, defining the function's arguments"
+            )
         return self.primary_key[0]
 
-    def to_pandas(self, index=None, use_nullable_int=True, symmetry=True) -> pd.DataFrame:
+    def to_pandas(
+        self, index=None, use_nullable_int=True, symmetry=True
+    ) -> pd.DataFrame:
         self._check_index(index)
         df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
         if symmetry:
@@ -160,7 +180,9 @@ class HTable(Table):
 
         return self.interpolate(df, val) * unit
 
-    def apply(self, column: str, func: Callable, new_name: Optional[str] = None) -> "HTable":
+    def apply(
+        self, column: str, func: Callable, new_name: Optional[str] = None
+    ) -> "HTable":
         """
         Applies a function on a column and returns the new `HTable`
 
@@ -206,7 +228,9 @@ class HTable(Table):
             table.set_index(set_index)
         return table
 
-    def populate(self, array: List[Real], method: Literal["mask", "interpolate"] = "mask") -> "HTable":
+    def populate(
+        self, array: List[Real], method: Literal["mask", "interpolate"] = "mask"
+    ) -> "HTable":
         """
         Populate a table with values from new keys contained in `array`.
         """
@@ -218,16 +242,20 @@ class HTable(Table):
         if method == "interpolate":
             right[self.values_column] = [self.get(x) for x in array]
 
-        table: HTable = join(self, HTable(right), join_type='outer')
+        table: HTable = join(self, HTable(right), join_type="outer")
 
         table.set_index(key)
 
         return table
 
-    def fill(self, method: Union[
+    def fill(
+        self,
+        method: Union[
             Literal["distributed_convex", "distributed_concave"],
-            Callable[[pd.DataFrame], pd.DataFrame]],
-            bounds: Optional[Tuple[Real, Real]] = None) -> "HTable":
+            Callable[[pd.DataFrame], pd.DataFrame],
+        ],
+        bounds: Optional[Tuple[Real, Real]] = None,
+    ) -> "HTable":
         """Fill masked values within `bounds` with the specified `method`.
         To fill with a unique value, see `~HTable.filled`.
 
@@ -273,7 +301,9 @@ class HTable(Table):
 
         return tab_copy
 
-    def diff(self, n=1, prepend: List = [], append: List = [], new_name: Optional[str] = None) -> "HTable":
+    def diff(
+        self, n=1, prepend: List = [], append: List = [], new_name: Optional[str] = None
+    ) -> "HTable":
         """Applies `np.diff` on this table's column values to calculate the n-th difference.
         By default, it will prepend the first value.
 
@@ -283,7 +313,9 @@ class HTable(Table):
 
         cat = prepend + append
         if len(cat) > n or n > len(cat) > 0:
-            raise ValueError(f"You must prepend or append exactly n ({n}) values or 0 values")
+            raise ValueError(
+                f"You must prepend or append exactly n ({n}) values or 0 values"
+            )
 
         if len(cat) == 0:
             prepend = [self[0][self.values_column]] * n
@@ -304,7 +336,9 @@ class HTable(Table):
         Uses the same arguments as `matplotlib.pyplot.plot`.
         """
 
-        assert len(self.primary_key) == 1, "plot2d is only valid with single argument tables"
+        assert (
+            len(self.primary_key) == 1
+        ), "plot2d is only valid with single argument tables"
 
         from matplotlib import pyplot as plt
 
@@ -317,18 +351,28 @@ class HTable(Table):
         return plt.plot(x, y, *args, **kwargs)
 
 
-def join_multiple(*tables, keys=None, join_type='inner',
-                  uniq_col_name='{col_name}_{table_name}',
-                  table_names=['1', '2'], metadata_conflicts='silent',
-                  join_funcs=None) -> Table:
+def join_multiple(
+    *tables,
+    keys=None,
+    join_type="inner",
+    uniq_col_name="{col_name}_{table_name}",
+    table_names=["1", "2"],
+    metadata_conflicts="silent",
+    join_funcs=None,
+) -> Table:
     """
     `astropy.table.join` but with more than one table, iteratively from left to right.
     """
 
-    _join = partial(join, keys=keys, join_type=join_type,
-                    uniq_col_name=uniq_col_name,
-                    table_names=table_names, metadata_conflicts=metadata_conflicts,
-                    join_funcs=join_funcs)
+    _join = partial(
+        join,
+        keys=keys,
+        join_type=join_type,
+        uniq_col_name=uniq_col_name,
+        table_names=table_names,
+        metadata_conflicts=metadata_conflicts,
+        join_funcs=join_funcs,
+    )
 
     new_table = _join(*tables[:2])
     for t in tables[2:]:

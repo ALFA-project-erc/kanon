@@ -4,9 +4,11 @@ import pandas as pd
 import pytest
 from hypothesis.core import given
 
-from kanon.tables.interpolations import (distributed_interpolation,
-                                         linear_interpolation,
-                                         quadratic_interpolation)
+from kanon.tables.interpolations import (
+    distributed_interpolation,
+    linear_interpolation,
+    quadratic_interpolation,
+)
 
 
 def build_dataframe():
@@ -14,7 +16,6 @@ def build_dataframe():
 
 
 class TestInterpolations:
-
     @given(st.floats(allow_infinity=False, allow_nan=False, min_value=1, max_value=8))
     def test_linear_hypothesis(self, key: float):
         df = build_dataframe()
@@ -47,7 +48,9 @@ class TestInterpolations:
         concave = df.pipe(distributed_interpolation, direction="concave")
         assert len(concave) == 8 and not np.isnan(concave[0]).any()
 
-        df = pd.DataFrame([5] + [np.nan] * 6 + [45] + [np.nan] * 6 + [100], [i / 4 for i in range(15)])
+        df = pd.DataFrame(
+            [5] + [np.nan] * 6 + [45] + [np.nan] * 6 + [100], [i / 4 for i in range(15)]
+        )
         concave = df.pipe(distributed_interpolation, direction="concave")
         assert len(concave) == 15 and not np.isnan(concave[0]).any()
 
@@ -66,16 +69,22 @@ class TestInterpolations:
         assert "unknown" in str(err.value)
 
         from kanon.units import Sexagesimal
-        df = pd.DataFrame([Sexagesimal(5)] + [np.nan] * 8 + [Sexagesimal(45)], list(range(6, 16)))
+
+        df = pd.DataFrame(
+            [Sexagesimal(5)] + [np.nan] * 8 + [Sexagesimal(45)], list(range(6, 16))
+        )
 
         convex = df.pipe(distributed_interpolation, direction="convex")
         assert list(convex[0]) == [5, 9, 13, 17, 21, 25, 30, 35, 40, 45]
 
-        df = pd.DataFrame([Sexagesimal("0;0,5")] + [np.nan] * 8 + [Sexagesimal("0;0,45")],
-                          list(range(6, 16)))
+        df = pd.DataFrame(
+            [Sexagesimal("0;0,5")] + [np.nan] * 8 + [Sexagesimal("0;0,45")],
+            list(range(6, 16)),
+        )
 
         convex = df.pipe(distributed_interpolation, direction="convex")
         assert list(convex[0]) == [
-            Sexagesimal.from_int(x).shift(2) for x in [5, 9, 13, 17, 21, 25, 30, 35, 40, 45]
+            Sexagesimal.from_int(x).shift(2)
+            for x in [5, 9, 13, 17, 21, 25, 30, 35, 40, 45]
         ]
-        assert convex.index[0].dtype == 'int64'
+        assert convex.index[0].dtype == "int64"

@@ -4,16 +4,23 @@ from decimal import Decimal
 import pytest
 
 from kanon.units import Sexagesimal
-from kanon.units.precision import (PreciseNumber, PrecisionContext,
-                                   PrecisionMode, TruncatureMode,
-                                   _with_context_precision, clear_records,
-                                   get_context, get_records, set_context,
-                                   set_precision, set_recording)
+from kanon.units.precision import (
+    PreciseNumber,
+    PrecisionContext,
+    PrecisionMode,
+    TruncatureMode,
+    _with_context_precision,
+    clear_records,
+    get_context,
+    get_records,
+    set_context,
+    set_precision,
+    set_recording,
+)
 from kanon.units.radices import BasedReal
 
 
 class TestPrecision:
-
     @classmethod
     def setup_class(cls):
         cls.context = asdict(get_context())
@@ -23,7 +30,9 @@ class TestPrecision:
     def test_context(self):
 
         current_ctx = get_context()
-        ctx = PrecisionContext(1, TruncatureMode.CEIL, (None, ""), (None, ""), (None, ""), (None, ""))
+        ctx = PrecisionContext(
+            1, TruncatureMode.CEIL, (None, ""), (None, ""), (None, ""), (None, "")
+        )
         set_context(ctx)
         with set_precision() as ctx_dict:
             assert ctx_dict["pmode"] == 1
@@ -32,7 +41,9 @@ class TestPrecision:
         set_context(current_ctx)
 
     def equality(self, a: BasedReal, b: BasedReal):
-        assert a.equals(b), f"{a.truncate()},r:{a.remainder} != {b.truncate()},r:{b.remainder}"
+        assert a.equals(
+            b
+        ), f"{a.truncate()},r:{a.remainder} != {b.truncate()},r:{b.remainder}"
 
     def test_precision_modes(self):
         s1 = Sexagesimal("0;30,0,0,6")
@@ -49,9 +60,15 @@ class TestPrecision:
             self.equality(s1_ / s2, Sexagesimal(0, remainder=Decimal("0.25")))
 
         with set_precision(pmode=3):
-            self.equality(s1 + s2, Sexagesimal((2,), (30, 0, 0), remainder=Decimal("0.1")))
-            self.equality(s1 * s2, Sexagesimal((1,), (0, 0, 0), remainder=Decimal("0.2")))
-            self.equality(s1 / s2, Sexagesimal((0,), (15, 0, 0), remainder=Decimal("0.05")))
+            self.equality(
+                s1 + s2, Sexagesimal((2,), (30, 0, 0), remainder=Decimal("0.1"))
+            )
+            self.equality(
+                s1 * s2, Sexagesimal((1,), (0, 0, 0), remainder=Decimal("0.2"))
+            )
+            self.equality(
+                s1 / s2, Sexagesimal((0,), (15, 0, 0), remainder=Decimal("0.05"))
+            )
 
             assert round(Sexagesimal(2, remainder=Decimal("0.5"))) == 3
 

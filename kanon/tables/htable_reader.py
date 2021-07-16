@@ -7,24 +7,25 @@ from astropy.units.core import Unit
 from kanon.tables.symmetries import Symmetry
 from kanon.units import Historical, Sexagesimal
 from kanon.units.radices import BasedReal
-from kanon.utils.types.dishas import (DSymmetry, NumberType, TableContent,
-                                      UnitType)
+from kanon.utils.types.dishas import DSymmetry, NumberType, TableContent, UnitType
 from kanon.utils.types.number_types import Real
 
 from .htable import HTable
 
-_dishas_fields = '","'.join([
-    "source_value_original",
-    "argument1_name",
-    "argument1_number_unit",
-    "argument1_significant_fractional_place",
-    "argument1_type_of_number",
-    "entry_significant_fractional_place",
-    "entry_number_unit",
-    "entry_type_of_number",
-    "symmetries",
-    "edited_text"
-])
+_dishas_fields = '","'.join(
+    [
+        "source_value_original",
+        "argument1_name",
+        "argument1_number_unit",
+        "argument1_significant_fractional_place",
+        "argument1_type_of_number",
+        "entry_significant_fractional_place",
+        "entry_number_unit",
+        "entry_type_of_number",
+        "symmetries",
+        "edited_text",
+    ]
+)
 DISHAS_REQUEST_URL = f'https://dishas.obspm.fr/elastic-query\
 ?index=table_content&hits=true&id={{}}&source=["{_dishas_fields}"]'
 
@@ -54,8 +55,7 @@ def read_table_dishas(requested_id: str) -> HTable:
         DISHAS_REQUEST_URL.format(int(requested_id)),
     ).json()
     if not res or "error" in res:
-        raise FileNotFoundError(
-            f'{requested_id} ID not found in DISHAS database')
+        raise FileNotFoundError(f"{requested_id} ID not found in DISHAS database")
 
     values = res["source_value_original"]
 
@@ -63,13 +63,10 @@ def read_table_dishas(requested_id: str) -> HTable:
         "sexagesimal": read_sexag_array,
         "floating sexagesimal": read_sexag_array,
         "integer and sexagesimal": read_intsexag_array,
-        "historical": read_historical
+        "historical": read_historical,
     }
 
-    unit_reader: Dict[UnitType, Unit] = {
-        "degree": u.degree,
-        "day": u.day
-    }
+    unit_reader: Dict[UnitType, Unit] = {"degree": u.degree, "day": u.day}
 
     arg_unit = res["argument1_number_unit"]
     arg_shift = int(res["argument1_significant_fractional_place"])
@@ -106,7 +103,7 @@ def read_table_dishas(requested_id: str) -> HTable:
         units=[unit_reader.get(arg_unit), unit_reader.get(entry_unit)],
         dtype=[object, object],
         symmetry=symmetries,
-        meta=res["edited_text"]
+        meta=res["edited_text"],
     )
 
     return table

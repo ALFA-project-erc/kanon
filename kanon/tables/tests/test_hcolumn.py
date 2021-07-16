@@ -7,7 +7,6 @@ from kanon.units import Historical, Sexagesimal
 
 
 class TestHColumn:
-
     def test_init(self):
 
         col = HColumn([1, 2, 3])
@@ -56,19 +55,28 @@ class TestHColumn:
 
         assert bcol.significant == 2
 
-        assert np.array_equal([
-            Sexagesimal("1;1"),
-            Sexagesimal("2;1"),
-            Sexagesimal("3;1"),
-        ], bcol.ceil(1))
+        assert np.array_equal(
+            [
+                Sexagesimal("1;1"),
+                Sexagesimal("2;1"),
+                Sexagesimal("3;1"),
+            ],
+            bcol.ceil(1),
+        )
         assert np.array_equal([1, 2, 3], bcol.truncate(0))
-        assert np.array_equal([
-            Sexagesimal("1;0"),
-            Sexagesimal("2;0"),
-            Sexagesimal("3;0"),
-        ], bcol.floor(1))
-        assert np.array_equal([
-            Sexagesimal("1;1"),
-            Sexagesimal("2;1"),
-            Sexagesimal("3;1"),
-        ], round(bcol, 1))
+        assert np.array_equal(
+            [
+                Sexagesimal("1;0"),
+                Sexagesimal("2;0"),
+                Sexagesimal("3;0"),
+            ],
+            bcol.floor(1),
+        )
+        assert np.array_equal(
+            [
+                Sexagesimal("1;1"),
+                Sexagesimal("2;1"),
+                Sexagesimal("3;1"),
+            ],
+            round(bcol, 1),
+        )

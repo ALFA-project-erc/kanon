@@ -77,10 +77,12 @@ class Symmetry:
             return df
 
         if self.source:
-            if not (self.source[0] < df.index[-1] >= self.source[1]
-                    and self.source[0] >= df.index[0] < self.source[1]):
+            if not (
+                self.source[0] < df.index[-1] >= self.source[1]
+                and self.source[0] >= df.index[0] < self.source[1]
+            ):
                 raise OutOfBoundsOriginError
-            symdf = df.loc[self.source[0]:self.source[1]].copy()  # type: ignore
+            symdf = df.loc[self.source[0] : self.source[1]].copy()  # type: ignore
         else:
             symdf = df.copy()
 
@@ -94,7 +96,9 @@ class Symmetry:
                 symdf = symdf[:-1][::-1]
 
             elif self.symtype == "periodic":
-                symdf.index = symdf.index.map(lambda x: 1 + x + symdf.index[-1] - symdf.index[0])
+                symdf.index = symdf.index.map(
+                    lambda x: 1 + x + symdf.index[-1] - symdf.index[0]
+                )
 
             if self.sign == -1 or self.offset:
                 symdf = symdf.applymap(apply)

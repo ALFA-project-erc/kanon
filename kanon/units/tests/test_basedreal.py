@@ -10,14 +10,19 @@ from hypothesis import strategies as st
 from hypothesis.core import given
 
 from kanon.units import BasedReal, Historical, Sexagesimal
-from kanon.units.radices import (EmptyStringException, IllegalBaseValueError,
-                                 IllegalFloatError, TooManySeparators)
+from kanon.units.radices import (
+    EmptyStringException,
+    IllegalBaseValueError,
+    IllegalFloatError,
+    TooManySeparators,
+)
 
 
 def test_init():
-    assert Sexagesimal(
-        (1, 2, 31), (6,), sign=-1, remainder=Decimal('0.3')
-    ).__repr__() == "-01,02,31 ; 06 |r0.3"
+    assert (
+        Sexagesimal((1, 2, 31), (6,), sign=-1, remainder=Decimal("0.3")).__repr__()
+        == "-01,02,31 ; 06 |r0.3"
+    )
 
     # From float
     assert Sexagesimal.from_float(-0.016666666666666666, 2) == -Sexagesimal((0,), (1,))
@@ -113,7 +118,9 @@ def test_truncations():
     assert m.floor(-s) == -3749
     assert m.ceil(-s) == -3750
     assert Sexagesimal(1, 2, 3).minimize_precision().equals(Sexagesimal(1, 2, 3))
-    assert Sexagesimal("1, 2, 3; 0, 0").minimize_precision().equals(Sexagesimal(1, 2, 3))
+    assert (
+        Sexagesimal("1, 2, 3; 0, 0").minimize_precision().equals(Sexagesimal(1, 2, 3))
+    )
 
 
 def test_misc():
@@ -180,16 +187,24 @@ def test_comparisons(x):
 
 def biop_testing(x: BasedReal, y: BasedReal, operator):
     fx, fy = float(x), float(y)
-    if operator == op.pow and (fy < 0 or fy > 10 or x < 0 and int(fy) != fy
-                               ) or operator == op.truediv and fy == 0:
+    if (
+        operator == op.pow
+        and (fy < 0 or fy > 10 or x < 0 and int(fy) != fy)
+        or operator == op.truediv
+        and fy == 0
+    ):
         return
     a = float(operator(x, y))
     b: float = operator(fx, fy)
     try:
         abstol = 1e-09 if a and b else 1e-11
         assert m.isclose(a, b.real, abs_tol=abstol)
-        a = float(operator(x, type(x).from_float(fy, x.significant, remainder_threshold=1)))
-        b = float(operator(type(x).from_float(fx, y.significant, remainder_threshold=1), y))
+        a = float(
+            operator(x, type(x).from_float(fy, x.significant, remainder_threshold=1))
+        )
+        b = float(
+            operator(type(x).from_float(fx, y.significant, remainder_threshold=1), y)
+        )
         assert m.isclose(a, b.real, abs_tol=abstol)
     except Exception as e:
         hypothesis.note(f"{x.remainder} {y.remainder}")
@@ -197,8 +212,7 @@ def biop_testing(x: BasedReal, y: BasedReal, operator):
         raise e
 
 
-@given(st.from_type(Sexagesimal),
-       st.from_type(Sexagesimal))
+@given(st.from_type(Sexagesimal), st.from_type(Sexagesimal))
 def test_operations_with_remainders(x, y):
     fx = float(x)
 
@@ -218,8 +232,7 @@ def test_operations_with_remainders(x, y):
             pass
 
 
-@given(st.from_type(Sexagesimal),
-       st.from_type(Sexagesimal))
+@given(st.from_type(Sexagesimal), st.from_type(Sexagesimal))
 def test_operations_without_remainders(x, y):
     x, y = x.truncate(), y.truncate()
 
@@ -227,8 +240,12 @@ def test_operations_without_remainders(x, y):
         biop_testing(x, y, o)
 
 
-@given(st.integers(min_value=int(-1e15), max_value=int(1e15)).map(Sexagesimal.from_int),
-       st.integers(min_value=int(-1e15), max_value=int(1e15)).filter(lambda x: x != 0).map(Sexagesimal.from_int))
+@given(
+    st.integers(min_value=int(-1e15), max_value=int(1e15)).map(Sexagesimal.from_int),
+    st.integers(min_value=int(-1e15), max_value=int(1e15))
+    .filter(lambda x: x != 0)
+    .map(Sexagesimal.from_int),
+)
 def test_mod_integers(x, y):
     hypothesis.assume(int(x) % int(y) == float(x) % float(y))
     biop_testing(x, y, op.mod)
@@ -255,7 +272,7 @@ def test_sqrt_hypo(n):
 @given(
     st.integers(-20, 20),
     st.integers(-20, 20),
-    st.integers(-2, 2).filter(lambda x: x != 0)
+    st.integers(-2, 2).filter(lambda x: x != 0),
 )
 def test_range(start: int, stop: int, step: int):
     based_range = Sexagesimal.range(start, stop, step)
@@ -274,8 +291,7 @@ def test_mixed_misc():
     assert divmod(Historical(5), Historical("1s26;3")) == (0, 5)
 
 
-@given(st.from_type(Historical),
-       st.from_type(Historical))
+@given(st.from_type(Historical), st.from_type(Historical))
 def test_operations_without_remainders_mixed(x, y):
     x, y = x.truncate(), y.truncate()
 

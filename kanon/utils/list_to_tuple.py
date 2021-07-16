@@ -7,7 +7,6 @@ def _no_list(v):
 
 
 def list_to_tuple(func):
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         args = (_no_list(arg) for arg in args)

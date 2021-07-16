@@ -1,12 +1,14 @@
 import pandas as pd
 import pytest
 
-from kanon.tables.symmetries import (OutOfBoundsOriginError,
-                                     OverlappingSymmetryError, Symmetry)
+from kanon.tables.symmetries import (
+    OutOfBoundsOriginError,
+    OverlappingSymmetryError,
+    Symmetry,
+)
 
 
 class TestSymmetry:
-
     def test_init(self):
         with pytest.raises(ValueError):
             Symmetry("a")

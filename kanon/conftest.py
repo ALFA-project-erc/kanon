@@ -13,8 +13,8 @@ from hypothesis.strategies._internal.core import tuples
 
 # For Astropy 3.0 and later, we can use the standalone pytest plugin
 try:
-    from pytest_astropy_header.display import (PYTEST_HEADER_MODULES,
-                                               TESTED_VERSIONS)
+    from pytest_astropy_header.display import PYTEST_HEADER_MODULES, TESTED_VERSIONS
+
     ASTROPY_HEADER = True
 except ImportError:
     ASTROPY_HEADER = False
@@ -34,20 +34,26 @@ def pytest_configure(config):
 
         # Customize the following lines to add/remove entries from the list of
         # packages for which version numbers are displayed when running the tests.
-        PYTEST_HEADER_MODULES.pop('Pandas', None)
-        PYTEST_HEADER_MODULES['scikit-image'] = 'skimage'
+        PYTEST_HEADER_MODULES.pop("Pandas", None)
+        PYTEST_HEADER_MODULES["scikit-image"] = "skimage"
 
         from . import __version__
+
         packagename = os.path.basename(os.path.dirname(__file__))
         TESTED_VERSIONS[packagename] = __version__
 
 
 def _hypothesis_sexagesimal_strategy():
-    """We define hypothesis strategy to generate Sexagesimal values in tests
-    """
+    """We define hypothesis strategy to generate Sexagesimal values in tests"""
     from hypothesis import HealthCheck, settings
-    from hypothesis.strategies import (builds, decimals, integers, lists,
-                                       register_type_strategy, sampled_from)
+    from hypothesis.strategies import (
+        builds,
+        decimals,
+        integers,
+        lists,
+        register_type_strategy,
+        sampled_from,
+    )
 
     from kanon.units import Historical, Sexagesimal
 
@@ -59,7 +65,7 @@ def _hypothesis_sexagesimal_strategy():
         lists(integers(0, 59), max_size=2),
         lists(integers(0, 59), max_size=2),
         remainder=decimals(0, 1).filter(lambda x: x != 1),
-        sign=sampled_from((-1, 1))
+        sign=sampled_from((-1, 1)),
     )
     register_type_strategy(Sexagesimal, strat)
 
@@ -68,9 +74,10 @@ def _hypothesis_sexagesimal_strategy():
         tuples(integers(0, 9), integers(0, 11), integers(0, 29)),
         lists(integers(0, 59), max_size=2),
         remainder=decimals(0, 1).filter(lambda x: x != 1),
-        sign=sampled_from((-1, 1))
+        sign=sampled_from((-1, 1)),
     )
     register_type_strategy(Historical, strat)
+
 
 # Uncomment the last two lines in this block to treat all DeprecationWarnings as
 # exceptions. For Astropy v2.0 or later, there are 2 additional keywords,

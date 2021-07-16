@@ -9,7 +9,6 @@ from kanon.calendars.calendars import Era, Julian, float_to_hm, hm_to_float
 
 
 class TestCalendars:
-
     def test_init(self):
         era = Era("test", 10)
 

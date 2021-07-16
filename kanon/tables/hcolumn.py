@@ -17,6 +17,7 @@ def _patch_dtype_info_name(func: Callable, col_arg: int):
     Wrapper monkey patching `dtype_info_name` to replace it with a column `BasedReal`
     name if possible.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         col = args[col_arg]
@@ -40,10 +41,13 @@ class HColumnInfo(ColumnInfo):
     attrs_from_parent = ColumnInfo.attrs_from_parent | {"basedtype"}
     attr_names = ColumnInfo.attr_names | {"basedtype"}
 
-    def new_like(self, cols, length, metadata_conflicts='warn', name=None):
-        attrs = self.merge_cols_attributes(cols, metadata_conflicts, name,
-                                           ('meta', 'unit', 'format', 'basedtype',
-                                            'description'))
+    def new_like(self, cols, length, metadata_conflicts="warn", name=None):
+        attrs = self.merge_cols_attributes(
+            cols,
+            metadata_conflicts,
+            name,
+            ("meta", "unit", "format", "basedtype", "description"),
+        )
 
         return self._parent_cls(length=length, **attrs)
 
@@ -58,19 +62,40 @@ class HColumn(Column, Truncable):
 
     _basedtype: Optional[Type[BasedReal]] = None
 
-    def __new__(cls, data=None, name=None,
-                dtype=None, shape=(), length=0,
-                description=None, unit=None, format=None, meta=None,
-                copy=False, copy_indices=True, basedtype: Optional[Type[BasedReal]] = None):
+    def __new__(
+        cls,
+        data=None,
+        name=None,
+        dtype=None,
+        shape=(),
+        length=0,
+        description=None,
+        unit=None,
+        format=None,
+        meta=None,
+        copy=False,
+        copy_indices=True,
+        basedtype: Optional[Type[BasedReal]] = None,
+    ):
 
         if data is None and basedtype:
             data = np.zeros((length,) + shape, dtype="O")
             data = np.vectorize(basedtype.from_int)(data)
 
         self = super().__new__(
-            cls, data=data, name=name, dtype=dtype, shape=shape, length=length,
-            description=description, unit=unit, format=format, meta=meta,
-            copy=copy, copy_indices=copy_indices)
+            cls,
+            data=data,
+            name=name,
+            dtype=dtype,
+            shape=shape,
+            length=length,
+            description=description,
+            unit=unit,
+            format=format,
+            meta=meta,
+            copy=copy,
+            copy_indices=copy_indices,
+        )
 
         if self.dtype == "object" and len(self) > 0:
             self._basedtype = type(self[0])
@@ -79,7 +104,9 @@ class HColumn(Column, Truncable):
 
     def __setitem__(self, index, value):
         array_value = np.array(value, ndmin=1)
-        if self.basedtype and not all(isinstance(v, self.basedtype) for v in array_value):
+        if self.basedtype and not all(
+            isinstance(v, self.basedtype) for v in array_value
+        ):
             raise ValueError(
                 f"Value has not the same type {array_value.dtype} as this column {self.basedtype}"
             )
@@ -87,7 +114,7 @@ class HColumn(Column, Truncable):
 
     def _copy_attrs(self, obj):
         super()._copy_attrs(obj)
-        if val := getattr(obj, 'basedtype', None):
+        if val := getattr(obj, "basedtype", None):
             self._basedtype = val
 
     @property
@@ -105,13 +132,17 @@ class HColumn(Column, Truncable):
                 res._basedtype = dtype
 
                 if self.basedtype:
+
                     def convert(x):
                         return dtype(x, self.significant)
+
                 elif self.dtype == "int":
                     convert = dtype.from_int
                 elif self.dtype == "float":
+
                     def convert(x):
                         return dtype.from_float(x, 3)
+
                 else:
                     raise ValueError
 

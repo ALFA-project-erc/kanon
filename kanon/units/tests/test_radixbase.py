@@ -4,7 +4,6 @@ from kanon.units import RadixBase, radix_registry
 
 
 class TestRadixBase:
-
     def test_bases(self):
         test_radix = RadixBase([1], [2], "Test", "a")
 
