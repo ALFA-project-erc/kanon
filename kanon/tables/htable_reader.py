@@ -42,11 +42,31 @@ def read_intsexag_array(array: List[str], _: int) -> BasedReal:
     return integer + (read_sexag_array(array[1:], 0) >> len(array) - 1)
 
 
-def read_historical(array: List[str], _: int) -> BasedReal:
+def read_historical(array: List[str], shift: int) -> BasedReal:
     integer = int(array[0])
-    if len(array) == 2:
+
+    # Special case for non true Historical in DISHAS with 2 values
+    if len(array) == 2 and shift == 0:
         return integer * 30 + Historical(array[1])
-    return Historical(*(int(x) for x in array))
+
+    values = tuple(int(x) for x in array)
+    return Historical(values[: -shift or None], values[-shift or len(values) :])
+
+
+number_reader: Dict[NumberType, Callable[[List[str], int], Real]] = {
+    "sexagesimal": read_sexag_array,
+    "floating sexagesimal": read_sexag_array,
+    "integer and sexagesimal": read_intsexag_array,
+    "historical": read_historical,
+}
+
+unit_reader: Dict[UnitType, Unit] = {
+    "degree": u.degree,
+    "day": u.day,
+    "year": u.year,
+    "month": u.year / 12,
+    "hour": u.hour,
+}
 
 
 def read_table_dishas(requested_id: str) -> HTable:
@@ -58,15 +78,6 @@ def read_table_dishas(requested_id: str) -> HTable:
         raise FileNotFoundError(f"{requested_id} ID not found in DISHAS database")
 
     values = res["source_value_original"]
-
-    number_reader: Dict[NumberType, Callable[[List[str], int], Real]] = {
-        "sexagesimal": read_sexag_array,
-        "floating sexagesimal": read_sexag_array,
-        "integer and sexagesimal": read_intsexag_array,
-        "historical": read_historical,
-    }
-
-    unit_reader: Dict[UnitType, Unit] = {"degree": u.degree, "day": u.day}
 
     arg_unit = res["argument1_number_unit"]
     arg_shift = int(res["argument1_significant_fractional_place"])

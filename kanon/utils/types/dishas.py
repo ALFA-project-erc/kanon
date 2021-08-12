@@ -15,7 +15,7 @@ NumberType = Literal[
 ]
 SymmetryType = Literal["mirror", "periodic"]
 SymmetryOperation = Literal["opposite", "identity", "addition", "substraction"]
-UnitType = Literal["degree", "day"]
+UnitType = Literal["degree", "day", "hour", "month", "year"]
 
 
 class TemplateArgs(TypedDict):

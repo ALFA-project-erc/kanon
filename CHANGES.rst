@@ -4,6 +4,7 @@ _____
 *Bug Fixes*
 
 - Fixed `Date` not working with non default frac on month bounds
+- Fixed `HTable.read` not correctly reading shifted `Historical` columns.
 - Fixed `BasedReal.__mod__` returning a result with incorrect significant
 
 0.3.1
