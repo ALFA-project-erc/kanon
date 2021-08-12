@@ -1221,7 +1221,7 @@ class BasedReal(PreciseNumber, _Real):
                 fdiv, mod = divmod(qself, qother)
                 return (
                     self.from_int(fdiv, max_sig),
-                    self.from_int(mod, max_sig) >> max_significant,
+                    self.from_int(mod) >> max_significant,
                 )
 
             fdiv = math.floor(self.decimal / other.decimal)

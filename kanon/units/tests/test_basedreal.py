@@ -297,3 +297,7 @@ def test_operations_without_remainders_mixed(x, y):
 
     for o in (op.mul, op.add, op.sub, op.pow, op.truediv):
         biop_testing(x, y, o)
+
+
+def test_mod():
+    assert (Sexagesimal("1,2;3,4") % Sexagesimal(4)).significant == 2
