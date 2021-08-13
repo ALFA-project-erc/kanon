@@ -7,8 +7,8 @@
 .. image:: https://readthedocs.org/projects/kanon/badge/?version=latest
     :target: https://kanon.readthedocs.io/en/latest/?badge=latest
     :alt: Docs status
-.. image:: https://img.shields.io/pypi/v/kanonpy
-    :target: https://pypi.org/project/kanonpy/
+.. image:: https://img.shields.io/pypi/v/kanon
+    :target: https://pypi.org/project/kanon/
     :alt: Kanon Pypi
 .. image:: https://shields.io/badge/python-v3.8-blue
     :target: https://www.python.org/downloads/release/python-380/
@@ -50,7 +50,7 @@ Install the package with `pip`
 
 .. code:: bash
 
-    pip install kanonpy
+    pip install kanon
 
 For now ``kanon`` features are only available through its Python library
 
