@@ -289,6 +289,7 @@ def test_range(start: int, stop: int, step: int):
 def test_mixed_misc():
     assert Historical.from_int(60) == Historical("2s0")
     assert divmod(Historical(5), Historical("1s26;3")) == (0, 5)
+    assert round(Historical(5, remainder=Decimal(0.6))) == 6
 
 
 @given(st.from_type(Historical), st.from_type(Historical))

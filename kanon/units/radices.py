@@ -738,7 +738,8 @@ class BasedReal(PreciseNumber, _Real):
             with set_precision(
                 pmode=PrecisionMode.MAX, tmode=TruncatureMode.NONE, recording=False
             ):
-                n += type(self)(1, sign=self.sign) >> significant
+                values = [0] * significant + [1]
+                n += type(self)(values[:1], values[1:], sign=self.sign)
         return n.truncate(significant)
 
     def __getitem__(self, key):
