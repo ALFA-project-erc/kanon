@@ -28,11 +28,13 @@ class TestBasedHTable:
             content = json.load(f)
         kwargs["mock"].get(DISHAS_REQUEST_URL.format(180), json=content)
 
-        table: HTable = HTable.read(180, format="dishas")
+        table: HTable = HTable.read("180", format="dishas")
 
         assert table["Mean Argument of the Sun"].unit is u.degree
         assert table["Mean Argument of the Sun"].basedtype is Sexagesimal
         assert table["Entries"].significant == 2
+
+        assert table.values_equal(HTable.read(180))
 
         assert table.loc[Sexagesimal(1)] == table[0]
 

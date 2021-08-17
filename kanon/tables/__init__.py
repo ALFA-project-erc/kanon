@@ -1,6 +1,6 @@
 """
 >>> from kanon.tables import HTable
->>> table = HTable.read(193, format="dishas")
+>>> table = HTable.read(193)
 >>> table
 <HTable length=60>
     Days             Entries
@@ -28,4 +28,10 @@ from .htable_reader import read_table_dishas
 
 __all__ = ["HTable"]
 
+
+def dishas_identifier(_, *args, **kwargs):
+    return isinstance(args[-1], int)
+
+
+registry.register_identifier("dishas", HTable, dishas_identifier)
 registry.register_reader("dishas", HTable, read_table_dishas)

@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Tuple, cast
+from typing import Callable, Dict, List, Tuple, Union, cast
 
 import astropy.units as u
 import requests
@@ -69,13 +69,20 @@ unit_reader: Dict[UnitType, Unit] = {
 }
 
 
-def read_table_dishas(requested_id: str) -> HTable:
+def read_table_dishas(
+    requested_id: Union[int, str], symmetry=True, units=True, entries_name="Entries"
+) -> HTable:
+
+    if isinstance(requested_id, int):
+        qid = requested_id
+    else:
+        qid = int(requested_id)
 
     res: TableContent = requests.get(
-        DISHAS_REQUEST_URL.format(int(requested_id)),
+        DISHAS_REQUEST_URL.format(qid),
     ).json()
     if not res or "error" in res:
-        raise FileNotFoundError(f"{requested_id} ID not found in DISHAS database")
+        raise FileNotFoundError(f"{qid} ID not found in DISHAS database")
 
     values = res["source_value_original"]
 
@@ -105,13 +112,18 @@ def read_table_dishas(requested_id: str) -> HTable:
 
         return symmetry
 
-    symmetries = [build_sym(sym) for sym in symmetry_raw]
+    symmetries = [build_sym(sym) for sym in symmetry_raw] if symmetry else []
 
     table = HTable(
         [args, entries],
-        names=(res["argument1_name"], "Entries"),
+        names=(res["argument1_name"], entries_name),
         index=(res["argument1_name"]),
-        units=[unit_reader.get(arg_unit), unit_reader.get(entry_unit)],
+        units=[
+            unit_reader.get(arg_unit),
+            unit_reader.get(entry_unit),
+        ]
+        if units
+        else None,
         dtype=[object, object],
         symmetry=symmetries,
         meta=res["edited_text"],

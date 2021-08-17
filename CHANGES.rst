@@ -1,3 +1,10 @@
+0.4.0
+_____
+
+*Features*
+
+- `HTable.read` can be used with the ID as sole parameter and with options
+
 0.3.2
 _____
 
