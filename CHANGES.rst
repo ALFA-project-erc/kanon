@@ -4,7 +4,7 @@ _____
 *Features*
 
 - `HTable.read` can be used with the ID as sole parameter and with options
-
+- `HTable` support for double argument tables
 0.3.2
 _____
 

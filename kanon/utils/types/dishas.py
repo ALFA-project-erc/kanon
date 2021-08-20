@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional, TypedDict
+from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
 
 # flake8: noqa
 
@@ -55,7 +55,7 @@ class DSymmetry(TypedDict):
 
 class Args(TypedDict):
     argument1: List[str]
-    argument2: Optional[List[str]]
+    argument2: List[str]
 
 
 class ValueFloat(TypedDict):
@@ -66,12 +66,12 @@ class ValueFloat(TypedDict):
 
 class OriginalArgs(TypedDict):
     argument1: List[OriginalValue]
-    argument2: Optional[List[OriginalValue]]
+    argument2: List[OriginalValue]
 
 
 class SourceValueOriginal(TypedDict):
     args: OriginalArgs
-    entry: List[OriginalValue]
+    entry: Any
 
 
 class ValueOriginal(SourceValueOriginal):
@@ -81,7 +81,7 @@ class ValueOriginal(SourceValueOriginal):
 
 class TableContent(TypedDict):
     argument1_number_of_steps: int
-    argument2_number_of_steps: Optional[int]
+    argument2_number_of_steps: int
     id: int
     source_value_original: SourceValueOriginal
     value_original: ValueOriginal
@@ -97,11 +97,11 @@ class TableContent(TypedDict):
     argument1_number_unit: UnitType
     argument1_number_of_cell: str
     argument1_significant_fractional_place: str
-    argument2_name: Optional[str]
+    argument2_name: str
     argument2_type_of_number: NumberType
-    argument2_number_unit: Optional[UnitType]
-    argument2_number_of_cell: Optional[str]
-    argument2_significant_fractional_place: Optional[str]
+    argument2_number_unit: UnitType
+    argument2_number_of_cell: str
+    argument2_significant_fractional_place: str
     comment: str
     mathematical_parameter: str
     parameter_sets: Dict

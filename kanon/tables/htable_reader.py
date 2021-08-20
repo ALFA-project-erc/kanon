@@ -19,6 +19,10 @@ _dishas_fields = '","'.join(
         "argument1_number_unit",
         "argument1_significant_fractional_place",
         "argument1_type_of_number",
+        "argument2_name",
+        "argument2_number_unit",
+        "argument2_significant_fractional_place",
+        "argument2_type_of_number",
         "entry_significant_fractional_place",
         "entry_number_unit",
         "entry_type_of_number",
@@ -50,7 +54,11 @@ def read_historical(array: List[str], shift: int) -> BasedReal:
         return integer * 30 + Historical(array[1])
 
     values = tuple(int(x) for x in array)
-    return Historical(values[: -shift or None], values[-shift or len(values) :])
+    return Historical(
+        values[: -shift or None],
+        values[-shift or len(values) :],
+        sign=1 if integer >= 0 else -1,
+    )
 
 
 number_reader: Dict[NumberType, Callable[[List[str], int], Real]] = {
@@ -92,9 +100,70 @@ def read_table_dishas(
 
     entry_unit = res["entry_number_unit"]
     entry_shift = int(res["entry_significant_fractional_place"])
-    entry_reader = number_reader.get(res["entry_type_of_number"], lambda x, _: x)
+
+    def entry_reader(val, shift):
+        reader = number_reader.get(res["entry_type_of_number"], lambda x, _: x)
+        if "**" in val:
+            return reader(["0"], shift)
+        return reader(val, shift)
 
     args = [arg_reader(v["value"], arg_shift) for v in values["args"]["argument1"]]
+
+    # Double argument
+
+    if "argument2" in values["args"]:
+        len1 = len(values["args"]["argument1"])
+        len2 = len(values["args"]["argument2"])
+
+        arg2_unit = res["argument2_number_unit"]
+        arg2_shift = int(res["argument2_significant_fractional_place"])
+        arg2_reader = number_reader.get(res["argument2_type_of_number"], lambda x, _: x)
+
+        args2 = [
+            arg2_reader(v["value"], arg2_shift) for v in values["args"]["argument2"]
+        ]
+
+        tables = [
+            HTable(
+                [
+                    args,
+                    [
+                        entry_reader(v["value"], entry_shift)
+                        for v in [values["entry"][j][i] for j in range(len1)]
+                    ],
+                ],
+                names=(res["argument1_name"], entries_name),
+                index=(res["argument1_name"]),
+                dtype=[object, object],
+            )
+            for i in range(len2)
+        ]
+
+        units_info = (
+            {
+                "unit_arg": unit_reader.get(arg_unit),
+                "unit_entry": unit_reader.get(entry_unit),
+            }
+            if units
+            else {}
+        )
+
+        return HTable(
+            [args2, tables],
+            names=(res["argument2_name"], "Tables"),
+            index=(res["argument2_name"]),
+            units=[unit_reader.get(arg2_unit), u.dimensionless_unscaled]
+            if units
+            else None,
+            dtype=None,
+            meta={
+                **res["edited_text"],
+                **units_info,
+                "index": res["argument1_name"],
+                "double": True,
+            },
+        )
+
     entries = [entry_reader(v["value"], entry_shift) for v in values["entry"]]
 
     symmetry_raw = res["symmetries"]
@@ -118,10 +187,7 @@ def read_table_dishas(
         [args, entries],
         names=(res["argument1_name"], entries_name),
         index=(res["argument1_name"]),
-        units=[
-            unit_reader.get(arg_unit),
-            unit_reader.get(entry_unit),
-        ]
+        units=[unit_reader.get(arg_unit), unit_reader.get(entry_unit)]
         if units
         else None,
         dtype=[object, object],

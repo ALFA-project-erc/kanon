@@ -1,0 +1,918 @@
+{
+    "entry_significant_fractional_place": "2",
+    "entry_type_of_number": "integer and sexagesimal",
+    "argument1_type_of_number": "historical",
+    "argument2_significant_fractional_place": "0",
+    "source_value_original": {
+        "args": {
+            "argument1": [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "00",
+                        "06"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "00",
+                        "12"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "00",
+                        "18"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "00",
+                        "24"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "01",
+                        "00"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "01",
+                        "06"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "01",
+                        "01"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "01",
+                        "18"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "01",
+                        "24"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "02",
+                        "00"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "02",
+                        "06"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "02",
+                        "12"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "02",
+                        "18"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "02",
+                        "24"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "03",
+                        "00"
+                    ]
+                }
+            ],
+            "argument2": [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "1"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "2"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "3"
+                    ]
+                }
+            ]
+        },
+        "entry": [
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "29",
+                        "35"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "29",
+                        "37"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "29",
+                        "52"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "29",
+                        "42"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "29",
+                        "47"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "07"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "29",
+                        "52"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "00"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "20"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "00",
+                        "02"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "09",
+                        "15"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "35"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "39",
+                        "17"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "30"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "37"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "27"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "47"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "22"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "30",
+                        "47"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "05"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "45"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "02"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "27"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "32",
+                        "12"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "20"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "50"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "32",
+                        "45"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "31",
+                        "37"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "32",
+                        "12"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "33",
+                        "17"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "32",
+                        "02"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "32",
+                        "37"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "33",
+                        "45"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "32",
+                        "22"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "33",
+                        "10"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "38",
+                        "10"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "33",
+                        "47"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "33",
+                        "37"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "34",
+                        "40"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "33",
+                        "15"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "34",
+                        "00"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "35",
+                        "12"
+                    ]
+                }
+            ],
+            [
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "**",
+                        "**"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "34",
+                        "27"
+                    ]
+                },
+                {
+                    "suggested": false,
+                    "critical_apparatus": [
+                        "",
+                        ""
+                    ],
+                    "comment": "",
+                    "value": [
+                        "35",
+                        "43"
+                    ]
+                }
+            ]
+        ]
+    },
+    "argument1_number_unit": "degree",
+    "edited_text": {
+        "date": "2021",
+        "page_range": null,
+        "created": "2021-05-26",
+        "kibana_name": "Moon velocity double argument, Tabule Magne",
+        "historian": {
+            "kibana_id": "Historian6",
+            "kibana_name": "Husson (Matthieu)"
+        },
+        "type": "a",
+        "created_by": {
+            "kibana_id": "Users5",
+            "kibana_name": "Matthieu Husson"
+        },
+        "kibana_id": "EditedText251",
+        "intellectual_authors": "Husson (Matthieu)",
+        "public": true,
+        "original_texts": [
+            {
+                "is_folio": true,
+                "primary_source": {
+                    "date": null,
+                    "digital_identifier": null,
+                    "prim_type": "ms",
+                    "prim_title_original_char": null,
+                    "taq": "1450",
+                    "kibana_name": "Erfurt, Universitat Erfurt | 2\u00b0 388",
+                    "tpq_date": "1400-01-01",
+                    "taq_date": "1450-01-01",
+                    "kibana_id": "PrimarySource27",
+                    "prim_title": null,
+                    "places": [
+                        {
+                            "kibana_id": "Place41",
+                            "kibana_name": "Erfurt, Germany",
+                            "location": "50.98476789999999,11.0298799"
+                        }
+                    ],
+                    "library": {
+                        "kibana_id": "Library14",
+                        "kibana_name": "Erfurt, DE, Universitat Erfurt"
+                    },
+                    "tpq": "1400",
+                    "default_title": "2\u00b0 388 | Universitat Erfurt",
+                    "id": "27"
+                },
+                "text_type": "astronomicalTable",
+                "taq": "1450",
+                "created": "2021-05-26T20:07:00+02:00",
+                "work": {
+                    "historical_actors": [
+                        {
+                            "kibana_id": "HistoricalActor6",
+                            "kibana_name": "John of Lign\u00e8res (1290\u20131350)",
+                            "viaf_identifier": null
+                        }
+                    ],
+                    "taq": "1325",
+                    "kibana_name": "Tabule Magne\u202a (1325) [John of Lign\u00e8res (1290\u20131350)]",
+                    "translator": null,
+                    "tpq_date": "1325-01-01",
+                    "title_original_char": null,
+                    "taq_date": "1325-01-01",
+                    "title": "Tabule Magne",
+                    "kibana_id": "Work6",
+                    "tpq": "1325",
+                    "incipit": "Multiplicis philosophie",
+                    "default_title": "Tabule Magne",
+                    "id": "6",
+                    "place": {
+                        "kibana_id": "Place10",
+                        "kibana_name": "Paris, France",
+                        "location": "48.85661400000001,2.3522219000000177"
+                    },
+                    "incipit_original_char": null
+                },
+                "kibana_name": "Luna in horis\u202a (1400\u20131450) ; Erfurt, Universitat Erfurt | 2\u00b0 388 , 30r-32v ; Tabule Magne\u202a (1325) [John of Lign\u00e8res (1290\u20131350)]",
+                "tpq_date": "1400-01-01",
+                "language": "Latin",
+                "historical_actor": null,
+                "page_max": "32v",
+                "taq_date": "1450-01-01",
+                "script": "Latin",
+                "kibana_id": "OriginalText147",
+                "original_text_title_original_char": null,
+                "tpq": "1400",
+                "public": true,
+                "comment": null,
+                "id": "147",
+                "place": {
+                    "kibana_id": "Place41",
+                    "kibana_name": "Erfurt, Germany",
+                    "location": "50.98476789999999,11.0298799"
+                },
+                "page_min": "30r",
+                "updated": "2021-05-26T20:07:00+02:00",
+                "original_text_title": "Luna in horis",
+                "table_type": "Moon | Lunar velocities"
+            }
+        ],
+        "edited_text_title": "Moon velocity double argument, Tabule Magne",
+        "secondary_source": null,
+        "era": null,
+        "online_resource": null,
+        "updated_by": {
+            "kibana_id": "Users36",
+            "kibana_name": "Segolene Albouy"
+        },
+        "comment": null,
+        "related_editions_ext": null,
+        "id": "251",
+        "updated": "2021-07-23T14:40:02+02:00",
+        "doi": "10.34847/nkl.c0973vz2"
+    },
+    "argument1_significant_fractional_place": "0",
+    "argument2_name": "days",
+    "argument1_name": "argumentum medium",
+    "argument2_type_of_number": "integer and sexagesimal",
+    "symmetries": [],
+    "argument2_number_unit": "day",
+    "entry_number_unit": "degree"
+}

@@ -138,6 +138,11 @@ class HTable(Table):
                 df = df.pipe(sym)
         return df
 
+    @property
+    def is_double(self) -> bool:
+        """Is this table a double argument table"""
+        return self.columns[self.values_column].dtype.name == "void128"
+
     @overload
     def get(self, key: Union[Real, Quantity], with_unit: Literal[False]) -> Real:
         ...
@@ -162,6 +167,16 @@ class HTable(Table):
         :return: Interpolated value
         :rtype: `~numbers.Real`
         """
+
+        if self.is_double:
+            return HTable(
+                self.loc[key][self.values_column],
+                index=self.meta["index"],
+                units=[self.meta["unit_arg"], self.meta["unit_entry"]]
+                if "unit_arg" in self.meta
+                else None,
+                meta=self.meta.copy(),
+            )
 
         df = self.to_pandas()
 
