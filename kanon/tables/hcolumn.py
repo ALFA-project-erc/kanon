@@ -170,7 +170,7 @@ class HColumn(Column, Truncable):
     @property
     def significant(self) -> Optional[int]:
         """
-        If this column containes `BasedReal` values, return the minimum significant
+        If this column contains `BasedReal` values, return the minimum significant
         of all values. Else returns `None`
         """
         if self.basedtype:

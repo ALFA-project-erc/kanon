@@ -1,10 +1,15 @@
 0.4.0
 _____
 
+*Bug Fixes*
+
+- `HTable.populate` correctly working with input array with number types different from index
+
 *Features*
 
 - `HTable.read` can be used with the ID as sole parameter and with options
 - `HTable` support for double argument tables
+
 0.3.2
 _____
 

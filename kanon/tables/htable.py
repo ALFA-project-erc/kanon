@@ -257,7 +257,13 @@ class HTable(Table):
         if method == "interpolate":
             right[self.values_column] = [self.get(x) for x in array]
 
-        table: HTable = join(self, HTable(right), join_type="outer")
+        right_tab = HTable(right)
+        if (index_type := self[key].basedtype) != right_tab[key].basedtype:
+            right_tab[key] = right_tab[key].astype(index_type or self[key].dtype)
+            if index_type is not None:
+                right_tab[key] = right_tab[key].resize(self[key].significant)
+
+        table: HTable = join(self, right_tab, join_type="outer")
 
         table.set_index(key)
 

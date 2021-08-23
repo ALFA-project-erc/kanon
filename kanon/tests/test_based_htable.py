@@ -106,20 +106,39 @@ def test_loc_slice(tab: HTable):
     assert not isinstance(sliced, HTable) or len(sliced) == len(tab) - 1
 
 
-def test_based_fill():
-    sin_table = HTable(
+sin_table = HTable(
+    [
+        list(Sexagesimal.range(91)),
         [
-            list(Sexagesimal.range(91)),
-            [
-                round(Sexagesimal.from_float(math.sin(x * math.pi / 180), 3))
-                for x in range(91)
-            ],
+            round(Sexagesimal.from_float(math.sin(x * math.pi / 180), 3))
+            for x in range(91)
         ],
-        names=("Arg", "Val"),
-        index="Arg",
-    )
-    sin_table_grid = sin_table[
-        [i for i in range(91) if i <= 60 and i % 12 == 0 or i > 60 and i % 6 == 0]
-    ]
+    ],
+    names=("Arg", "Val"),
+    index="Arg",
+)
+sin_table_grid = sin_table[
+    [i for i in range(91) if i <= 60 and i % 12 == 0 or i > 60 and i % 6 == 0]
+]
+
+
+def test_based_fill():
     sin_table_pop_euclidean = sin_table_grid.populate(list(Sexagesimal.range(91)))
     sin_table_pop_euclidean.fill("distributed_convex")
+    assert len(sin_table_pop_euclidean) == 91
+
+
+def test_based_populate():
+    tab = sin_table_grid.populate(list(range(91)))
+    assert tab["Arg"].basedtype == Sexagesimal
+    assert len(tab) == 91
+
+    tab_int = sin_table_grid.copy()
+    tab_int.remove_indices("Arg")
+    tab_int["Arg"] = tab_int["Arg"].astype(int)
+    tab_int.set_index("Arg")
+
+    tab = tab_int.populate(list(Sexagesimal.range(91)))
+    assert tab["Arg"].basedtype is None
+    assert tab["Arg"].dtype == int
+    assert len(tab) == 91
