@@ -7,40 +7,7 @@ packagename.test
 
 """
 
-import os
-
 from hypothesis.strategies._internal.core import tuples
-
-# For Astropy 3.0 and later, we can use the standalone pytest plugin
-try:
-    from pytest_astropy_header.display import PYTEST_HEADER_MODULES, TESTED_VERSIONS
-
-    ASTROPY_HEADER = True
-except ImportError:
-    ASTROPY_HEADER = False
-
-
-def pytest_configure(config):
-    """Configure Pytest with Astropy.
-
-    Parameters
-    ----------
-    config : pytest configuration
-
-    """
-    if ASTROPY_HEADER:
-
-        config.option.astropy_header = True
-
-        # Customize the following lines to add/remove entries from the list of
-        # packages for which version numbers are displayed when running the tests.
-        PYTEST_HEADER_MODULES.pop("Pandas", None)
-        PYTEST_HEADER_MODULES["scikit-image"] = "skimage"
-
-        from . import __version__
-
-        packagename = os.path.basename(os.path.dirname(__file__))
-        TESTED_VERSIONS[packagename] = __version__
 
 
 def _hypothesis_sexagesimal_strategy():
