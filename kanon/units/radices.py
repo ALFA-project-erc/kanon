@@ -1229,10 +1229,8 @@ class BasedReal(PreciseNumber, _Real):
             if fdiv == self.decimal / other.decimal:
                 mod = Decimal(0)
             else:
-                mod = (
-                    self.decimal % other.decimal + 0
-                    if self.sign == other.sign
-                    else other.decimal
+                mod = self.decimal % other.decimal + (
+                    0 if self.sign == other.sign else other.decimal
                 )
             return self.from_int(fdiv, max_sig), self.from_decimal(mod, max_sig)
 

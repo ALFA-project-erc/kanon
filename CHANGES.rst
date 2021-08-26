@@ -4,6 +4,8 @@ _____
 *Bug Fixes*
 
 - `HTable.populate` correctly working with input array with number types different from index
+- `BasedReal.__mod__` correctly working with negative values
+- `BasedReal.__mod__` correctly keeping precision
 
 *Features*
 

@@ -302,3 +302,5 @@ def test_operations_without_remainders_mixed(x, y):
 
 def test_mod():
     assert (Sexagesimal("1,2;3,4") % Sexagesimal(4)).significant == 2
+    val = Sexagesimal((30,), (30,), remainder=Decimal("0.9"))
+    assert -val % 360 == 360 - val
