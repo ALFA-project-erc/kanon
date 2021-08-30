@@ -12,11 +12,11 @@ method to be valid.
 ...         return year % 7 == 0
 >>> my_era = Era("MyEra", 1234)
 >>> my_calendar = NewCal(my_era)
->>> my_date = Date(my_calendar, (26, 3, 42))
+>>> my_date = Date(my_calendar, (26, 3, 42), 13.5)
 >>> str(my_date)
-'42 ThirdMonth 26 MyEra in My New Calendar 12:00'
+'42 ThirdMonth 26 MyEra in My New Calendar 13:30'
 >>> my_date.jdn
-3851.0
+3851.0625
 """
 
 import abc
@@ -26,6 +26,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from astropy.time import Time
 
+from kanon.units import BasedReal, Sexagesimal
 from kanon.utils.types.number_types import Real
 
 CALENDAR_REGISTRY: Dict[str, "Calendar"] = {}
@@ -60,6 +61,15 @@ def float_to_hm(fraction: float) -> Tuple[int, int]:
     mins = int((time - int(time)) * 60)
 
     return hours, mins
+
+
+def hours_to_day(hours: Real) -> float:
+    """Convert number of hours into fraction of day
+
+    :type fraction: float
+    :rtype: float
+    """
+    return float(hours) / 24
 
 
 @dataclass(frozen=True)
@@ -118,7 +128,7 @@ class Date:
     Dataclass defining a date.
 
     >>> cal = Calendar.registry["Julian A.D."]
-    >>> date = Date(cal, (1,2,3), hm_to_float(13, 0))
+    >>> date = Date(cal, (1,2,3), 13)
     >>> str(date)
     '3 Februarius 1 A.D. in Julian 13:00'
     >>> date.jdn
@@ -128,24 +138,31 @@ class Date:
     """
 
     def __init__(
-        self, calendar: "Calendar", ymd: Tuple[int, int, int], frac: float = 0.5
+        self,
+        calendar: "Calendar",
+        ymd: Tuple[int, int, int],
+        hours: Real = Sexagesimal(12),
     ):
         """
         :param calendar: Calendar used in this date.
         :type calendar: Calendar
         :param ymd: Year, month and days, expressed in the specified calendar.
         :type ymd: Tuple[int, int, int]
-        :param frac: Fraction of day, 0.5 == 12:00, defaults to 0.5
-        :type frac: float, optional
+        :param hours: Number of hours, defaults to Sexagesimal(12);
+        :type hours: Real, optional
         """
-        if not 0 <= frac < 1:
-            raise ValueError("Time must be in the range [0;1[")
+        if not 0 <= float(hours) < 24:
+            raise ValueError("Time must be in the range [0;24,0[")
 
         self._calendar = calendar
         self._ymd = ymd
-        self._frac = frac
+        self._hours = (
+            hours.resize(1)
+            if isinstance(hours, Sexagesimal)
+            else Sexagesimal.from_float(float(hours), 2)
+        )
 
-        self._jdn = calendar.jdn_at_ymd(*ymd) - 0.5 + frac
+        self._jdn = calendar.jdn_at_ymd(*ymd) - 0.5 + hours_to_day(hours)
 
     @property
     def calendar(self) -> "Calendar":
@@ -164,12 +181,12 @@ class Date:
         return self._ymd
 
     @property
-    def frac(self) -> float:
-        """Fraction of day, 0.5 == 12:00
+    def hours(self) -> BasedReal:
+        """Number of hours
 
-        :rtype: float
+        :rtype: Sexagesimal
         """
-        return self._frac
+        return self._hours
 
     @property
     def jdn(self) -> float:
@@ -204,7 +221,7 @@ class Date:
 
     def __str__(self):
         year, month, days = self.ymd
-        h, m = float_to_hm(self.frac)
+        h, m = self.hours[0], self.hours[1]
         return (
             f"{days} {self.calendar.months[month-1].name} "
             f"{year} {self.calendar.era.name} in {self.calendar._name} "
@@ -401,7 +418,7 @@ class Calendar(metaclass=abc.ABCMeta):
             else:
                 rem -= ndays
 
-        return Date(self, (year, month, int(days)), time)
+        return Date(self, (year, month, int(days)), Sexagesimal("24;0") * time)
 
     def __repr__(self) -> str:
         return f"Calendar({self.name})"

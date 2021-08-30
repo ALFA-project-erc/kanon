@@ -1,3 +1,10 @@
+0.5.0
+_____
+
+*Features*
+- `Date.frac` no longer exists, replaced with `Date.hours` which is `Sexagesimal`
+
+
 0.4.0
 _____
 
