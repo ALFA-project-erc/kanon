@@ -3,6 +3,7 @@ _____
 
 *Features*
 - `Date.frac` no longer exists, replaced with `Date.hours` which is `Sexagesimal`
+- Introducing `models`
 
 
 0.4.0
