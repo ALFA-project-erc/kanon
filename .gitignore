@@ -56,9 +56,6 @@ distribute-*.tar.gz
 .tox
 .*.sw[op]
 *~
-.project
-.pydevproject
-.settings
 pip-wheel-metadata/
 
 # Mac OSX
@@ -69,3 +66,9 @@ pip-wheel-metadata/
 coverage.xml
 .tmp
 .hypothesis
+
+# Virtual env
+.venv
+venv
+env
+.env

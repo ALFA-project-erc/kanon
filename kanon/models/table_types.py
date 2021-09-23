@@ -6,12 +6,12 @@ class Sun(TableType):
     def astro_id(cls):
         return 1
 
-    equation_time = "equation of time"
-    solar_velocities = "solar velocities"
-    revolutions = "revolutions"
-    equation_sun = "equation of the Sun"
-    mm_solar_sideral_longitude = "mean motion solar sideral longitude"
-    mm_solar_tropical_longitude = "mean motion solar tropical longitude"
+    equ_of_the_sun = 4
+    equ_of_time = 1
+    mean_motion_solar_sideral_long = 3
+    mean_motion_solar_tropical_long = 2
+    revolutions = 86
+    solar_velocities = 20
 
 
 class Mercury(TableType):
@@ -19,25 +19,25 @@ class Mercury(TableType):
     def astro_id(cls):
         return 2
 
-    latitude_deviation = "Mercury latitude deviation"
-    velocity_double_argument = "Mercury velocity double argument"
-    mm_anomaly = "mean motion anomaly Mercury"
-    equation_center = "equation Mercury center"
-    equation_anomaly_mean_distance = "equation Mercury anomaly at mean distance"
-    total_equation_double_argument = "total equation double-argument table Mercury"
-    planetary_stations = "planetary Stations Mercury"
-    latitude_inclination = "Mercury latitude inclination"
-    latitude_slant = "Mercury latitude slant"
-    first_latitude = "Mercury first latitude"
-    velocity_epicycle_component = "Mercury velocity epicycle component"
-    second_latitude = "Mercury second latitude"
-    latitude_double_argument = "Mercury latitude double argument"
-    variable_hypothenuse = "variable hypothenuse Mercury"
-    equation_minuta_proportionalia = "Mercury equation minuta proportionalia"
-    true_position_double_argument = "true position double argument Mercury"
-    equation_anomaly_min_distance = "equation Mercury anomaly at minimum distance"
-    equation_anomaly_max_distance = "equation Mercury anomaly at maximum distance"
-    velocity_eccentricity_component = "Mercury velocity eccentricity component"
+    equ_anomaly_at_max_dist = 72
+    equ_anomaly_at_mean_dist = 27
+    equ_anomaly_at_min_dist = 73
+    equ_center = 26
+    equ_minuta_proportionalia = 91
+    first_lat = 96
+    lat_deviation = 100
+    lat_double_arg = 101
+    lat_incl = 98
+    lat_slant = 99
+    mean_motion_anomaly = 25
+    planetary_stations = 30
+    second_lat = 97
+    total_equ_double_arg_table = 28
+    true_position_double_arg = 92
+    variable_hypotenuse = 90
+    velocity_double_arg = 95
+    velocity_eccentricity_component = 93
+    velocity_epicycle_component = 94
 
 
 class Venus(TableType):
@@ -45,25 +45,25 @@ class Venus(TableType):
     def astro_id(cls):
         return 3
 
-    equation_anomaly_max_distance = "equation Venus anomaly at maximum distance"
-    latitude_inclination = "Venus latitude inclination"
-    second_latitude = "Venus second latitude"
-    first_latitude = "Venus first latitude"
-    velocity_double_argument = "Venus velocity double argument"
-    velocity_eccentricity_component = "Venus velocity eccentricity component"
-    true_position_double_argument = "true position double argument Venus"
-    equation_minuta_proportionalia = "Venus equation minuta proportionalia"
-    variable_hypothenuse = "variable hypothenuse Venus"
-    equation_anomaly_min_distance = "equation Venus anomaly at minimum distance"
-    latitude_slant = "Venus latitude slant"
-    latitude_deviation = "Venus latitude deviation"
-    mm_anomaly = "mean motion anomaly Venus"
-    total_equation_double_argument = "total equation double-argument table Venus"
-    equation_anomaly_mean_distance = "equation Venus anomaly at mean distance"
-    equation_center = "equation Venus center"
-    latitude_double_argument = "Venus latitude double argument"
-    velocity_epicycle_component = "Venus velocity epicycle component"
-    planetary_stations = "planetary stations Venus"
+    equ_anomaly_at_max_dist = 76
+    equ_anomaly_at_mean_dist = 33
+    equ_anomaly_at_min_dist = 77
+    equ_center = 32
+    equ_minuta_proportionalia = 103
+    first_lat = 108
+    lat_deviation = 112
+    lat_double_arg = 113
+    lat_incl = 110
+    lat_slant = 111
+    mean_motion_anomaly = 31
+    planetary_stations = 36
+    second_lat = 109
+    total_equ_double_arg_table = 34
+    true_position_double_arg = 104
+    variable_hypotenuse = 102
+    velocity_double_arg = 107
+    velocity_eccentricity_component = 105
+    velocity_epicycle_component = 106
 
 
 class Moon(TableType):
@@ -71,19 +71,20 @@ class Moon(TableType):
     def astro_id(cls):
         return 4
 
-    lunar_velocities = "lunar velocities"
-    equation_minuta_proportionalia = "Moon equation minuta proportionalia"
-    lunar_latitude = "lunar latitude"
-    equation_variation_diameter = "Moon equation variation of diameter"
-    mean_argument_latitude = "Moon mean argument of latitude"
-    mm_double_elongation = "mean motion double elongation"
-    mm_lunar_longitude = "mean motion lunar longitude"
-    mm_lunar_anomaly = "mean motion lunar anomaly"
-    mm_lunar_node = "mean motion lunar node"
-    equation_center = "equation Moon center"
-    mm_longitude_plus_lunar_node = "mean motion longitude plus lunar node"
-    equation_anomaly = "equation Moon anomaly"
-    mm_lunar_elongation = "mean motion lunar elongation"
+    equ_anomaly = 47
+    equ_anomaly_at_max_dist = 188
+    equ_center = 46
+    equ_minuta_proportionalia = 89
+    equ_variation_of_diameter = 88
+    lunar_lat = 48
+    lunar_velocities = 23
+    mean_arg_of_lat = 87
+    mean_motion_double_elongation = 45
+    mean_motion_long_plus_lunar_node = 43
+    mean_motion_lunar_anomaly = 38
+    mean_motion_lunar_elongation = 44
+    mean_motion_lunar_long = 37
+    mean_motion_lunar_node = 42
 
 
 class Mars(TableType):
@@ -91,24 +92,24 @@ class Mars(TableType):
     def astro_id(cls):
         return 5
 
-    second_latitude = "Mars second latitude"
-    southern_latitude = "Mars southern latitude"
-    northern_latitude = "Mars northern latitude"
-    first_latitude = "Mars first latitude"
-    velocity_epicycle_component = "Mars velocity epicycle component"
-    velocity_eccentricity_component = "Mars velocity eccentricity component"
-    true_position_double_argument = "true position double argument Mars"
-    equation_minuta_proportionalia = "Mars equation minuta proportionalia"
-    variable_hypothenuse = "variable hypothenuse Mars"
-    velocity_double_argument = "Mars velocity double argument"
-    latitude_double_argument = "Mars latitude double argument"
-    planetary_stations = "planetary stations Mars"
-    total_equation_double_argument = "total equation double-argument table Mars"
-    equation_anomaly_mean_distance = "equation Mars anomaly at mean distance"
-    equation_center = "equation Mars center"
-    equation_anomaly_max_distance = "equation Mars anomaly at maximum distance"
-    equation_anomaly_min_distance = "equation Mars anomaly at minimum distance"
-    mm_longitude = "mean motion longitude Mars"
+    equ_anomaly_at_max_dist = 70
+    equ_anomaly_at_mean_dist = 51
+    equ_anomaly_at_min_dist = 71
+    equ_center = 50
+    equ_minuta_proportionalia = 115
+    first_lat = 120
+    lat_double_arg = 124
+    mean_motion_long = 49
+    northern_lat = 122
+    planetary_stations = 54
+    second_lat = 121
+    southern_lat = 123
+    total_equ_double_arg_table = 52
+    true_position_double_arg = 116
+    variable_hypotenuse = 114
+    velocity_double_arg = 119
+    velocity_eccentricity_component = 117
+    velocity_epicycle_component = 118
 
 
 class Jupiter(TableType):
@@ -116,24 +117,24 @@ class Jupiter(TableType):
     def astro_id(cls):
         return 6
 
-    equation_center = "equation Jupiter center"
-    mm_longitude = "mean motion longitude Jupiter"
-    southern_latitude = "Jupiter southern latitude"
-    second_latitude = "Jupiter second latitude"
-    first_latitude = "Jupiter first latitude"
-    equation_anomaly_mean_distance = "equation Jupiter anomaly at mean distance"
-    latitude_double_argument = "Jupiter latitude double argument"
-    variable_hypothenuse = "variable hypothenuse Jupiter"
-    velocity_double_argument = "Jupiter velocity double argument"
-    velocity_epicycle_component = "Jupiter velocity epicycle component"
-    equation_minuta_proportionalia = "Jupiter equation minuta proportionalia"
-    true_position_double_argument = "true position double argument Jupiter"
-    velocity_eccentricity_component = "Jupiter velocity eccentricity component"
-    total_equation_double_argument = "total equation double-argument table Jupiter"
-    planetary_stations = "planetary stations Jupiter"
-    northern_latitude = "Jupiter northern latitude"
-    equation_anomaly_min_distance = "equation Jupiter anomaly at minimum distance"
-    equation_anomaly_max_distance = "equation Jupiter anomaly at maximum distance"
+    equ_anomaly_at_max_dist = 68
+    equ_anomaly_at_mean_dist = 57
+    equ_anomaly_at_min_dist = 69
+    equ_center = 56
+    equ_minuta_proportionalia = 126
+    first_lat = 131
+    lat_double_arg = 135
+    mean_motion_long = 55
+    northern_lat = 133
+    planetary_stations = 60
+    second_lat = 132
+    southern_lat = 134
+    total_equ_double_arg_table = 58
+    true_position_double_arg = 127
+    variable_hypotenuse = 125
+    velocity_double_arg = 130
+    velocity_eccentricity_component = 128
+    velocity_epicycle_component = 129
 
 
 class Saturn(TableType):
@@ -141,44 +142,44 @@ class Saturn(TableType):
     def astro_id(cls):
         return 7
 
-    equation_anomaly_mean_distance = "equation Saturn anomaly at mean distance"
-    first_latitude = "Saturn first latitude"
-    equation_center = "equation Saturn center"
-    equation_anomaly_max_distance = "equation Saturn anomaly at maximum distance"
-    mm_longitude = "mean motion longitude Saturn"
-    equation_anomaly_min_distance = "equation Saturn anomaly at minimum distance"
-    velocity_double_argument = "Saturn velocity double argument"
-    variable_hypothenuse = "variable hypothenuse Saturn"
-    equation_minuta_proportionalia = "Saturn equation minuta proportionalia"
-    true_position_double_argument = "true position double argument Saturn"
-    velocity_eccentricity_component = "Saturn velocity eccentricity component"
-    second_latitude = "Saturn second latitude"
-    velocity_epicycle_component = "Saturn velocity epicycle component"
-    total_equation_double_argument = "total equation double-argument table Saturn"
-    planetary_stations = "planetary stations Saturn"
-    latitude_double_argument = "Saturn latitude double argument"
-    southern_latitude = "Saturn southern latitude"
-    northern_latitude = "Saturn northern latitude"
+    equ_anomaly_at_max_dist = 74
+    equ_anomaly_at_mean_dist = 63
+    equ_anomaly_at_min_dist = 75
+    equ_center = 62
+    equ_minuta_proportionalia = 137
+    first_lat = 142
+    lat_double_arg = 146
+    mean_motion_long = 61
+    northern_lat = 144
+    planetary_stations = 66
+    second_lat = 143
+    southern_lat = 145
+    total_equ_double_arg_table = 64
+    true_position_double_arg = 138
+    variable_hypotenuse = 136
+    velocity_double_arg = 141
+    velocity_eccentricity_component = 139
+    velocity_epicycle_component = 140
 
 
-class Spherical(TableType):
+class SphericalAstronomical(TableType):
     @classmethod
     def astro_id(cls):
         return 8
 
-    tangent = "tangent"
-    projection_rays = "projection of rays"
-    solar_altitude_from_time_day = "solar altitude from the time of day"
-    time_day_from_solar_altitude = "time of day from solar altitude"
-    houses = "houses"
-    meridian_altitude_sun = "meridian altitude of the Sun"
-    proportions = "proportion tables"
-    right_ascension = "right ascension"
-    oblique_ascension = "oblique ascension"
-    ascensional_difference = "ascensional difference"
-    length_diurnal_seasonal_hour = "length of diurnal seasonal hour"
-    length_daylight = "length of daylight"
-    declination = "declination"
+    ascensional_diff = 11
+    declination = 8
+    houses = 79
+    length_of_daylight = 78
+    length_of_diurnal_seasonal_hour = 12
+    meridian_altitude_of_the_sun = 80
+    oblique_ascension = 10
+    projection_of_rays = 83
+    proportion_tables = 84
+    right_ascension = 9
+    solar_altitude_from_the_time_of_day = 82
+    tangent = 85
+    time_of_day_from_solar_altitude = 81
 
 
 class EighthSphere(TableType):
@@ -186,11 +187,11 @@ class EighthSphere(TableType):
     def astro_id(cls):
         return 9
 
-    equation_access_and_recess = "equation access and recess"
-    trepidation = "trepidation"
-    mm_access_and_recess = "mean motion access and recess"
-    mm_apogees_and_stars_precessions = "mean motion apogees and stars/precessions"
-    mm_solar_apogee = "mean motion solar apogee"
+    equ_access_and_recess = 148
+    mean_motion_access_and_recess = 13
+    mean_motion_apogees_and_stars_precessions = 14
+    mean_motion_solar_apogee = 17
+    trepidation = 147
 
 
 class Eclipse(TableType):
@@ -198,80 +199,52 @@ class Eclipse(TableType):
     def astro_id(cls):
         return 10
 
-    eclipsed_part_solar_disk = "eclipsed part of the solar disk"
-    eclipsed_part_lunar_disk = "eclipsed part of the lunar disk"
-    eclipse_interpolation = "eclipse interpolation table"
-    immersion_eclipse_nearest_distance = "immersion of eclipse at nearest distance"
-    digit_solar_eclipse_nearest_distance = "digit of solar eclipse at nearest distance"
-    immersion_solar_eclipse_greatest_distance = (
-        "immersion of solar eclipse at greatest distance"
-    )
-    digit_solar_eclipse_greatest_distance = (
-        "digit of solar eclipse at greatest distance"
-    )
-    half_totality_lunar_eclipse_nearest_distance = (
-        "half-totality of lunar eclipse at nearest distance"
-    )
-    immersion_lunar_eclipse_nearest_distance = (
-        "immersion of lunar eclipse at nearest distance"
-    )
-    inclination_begining_solar_eclipse = "inclination at the begining of solar eclipse"
-    inclination_end_solar_eclipse = "inclination at the end of solar eclipse"
-    inclination_obliquity_component = "inclination obliquity component"
-    inclination_local_latitude_component = "inclination local latitude component"
-    lunar_eclipse_half_totality = "lunar eclipse half totality table"
-    lunar_eclipse_half_duration = "lunar eclipse half duration table"
-    solar_eclipse_half_duration = "solar eclipse half duration table"
-    inclination_end_lunar_eclipse = "inclination at the end of lunar eclipse"
-    inclination_end_totality_lunar_eclipse = (
-        "inclination at the end of totality for a lunar eclipse"
-    )
-    inclination_begining_totality_lunar_eclipse = (
-        "inclination at the begining of totality for a lunar eclipse"
-    )
-    inclination_begining_lunar_eclipse = "inclination at the begining of lunar eclipse"
-    digit_lunar_eclipse_nearest_distance = "digit of lunar eclipse at nearest distance"
-    half_totality_lunar_eclipse_greatest_distance = (
-        "half-totality of lunar eclipse at greatest distance"
-    )
-    mm_syzygies = "mean motion syzygies"
-    parallax_longitude_component = "parallax longitude component"
-    parallax_latitude_component = "parallax latitude component"
-    moon_prlx_syzygy_true_anomaly_0deg = (
-        "Moon parallax at syzygy and true anomaly at 0°"
-    )
-    moon_prlx_syzygy_true_anomaly_180deg = (
-        "Moon parallax at syzygy and true anomaly at 180°"
-    )
-    moon_prlx_quadrature_true_anomaly_0deg = (
-        "Moon parallax at quadrature and true anomaly at 0°"
-    )
-    moon_prlx_quadrature_true_anomaly_180deg = (
-        "Moon parallax at quadrature and true anomaly at 180°"
-    )
-    moon_prlx_interpolation_syzygy = "Moon parallax interpolation at syzygy"
-    moon_prlx_interpolation_quadrature = "Moon parallax interpolation at quadrature"
-    immersion_lunar_eclipse_greatest_distance = (
-        "immersion of lunar eclipse at greatest distance"
-    )
-    digit_lunar_eclipse_greatest_distance = (
-        "digit of lunar eclipse at greatest distance"
-    )
-    variation_shadow = "variation of shadow"
-    radius_shadow = "radius of the shadow"
-    radius_moon = "radius of the Moon"
-    radius_sun = "radius of the Sun"
-    moon_prlx_interpolation_syzygy_and_quadrature = (
-        "Moon parallax interpolation between syzygy and quadrature"
-    )
+    digit_of_lunar_eclipse_at_great_dist = 163
+    digit_of_lunar_eclipse_at_near_dist = 166
+    digit_of_solar_eclipse_at_great_dist = 169
+    digit_of_solar_eclipse_at_near_dist = 171
+    eclipse_interpolation_table = 173
+    eclipsed_part_of_the_lunar_disk = 174
+    eclipsed_part_of_the_solar_disk = 175
+    half_totality_of_lunar_eclipse_at_great_dist = 165
+    half_totality_of_lunar_eclipse_at_near_dist = 168
+    immersion_of_eclipse_at_near_dist = 172
+    immersion_of_lunar_eclipse_at_great_dist = 164
+    immersion_of_lunar_eclipse_at_near_dist = 167
+    immersion_of_solar_eclipse_at_great_dist = 170
+    incl_at_the_beginning_of_lunar_eclipse = 178
+    incl_at_the_beginning_of_solar_eclipse = 176
+    incl_at_the_beginning_of_totality_for_a_lunar_eclipse = 179
+    incl_at_the_end_of_lunar_eclipse = 181
+    incl_at_the_end_of_solar_eclipse = 177
+    incl_at_the_end_of_totality_for_a_lunar_eclipse = 180
+    incl_local_lat_component = 185
+    incl_obliquity_component = 186
+    lunar_eclipse_half_duration_table = 183
+    lunar_eclipse_half_totality_table = 184
+    mean_motion_syzygies = 149
+    moon_prlx_at_quadrature_and_true_anomaly_at_0deg = 154
+    moon_prlx_at_quadrature_and_true_anomaly_at_180deg = 155
+    moon_prlx_at_syzygy_and_true_anomaly_at_0deg = 152
+    moon_prlx_at_syzygy_and_true_anomaly_at_180deg = 153
+    moon_prlx_interpolation_at_quadrature = 157
+    moon_prlx_interpolation_at_syzygy = 156
+    moon_prlx_interpolation_between_syzygy_and_quadrature = 158
+    prlx_lat_component = 151
+    prlx_long_component = 150
+    radius_of_the_moon = 160
+    radius_of_the_shadow = 161
+    radius_of_the_sun = 159
+    solar_eclipse_half_duration_table = 182
+    variation_of_shadow = 162
 
 
-class Trigonometrical(TableType):
+class Mathematical(TableType):
     @classmethod
     def astro_id(cls):
         return 11
 
-    cosine = "cosine"
-    sine = "sine"
-    shadow = "shadow"
-    chords = "chords"
+    chords = 5
+    cosine = 67
+    shadow = 7
+    sine = 6
