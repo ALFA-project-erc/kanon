@@ -11,8 +11,11 @@ from kanon.units.precision import (
     TruncatureMode,
     _with_context_precision,
     clear_records,
+    find_func,
     get_context,
     get_records,
+    identify_func,
+    remove_func,
     set_context,
     set_precision,
     set_recording,
@@ -30,15 +33,18 @@ class TestPrecision:
     def test_context(self):
 
         current_ctx = get_context()
-        ctx = PrecisionContext(
-            1, TruncatureMode.CEIL, (None, ""), (None, ""), (None, ""), (None, "")
-        )
+        ctx = PrecisionContext(1, TruncatureMode.CEIL, None, None, None, None)
         set_context(ctx)
         with set_precision() as ctx_dict:
             assert ctx_dict["pmode"] == 1
             with pytest.raises(ValueError):
                 set_context(ctx)
         set_context(current_ctx)
+
+        with pytest.raises(ValueError) as err:
+            ctx.mutate(add=lambda x, y: 0)
+
+        assert "not registered" in str(err)
 
     def equality(self, a: BasedReal, b: BasedReal):
         assert a.equals(
@@ -123,28 +129,43 @@ class TestPrecision:
                 pass
 
     def test_custom_arithmetic(self):
+        @identify_func("ADD")
         def add(a: PreciseNumber, b: PreciseNumber):
             return a._add(Sexagesimal.from_float(float(b) + 1, 0))
 
+        @identify_func("SUB")
         def sub(a: PreciseNumber, b: PreciseNumber):
             return a._sub(Sexagesimal.from_float(float(b) + 1, 0))
 
+        @identify_func("MUL")
         def mul(a: PreciseNumber, b: PreciseNumber):
             return a._mul(Sexagesimal.from_float(float(b) + 1, 0))
 
+        @identify_func("DIV")
         def div(a: PreciseNumber, b: PreciseNumber):
             return Sexagesimal(5)
 
-        with set_precision(
-            add=(add, "ADD"),
-            sub=(sub, "SUB"),
-            div=(div, "DIV"),
-            mul=(mul, "MUL"),
-        ):
+        with set_precision(add=add, sub=sub, div=div, mul=mul):
             assert Sexagesimal(1) + Sexagesimal(1) == 3
             assert Sexagesimal(1) - Sexagesimal(1) == 0
             assert Sexagesimal(1) * Sexagesimal(1) == 2
             assert Sexagesimal(1) / Sexagesimal(1) == 5
+
+        with pytest.raises(ValueError) as err:
+
+            @identify_func("ADD")
+            def _add():
+                pass
+
+        assert "already in use" in str(err)
+
+        assert find_func("ADD") == add
+        assert remove_func(add)
+        assert not remove_func(add)
+
+        with pytest.raises(ValueError) as err:
+            identify_func("ADD")(mul)
+        assert "Function" in str(err)
 
     def test_history(self):
         set_recording(True)
@@ -166,13 +187,14 @@ class TestPrecision:
         Sexagesimal(1) + Sexagesimal(1)
         assert len(records) == 2
 
+        @identify_func("_ADD")
         def add(a, b):
             return Sexagesimal(0)
 
-        with set_precision(add=(add, "ADD")):
+        with set_precision(add=add):
             Sexagesimal(1) + Sexagesimal(1)
         assert len(records) == 3
-        assert records[-1]["add"] == "ADD"
+        assert records[-1]["add"] == "_ADD"
 
         with set_precision():
             with pytest.raises(ValueError):

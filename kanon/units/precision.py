@@ -4,10 +4,10 @@ All operations are made within a `PrecisionContext` rules, which indicate :
 
 - A `TruncatureMode`
 - A `PrecisionMode`
-- 4 `ArithmeticIdentifier`, (add, sub, mul, div)
+- 4 `CustomArithmeticAlgorithm`, (add, sub, mul, div)
 
 Default precision context is set to `TruncatureMode.NONE`, `PrecisionMode.MAX`, and all
-`ArithmeticIdentifier` as default.
+`CustomArithmeticAlgorithm` as default.
 
 To set new precision rules you should use the `set_precision` context manager. In the example
 below, I set the precision so that the result significant number is 0 and that it should be
@@ -24,36 +24,35 @@ truncated.
 03 ;
 
 If you want to use a specific algorithm for one of the arithmetical operations,
-you first need to define the algorithm with this signature :
+you first need to define the algorithm with this signature with the `identify_func`
+decorator specifying a unique ID :
 
 .. code:: python
 
     Callable[[PreciseNumber, PreciseNumber], PreciseNumber]
 
-For example, a multiplication algorithm which is essentialy equivalent to ``a * round(b,0)``:
+For example, a multiplication algorithm which is essentialy equivalent to ``a * round(b,0)``
+with `TEST_MUL` as its ID:
 
->>> def test_mul(a: PreciseNumber, b: PreciseNumber) -> PreciseNumber:
+>>> @identify_func("TEST_MUL")
+... def test_mul(a: PreciseNumber, b: PreciseNumber) -> PreciseNumber:
 ...     res = 0
 ...     for i in range(int(round(b,0))):
 ...         res += a
 ...     return res
 
-Then you have to identify this algorithm with a unique string
-
->>> test_mul_identifier = (test_mul, "TEST_MUL")
-
-You can now use this identifier to make multiplications use this algorithm
+You can now use this function to make multiplications use this algorithm
 
 >>> b * a
 03 ; 40
->>> with set_precision(mul=test_mul_identifier):
+>>> with set_precision(mul=test_mul):
 ...     b * a
 04 ; 00
 
 All operations and their associated context are stored inside the `ContextPrecision` when
 the recording flag is set to ``True``. You can either set it to ``True`` inside of a
 `set_precision` context manager, or globally turn it on with `set_recording(True)`.
-Records are easily accessed through `get_records`, and can be cleared with `clear_records`.
+Records are displayed with `get_records`, and can be cleared with `clear_records`.
 
 Let's try to record our operations.
 
@@ -65,7 +64,7 @@ Let's try to record our operations.
 >>> with set_precision(tmode=TruncatureMode.ROUND, pmode=1):
 ...     a + Sexagesimal("2;5,30")
 03 ; 56
->>> with set_precision(mul=test_mul_identifier):
+>>> with set_precision(mul=test_mul):
 ...     b * a
 04 ; 00
 >>> get_records()
@@ -85,9 +84,9 @@ Let's try to record our operations.
 Types
 -----
 
-.. py:attribute:: ArithmeticIdentifier
+.. py:attribute:: CustomArithmeticAlgorithm
 
-    :type: Tuple[Optional[Callable[[PreciseNumber, PreciseNumber], PreciseNumber]], str]
+    :type: Optional[Callable[[PreciseNumber, PreciseNumber], PreciseNumber]
 """
 from __future__ import annotations
 
@@ -97,7 +96,7 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import partial, wraps
 from numbers import Number
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Dict, List, Literal, Optional, Union
 
 __all__ = [
     "PrecisionMode",
@@ -110,7 +109,7 @@ __all__ = [
     "set_recording",
     "get_records",
     "clear_records",
-    "ArithmeticIdentifier",
+    "CustomArithmeticAlgorithm",
     "Truncable",
 ]
 
@@ -175,7 +174,7 @@ class PreciseNumber(Number, Truncable):
 
     @_with_context_precision(symbol="+")
     def __add__(self, other):
-        if f := get_context().add[0]:
+        if f := get_context().add:
             return f(self, other)
         return self._add(other)
 
@@ -185,7 +184,7 @@ class PreciseNumber(Number, Truncable):
 
     @_with_context_precision(symbol="-")
     def __sub__(self, other):
-        if f := get_context().sub[0]:
+        if f := get_context().sub:
             return f(self, other)
         return self._sub(other)
 
@@ -195,7 +194,7 @@ class PreciseNumber(Number, Truncable):
 
     @_with_context_precision(symbol="*")
     def __mul__(self, other):
-        if f := get_context().mul[0]:
+        if f := get_context().mul:
             return f(self, other)
         return self._mul(other)
 
@@ -205,7 +204,7 @@ class PreciseNumber(Number, Truncable):
 
     @_with_context_precision(symbol="/")
     def __truediv__(self, other):
-        if f := get_context().div[0]:
+        if f := get_context().div:
             return f(self, other)
         return self._truediv(other)
 
@@ -249,9 +248,40 @@ class TruncatureMode(FuncEnum):
     FLOOR = (lambda x: x.floor(), 4)  #: floor()
 
 
-ArithmeticIdentifier = Tuple[
-    Optional[Callable[[PreciseNumber, PreciseNumber], PreciseNumber]], str
+CustomArithmeticAlgorithm = Optional[
+    Callable[[PreciseNumber, PreciseNumber], PreciseNumber]
 ]
+
+_AI_REGISTRY: Dict[CustomArithmeticAlgorithm, str] = {None: "DEFAULT"}
+
+
+def identify_func(identifier: str):
+    """Identify a custom arithmetic algorithm with a unique name"""
+
+    def wrapper(fn: Callable) -> CustomArithmeticAlgorithm:
+        if identifier in _AI_REGISTRY.values():
+            raise ValueError("Identifier already in use")
+        if fn in _AI_REGISTRY:
+            raise ValueError(
+                f"Function already registered with identifier {_AI_REGISTRY[fn]}"
+            )
+        _AI_REGISTRY[fn] = identifier
+        return fn
+
+    return wrapper
+
+
+def remove_func(func: CustomArithmeticAlgorithm):
+    """Remove a custom arithmetic algorithm from the registry"""
+    if func in _AI_REGISTRY:
+        del _AI_REGISTRY[func]
+        return True
+    return False
+
+
+def find_func(identifier: str):
+    """Find the function of an identifier that has been registered"""
+    return [k for k, v in _AI_REGISTRY.items() if v == identifier][0]
 
 
 @dataclass
@@ -262,14 +292,14 @@ class PrecisionContext:
     pmode: PrecisionMode = PrecisionMode.MAX
     #: Truncature mode
     tmode: TruncatureMode = TruncatureMode.NONE
-    #: Addition `ArithmeticIdentifier`
-    add: ArithmeticIdentifier = (None, "DEFAULT")
-    #: Substraction `ArithmeticIdentifier`
-    sub: ArithmeticIdentifier = (None, "DEFAULT")
-    #: Multiplication `ArithmeticIdentifier`
-    mul: ArithmeticIdentifier = (None, "DEFAULT")
-    #: Division `ArithmeticIdentifier`
-    div: ArithmeticIdentifier = (None, "DEFAULT")
+    #: Addition `CustomArithmeticAlgorithm`
+    add: CustomArithmeticAlgorithm = None
+    #: Substraction `CustomArithmeticAlgorithm`
+    sub: CustomArithmeticAlgorithm = None
+    #: Multiplication `CustomArithmeticAlgorithm`
+    mul: CustomArithmeticAlgorithm = None
+    #: Division `CustomArithmeticAlgorithm`
+    div: CustomArithmeticAlgorithm = None
     #: Recording mode
     recording: bool = False
 
@@ -295,19 +325,24 @@ class PrecisionContext:
         pmode: Optional[PrecisionMode] = None,
         tmode: Optional[TruncatureMode] = None,
         recording: Optional[bool] = None,
-        add: Optional[ArithmeticIdentifier] = None,
-        sub: Optional[ArithmeticIdentifier] = None,
-        mul: Optional[ArithmeticIdentifier] = None,
-        div: Optional[ArithmeticIdentifier] = None,
+        add: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
+        sub: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
+        mul: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
+        div: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
     ):
         """Mutates this `PrecisionContext` with new rules."""
+
+        for f in [add, sub, mul, div]:
+            if f is not False and f not in _AI_REGISTRY:
+                raise ValueError("CustomArithmeticFunction not registered")
+
         self.pmode = self.pmode if pmode is None else pmode
         self.tmode = tmode or self.tmode
         self.recording = self.recording if recording is None else recording
-        self.add = add or self.add
-        self.sub = sub or self.sub
-        self.mul = mul or self.mul
-        self.div = div or self.div
+        self.add = add if add is not False else self.add
+        self.sub = sub if sub is not False else self.sub
+        self.mul = mul if mul is not False else self.mul
+        self.div = div if div is not False else self.div
 
         self.__post_init__()
 
@@ -318,10 +353,10 @@ class PrecisionContext:
             "pmode": self.pmode.name
             if isinstance(self.pmode, PrecisionMode)
             else self.pmode,
-            "add": self.add[1],
-            "sub": self.sub[1],
-            "mul": self.mul[1],
-            "div": self.div[1],
+            "add": _AI_REGISTRY[self.add],
+            "sub": _AI_REGISTRY[self.sub],
+            "mul": _AI_REGISTRY[self.mul],
+            "div": _AI_REGISTRY[self.div],
         }
 
     def record(self, *args):
@@ -381,10 +416,10 @@ def set_precision(
     pmode: Optional[PrecisionMode] = None,
     tmode: Optional[TruncatureMode] = None,
     recording: Optional[bool] = None,
-    add: Optional[ArithmeticIdentifier] = None,
-    sub: Optional[ArithmeticIdentifier] = None,
-    mul: Optional[ArithmeticIdentifier] = None,
-    div: Optional[ArithmeticIdentifier] = None,
+    add: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
+    sub: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
+    mul: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
+    div: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
 ):
     """Mutates the current `PrecisionContext` with the specified rules."""
     ctx = get_context()

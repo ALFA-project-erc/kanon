@@ -3,78 +3,78 @@ _____
 
 *Features*
 
-- `Date.frac` no longer exists, replaced with `Date.hours` which is `Sexagesimal`
-- Introducing `models`
-
+- calendars : `Date.frac` no longer exists, replaced with `Date.hours` which is `Sexagesimal`
+- models : Introducing `models`
+- precision : Custom arithmetic algorithms now declared with `identify_func` decorator
 
 0.4.0
 _____
 
 *Bug Fixes*
 
-- `HTable.populate` correctly working with input array with number types different from index
-- `BasedReal.__mod__` correctly working with negative values
-- `BasedReal.__mod__` correctly keeping precision
+- tables : `HTable.populate` correctly working with input array with number types different from index
+- radices : `BasedReal.__mod__` correctly working with negative values
+- radices : `BasedReal.__mod__` correctly keeping precision
 
 *Features*
 
-- `HTable.read` can be used with the ID as sole parameter and with options
-- `HTable` support for double argument tables
+- tables : `HTable.read` can be used with the ID as sole parameter and with options
+- tables : `HTable` support for double argument tables
 
 0.3.2
 _____
 
 *Bug Fixes*
 
-- Fixed `Date` not working with non default frac on month bounds
-- Fixed `BasedReal.__round__` not working with mixed base
-- Fixed `HTable.read` not correctly reading shifted `Historical` columns.
-- Fixed `BasedReal.__mod__` returning a result with incorrect significant
+- calendars : Fixed `Date` not working with non default frac on month bounds
+- tables : Fixed `HTable.read` not correctly reading shifted `Historical` columns.
+- radices : Fixed `BasedReal.__round__` not working with mixed base
+- radices : Fixed `BasedReal.__mod__` returning a result with incorrect significant
 
 0.3.1
 _____
 
 *Bug Fixes*
 
-- Fixed `BasedReal.__pow__` with negative values raised to fractional power
+- radices : Fixed `BasedReal.__pow__` with negative values raised to fractional power
 
 *Features*
 
-- `HTable.read` accepts DISHAS `Historical` columns
+- tables : `HTable.read` accepts DISHAS `Historical` columns
 
 0.3.0
 _____
 
 *Bug Fixes*
 
-- Fixed `Persian Andarjah after Aban` months
-- Fixed incorrect behavior of `Calendar.jdn_at_ymd`
-- Fixed mixed base `BasedReal` arithmetic
+- calendars : Fixed `Persian Andarjah after Aban` months
+- calendars : Fixed incorrect behavior of `Calendar.jdn_at_ymd`
+- calendars : Fixed mixed base `BasedReal` arithmetic
 
 *Features*
 
-- `FloatingSexagesimal` removed
-- `Byzantine/Syrian` calendar renamed `Byzantine`
-- `BasedQuantity` typing
-- Fraction of day support for `Date`
-- `HTable.get` now supports `key` of type `Quantity` with same unit as the table index
+- radices : `FloatingSexagesimal` removed
+- other : `BasedQuantity` typing
+- calendars : `Byzantine/Syrian` calendar renamed `Byzantine`
+- calendars : Fraction of day support for `Date`
+- tables : `HTable.get` now supports `key` of type `Quantity` with same unit as the table index
 
 
 0.2.0
 _____
 
-- Update `HTable.read` with new DISHAS api source_value_original key.
+- tables : Update `HTable.read` with new DISHAS api source_value_original key.
 
 0.1.2
 _____
 
-- Fixed calendars not able to process JDN below their era epoch.
-- Fixed `HTable.read` with dishas format not correctly processing non existing id.
-- Package typing enabled.
+- calendars : Fixed calendars not able to process JDN below their era epoch.
+- tables : Fixed `HTable.read` with dishas format not correctly processing non existing id.
+- other : Package typing enabled.
 
 0.0.1
 _____
 
-- Units with radices and precision.
-- Tables with HTable reading.
-- Calendars with date conversions.
+- radices : Units with radices and precision.
+- tables : Tables with HTable reading.
+- calendars : Calendars with date conversions.
