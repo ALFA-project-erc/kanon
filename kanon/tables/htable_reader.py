@@ -48,17 +48,16 @@ def read_intsexag_array(array: List[str], _: int) -> BasedReal:
 
 def read_historical(array: List[str], shift: int) -> BasedReal:
     integer = int(array[0])
-
     # Special case for non true Historical in DISHAS with 2 values
     if len(array) == 2 and shift == 0:
-        return integer * 30 + Historical(array[1])
+        return integer * 30 + Sexagesimal(array[1])
 
-    values = tuple(int(x) for x in array)
-    return Historical(
-        values[: -shift or None],
-        values[-shift or len(values) :],
-        sign=1 if integer >= 0 else -1,
-    )
+    sign = -1 if array[0][0] == "-" else 1
+    values = tuple(abs(int(x)) for x in array)
+    intpart = Historical(*values[: -shift or None])
+    floatpart = Sexagesimal((), values[-shift or len(values) :])
+
+    return sign * (floatpart + int(intpart))
 
 
 number_reader: Dict[NumberType, Callable[[List[str], int], Real]] = {

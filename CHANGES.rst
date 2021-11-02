@@ -1,3 +1,10 @@
+0.5.1
+_____
+
+*Features*
+
+- tables : `HTable.read` now uses `Sexagesimal` for `Historical` input
+
 0.5.0
 _____
 
