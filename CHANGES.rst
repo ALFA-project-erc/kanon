@@ -1,6 +1,13 @@
 0.5.1
 _____
 
+*Bug Fixes*
+
+- tables : `with_units` replaces `units` in `HTable.read` parameter to make it work
+
+0.5.1
+_____
+
 *Features*
 
 - tables : `HTable.read` now uses `Sexagesimal` for `Historical` input

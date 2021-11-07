@@ -77,7 +77,10 @@ unit_reader: Dict[UnitType, Unit] = {
 
 
 def read_table_dishas(
-    requested_id: Union[int, str], symmetry=True, units=True, entries_name="Entries"
+    requested_id: Union[int, str],
+    symmetry=True,
+    with_units=True,
+    entries_name="Entries",
 ) -> HTable:
 
     qid = int(requested_id)
@@ -88,7 +91,7 @@ def read_table_dishas(
     if not res or "error" in res:
         raise FileNotFoundError(f"{qid} ID not found in DISHAS database")
 
-    return read_table_content(res, symmetry, units, entries_name)
+    return read_table_content(res, symmetry, with_units, entries_name)
 
 
 def read_table_content(

@@ -142,3 +142,8 @@ def test_based_populate():
     assert tab["Arg"].basedtype is None
     assert tab["Arg"].dtype == int
     assert len(tab) == 91
+
+
+def test_options_working():
+    table: HTable = HTable.read(180, with_units=False)
+    assert table["Entries"].unit is None
