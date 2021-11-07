@@ -81,6 +81,7 @@ def read_table_dishas(
     symmetry=True,
     with_units=True,
     entries_name="Entries",
+    freeze=False,
 ) -> HTable:
 
     qid = int(requested_id)
@@ -91,11 +92,11 @@ def read_table_dishas(
     if not res or "error" in res:
         raise FileNotFoundError(f"{qid} ID not found in DISHAS database")
 
-    return read_table_content(res, symmetry, with_units, entries_name)
+    return read_table_content(res, symmetry, with_units, entries_name, freeze)
 
 
 def read_table_content(
-    tabc: TableContent, symmetry=True, units=True, entries_name="Entries"
+    tabc: TableContent, symmetry=True, units=True, entries_name="Entries", freeze=False
 ):
 
     values = tabc["source_value_original"]
@@ -202,5 +203,8 @@ def read_table_content(
         symmetry=symmetries,
         meta=tabc["edited_text"],
     )
+
+    if freeze:
+        table.freeze()
 
     return table

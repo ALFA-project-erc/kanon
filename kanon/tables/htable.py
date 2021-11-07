@@ -103,6 +103,9 @@ class HTable(Table):
     opposite: bool = TableAttribute(default=False)
     """Defines if the table values should be of the opposite sign."""
 
+    _frozen: bool = False
+    _cached_to_pandas: pd.DataFrame
+
     def __init__(
         self,
         data=None,
@@ -131,12 +134,23 @@ class HTable(Table):
     def to_pandas(
         self, index=None, use_nullable_int=True, symmetry=True
     ) -> pd.DataFrame:
+        if self._frozen:
+            return self._cached_to_pandas
         self._check_index(index)
         df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
         if symmetry:
             for sym in self.symmetry:
                 df = df.pipe(sym)
         return df
+
+    def freeze(self):
+        """Freezes the tables values for `to_pandas` and `get` results"""
+        self._cached_to_pandas = self.to_pandas()
+        self._frozen = True
+
+    def unfreeze(self):
+        """Unfreezes the tables values for `to_pandas` and `get` results"""
+        self._frozen = False
 
     @property
     def is_double(self) -> bool:

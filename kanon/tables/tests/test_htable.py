@@ -205,3 +205,16 @@ def test_get_with_quantity():
 
     with pytest.raises(UnitConversionError):
         assert tab.get(3 * u.deg_C)
+
+
+def test_freeze():
+    tab = make_sample_table()
+    tab.freeze()
+    assert tab.loc[3]["b"] == 12
+    assert tab.get(3) == 12
+    tab.loc[3]["b"] = 4
+    assert tab.loc[3]["b"] == 4
+    assert tab.get(3) == 12
+    tab.unfreeze()
+    assert tab.loc[3]["b"] == 4
+    assert tab.get(3) == 4

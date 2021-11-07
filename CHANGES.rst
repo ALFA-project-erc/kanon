@@ -1,5 +1,9 @@
-0.5.1
+0.5.2
 _____
+
+*Features*
+
+- tables : New `HTable.freeze` method to cache `get` and `to_pandas` results
 
 *Bug Fixes*
 

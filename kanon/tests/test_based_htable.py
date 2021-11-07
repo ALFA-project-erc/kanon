@@ -145,5 +145,8 @@ def test_based_populate():
 
 
 def test_options_working():
-    table: HTable = HTable.read(180, with_units=False)
+    table: HTable = HTable.read(180, with_units=False, freeze=True)
     assert table["Entries"].unit is None
+    table.loc[18]["Entries"] = Sexagesimal.from_int(500)
+    assert table.loc[18]["Entries"] == 500
+    assert table.get(18) != 500
