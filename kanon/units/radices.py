@@ -1,17 +1,15 @@
 """
-In this module we define RadixBase and BasedReal.
-RadixBase is the basis of the way we work with different radices.
-BasedReal are a class of Real numbers with a 1-1 relation with a RadixBase.
-
 .. testsetup::
 
     >>> import builtins
-    >>> builtins.Sexagesimal = radix_registry["Sexagesimal"]
-    >>> builtins.Historical = radix_registry["Historical"]
+    >>> from .definitions import Sexagesimal, Historical
+    >>> builtins.Sexagesimal = Sexagesimal
+    >>> builtins.Historical = Historical
 
->>> from kanon.units import RadixBase, radix_registry
->>> example_base = RadixBase([20, 5, 18], [24, 60], "example_base", [" ","u ","sep "])
->>> number = radix_registry["ExampleBase"]((8, 12, 3, 1), (23, 31))
+>>> class ExampleBase(BasedReal, base=([20, 5, 18], [24, 60]), separators=[" ","u ","sep "]):
+...     pass
+...
+>>> number = ExampleBase((8, 12, 3, 1), (23, 31))
 >>> number
 08 12u 3sep 01 ; 23,31
 >>> float(number)
@@ -27,7 +25,6 @@ from numbers import Number
 from numbers import Real as _Real
 from typing import (
     Any,
-    Dict,
     Generator,
     List,
     Literal,
@@ -36,6 +33,7 @@ from typing import (
     SupportsFloat,
     Tuple,
     Type,
+    TypeVar,
     Union,
     cast,
     overload,
@@ -52,118 +50,11 @@ from kanon.utils.looping_list import LoopingList
 
 from .precision import PreciseNumber, PrecisionMode, TruncatureMode, set_precision
 
-__all__ = ["RadixBase", "BasedReal", "radix_registry"]
+__all__ = ["BasedReal"]
 
 
-radix_registry: Dict[str, Type["BasedReal"]] = {}
-"""Registry containing all instanciated BasedReal classes."""
-
-
-class RadixBase:
-    """
-    A class representing a numeral system. A radix must be specified at each position,
-    by specifying an integer list for the integer positions, and an integer list for the
-    fractional positions.
-    """
-
-    def __init__(
-        self,
-        left: Sequence[int],
-        right: Sequence[int],
-        name: str,
-        integer_separators: Optional[Sequence[str]] = None,
-    ):
-        """
-        Definition of a numeral system. A radix must be specified for each integer position
-        (left argument) and for each fractional position (right argument).
-        Note that the integer position are counted from right to left (starting from the ';'
-        symbol and going to the left).
-
-        :param left: Radix list for the integer part
-        :param right: Radix list for the fractional part
-        :param name: Name of this numeral system
-        :param integer_separators: List of string separators, used for displaying the integer part of the number
-        """
-        assert left and right
-        assert all(isinstance(x, int) for x in left)
-        assert all(isinstance(x, int) for x in right)
-
-        self.left: LoopingList[int] = LoopingList(left)
-        self.right: LoopingList[int] = LoopingList(right)
-        self.name = name
-        if integer_separators is not None:
-            if len(integer_separators) != len(left):
-                raise ValueError
-            self.integer_separators = LoopingList[str](integer_separators)
-        else:
-            self.integer_separators = LoopingList[str](
-                ["," if x != 10 else "" for x in left]
-            )
-
-        self.mixed = any(x != left[0] for x in tuple(left) + tuple(right))
-
-        # Build a class inheriting from BasedReal, that will use this RadixBase as
-        # its numeral system.
-        type_name = "".join(map(str.capitalize, self.name.split("_")))
-        if type_name in radix_registry:
-            raise ValueError(f"Name {type_name} already exists in registry")
-
-        new_type = type(type_name, (BasedReal,), {"base": self})
-        radix_registry[type_name] = new_type
-
-        # Store the newly created BasedReal class
-        self.type: Type[BasedReal] = new_type
-
-    @overload
-    def __getitem__(self, key: int) -> int:
-        ...
-
-    @overload
-    def __getitem__(self, key: slice) -> LoopingList[int]:
-        ...
-
-    def __getitem__(self, key):
-        """
-        Return the radix at the specified position. Position 0 represents the last integer
-        position before the fractional part (i.e. the position just before the ';' in sexagesimal
-        notation, or just before the '.' in decimal notation). Positive positions represent
-        the fractional positions, negative positions represent the integer positions.
-
-        :param key: Position. <= 0 for integer part (with 0 being the right-most integer position), > 0 for fractional part
-        :return: Radix at the specified position
-        """
-        if isinstance(key, slice):
-            if not key.start or not key.stop:
-                raise ValueError("RadixBase slices must have a start and a stop value")
-            array = [self[i] for i in range(key.start, key.stop)]
-            return LoopingList[str](array[:: key.step])
-
-        if key <= 0:
-            return self.left[key - 1]
-        else:
-            return self.right[key - 1]
-
-    @lru_cache
-    def factor_at_pos(self, pos: int) -> int:
-        """
-        Returns an int factor corresponding to a digit at position pos.
-        This factor is an integer, when dealing with fractional position you should invert
-        the result to find relevant factor.
-
-        >>> Sexagesimal.base.factor_at_pos(-2)
-        3600
-        >>> Sexagesimal.base.factor_at_pos(0)
-        1
-
-        :param pos: Position of the digit
-        :type pos: int
-        :return: Factor at pos
-        :rtype: int
-        """
-        factor = 1
-        for i in range(abs(pos)):
-            factor *= self[i if pos > 0 else -i]
-        return factor
+TBasedReal = TypeVar("TBasedReal", bound="BasedReal")
+RadixBase = Tuple[LoopingList[int], LoopingList[int]]
 
 
 def ndigit_for_radix(radix: int) -> int:
@@ -182,24 +73,96 @@ def ndigit_for_radix(radix: int) -> int:
     return int(np.ceil(np.log10(radix)))
 
 
+def radix_at_pos(base: RadixBase, pos: int):
+    """
+    Return the radix at the specified position. Position 0 represents the last integer
+    position before the fractional part (i.e. the position just before the ';' in sexagesimal
+    notation, or just before the '.' in decimal notation). Positive positions represent
+    the fractional positions, negative positions represent the integer positions.
+
+    :param base: Base
+    :type base: `RadixBase`
+    :param pos: Position. <= 0 for integer part \
+        (with 0 being the right-most integer position), > 0 for fractional part
+    :return: Radix at the specified position
+    """
+
+    if pos <= 0:
+        return base[0][pos - 1]
+    else:
+        return base[1][pos - 1]
+
+
+def factor_at_pos(base: RadixBase, pos: int):
+    """
+    Returns an int factor corresponding to a digit at position pos.
+    This factor is an integer, when dealing with fractional position you should invert
+    the result to find relevant factor.
+
+    >>> base = Sexagesimal(0).base
+    >>> factor_at_pos(base, -2)
+    3600
+    >>> factor_at_pos(base, 0)
+    1
+
+    :param base: Base
+    :type base: `RadixBase`
+    :param pos: Position of the digit
+    :type pos: int
+    :return: Factor at pos
+    :rtype: int
+    """
+
+    factor = 1
+    for i in range(abs(pos)):
+        factor *= radix_at_pos(base, i if pos > 0 else -i)
+    return factor
+
+
 class BasedReal(PreciseNumber, _Real):
     """
-    Abstract class allowing to represent a value in a specific `RadixBase`.
-    Each time a new `RadixBase` object is recorded, a new class inheriting from BasedReal
-    is created and recorded in `radix_registry`.
-    The `RadixBase` to be used will be placed in the class attribute `base`
-
-    Class attributes:
-       - base :        A `RadixBase` object (will be attributed dynamically to the children inheriting this class)
+    Abstract class to represent a number in a specific `base`.
     """
 
-    base: RadixBase
-    """`RadixBase` of this BasedReal"""
+    _base: RadixBase
+    """Base of this BasedReal, (integer part, fractional part)"""
+    _integer_separators: LoopingList[str]
+    """List of string separators, used for displaying the integer part of the number"""
+    _mixed: bool
+    """Is this class with a mixed base"""
     __left: Tuple[int, ...]
     __right: Tuple[int, ...]
     __remainder: Decimal
     __sign: Literal[-1, 1]
-    __slots__ = ("base", "__left", "__right", "__remainder", "__sign")
+    __slots__ = (
+        "_base",
+        "_integer_separators",
+        "__left",
+        "__right",
+        "__remainder",
+        "__sign",
+    )
+
+    def __init_subclass__(
+        cls: Type[TBasedReal],
+        base: Tuple[Sequence[int], Sequence[int]],
+        separators: Optional[Sequence[str]] = None,
+    ) -> None:
+        left, right = base
+        assert left and right
+        assert all(isinstance(x, int) and x > 0 for x in left)
+        assert all(isinstance(x, int) and x > 0 for x in right)
+        cls._base = (LoopingList(left), LoopingList(right))
+        if separators is not None:
+            if len(separators) != len(left):
+                raise ValueError
+            cls._integer_separators = LoopingList(separators)
+        else:
+            cls._integer_separators = LoopingList(
+                ["," if x != 10 else "" for x in left]
+            )
+        cls._mixed = any(x != left[0] for x in tuple(left) + tuple(right))
+        return super().__init_subclass__()
 
     def __check_range(self):
         """
@@ -214,20 +177,15 @@ class BasedReal(PreciseNumber, _Real):
                 raise ValueError(
                     f"Illegal remainder value ({self.remainder}), should be a Decimal between [0.,1.["
                 )
-        # if self.base.factor_at_pos(len(self.left) - 1) > 1e+15 and self.remainder:
-        #     warnings.warn("""
-        #                 Integer part of this number exceeds floating point precision.
-        #                 Calculations made with this number as a float might return incorrect results.
-        #                 """)
         for x in self[:]:
             if isinstance(x, float):
                 raise IllegalFloatError(x)
             if not isinstance(x, int):
                 raise TypeError(f"{x} not an int")
         for i, s in enumerate(self[:]):
-            if s < 0.0 or s >= self.base[i - len(self.left) + 1]:
+            if s < 0.0 or s >= radix_at_pos(self.base, i - len(self.left) + 1):
                 raise IllegalBaseValueError(
-                    self.base, self.base[i - len(self.left) + 1], s
+                    self.__class__, radix_at_pos(self.base, i - len(self.left) + 1), s
                 )
 
     def __simplify_integer_part(self) -> int:
@@ -245,7 +203,9 @@ class BasedReal(PreciseNumber, _Real):
         return count != 0
 
     @list_to_tuple
-    def __new__(cls, *args, remainder=Decimal(0.0), sign=1) -> "BasedReal":
+    def __new__(
+        cls: Type[TBasedReal], *args, remainder=Decimal(0.0), sign=1
+    ) -> TBasedReal:
         """Constructs a number with a given radix.
 
         Arguments:
@@ -282,7 +242,7 @@ class BasedReal(PreciseNumber, _Real):
         """
         if cls is BasedReal:
             raise TypeError("Can't instanciate abstract class BasedReal")
-        self: BasedReal = super().__new__(cls)
+        self: TBasedReal = super().__new__(cls)
         self.__left = ()
         self.__right = ()
         self.__remainder = remainder
@@ -348,6 +308,22 @@ class BasedReal(PreciseNumber, _Real):
         return self.__right
 
     @property
+    def base(self) -> RadixBase:
+        """
+        Base of this BasedReal, (integer part, fractional part)
+
+        >>> Sexagesimal(1).base
+        ([..., 60, ...], [..., 60, ...])
+
+        :rtype: `RadixBase`
+        """
+        return self._base
+
+    @property
+    def mixed(self) -> bool:
+        return self._mixed
+
+    @property
     def remainder(self) -> Decimal:
         """
         When a computation requires more significant figures than the precision of this number,
@@ -398,7 +374,7 @@ class BasedReal(PreciseNumber, _Real):
         value = Decimal(abs(int(self)))
         factor = Decimal(1)
         for i in range(self.significant):
-            factor *= self.base.right[i]
+            factor *= self.base[1][i]
             value += self.right[i] / factor
 
         value += self.remainder / factor
@@ -412,10 +388,10 @@ class BasedReal(PreciseNumber, _Real):
 
     @classmethod
     def from_fraction(
-        cls,
+        cls: Type[TBasedReal],
         fraction: Fraction,
         significant: Optional[int] = None,
-    ) -> "BasedReal":
+    ) -> TBasedReal:
         """
         :param fraction: a `~fractions.Fraction` object
         :param significant: significant precision desired
@@ -426,9 +402,7 @@ class BasedReal(PreciseNumber, _Real):
             raise TypeError(f"Argument {fraction} is not a Fraction")
 
         num, den = fraction.as_integer_ratio()
-        res: BasedReal = cls.from_decimal(
-            Decimal(num) / Decimal(den), significant or 100
-        )
+        res = cls.from_decimal(Decimal(num) / Decimal(den), significant or 100)
 
         return res if significant else res.minimize_precision()
 
@@ -445,16 +419,16 @@ class BasedReal(PreciseNumber, _Real):
 
         for i in range(len(self.left)):
             if i > 0:
-                res += self.base.integer_separators[i - len(self.left)]
+                res += self._integer_separators[i - len(self.left)]
             num = str(self.left[i])
-            digit = ndigit_for_radix(self.base.left[i - len(self.left)])
+            digit = ndigit_for_radix(self.base[0][i - len(self.left)])
             res += "0" * (digit - len(num)) + num
 
         res += " ; "
 
         for i in range(len(self.right)):
             num = str(self.right[i])
-            digit = ndigit_for_radix(self.base.right[i])
+            digit = ndigit_for_radix(self.base[1][i])
             res += "0" * (digit - len(num)) + num
 
             if i < len(self.right) - 1:
@@ -468,7 +442,7 @@ class BasedReal(PreciseNumber, _Real):
     __str__ = __repr__
 
     @classmethod
-    def _from_string(cls, string: str) -> "BasedReal":
+    def _from_string(cls: Type[TBasedReal], string: str) -> TBasedReal:
         """
         Parses and instantiate a `BasedReal` object from a string
 
@@ -515,7 +489,7 @@ class BasedReal(PreciseNumber, _Real):
         if len(left) > 0:
             rleft = left[::-1]
             for i in range(len(left)):
-                separator = cls.base.integer_separators[-i - 1].strip().lower()
+                separator = cls._integer_separators[-i - 1].strip().lower()
                 if separator != "":
                     split = rleft.split(separator, 1)
                     if len(split) == 1:
@@ -533,7 +507,7 @@ class BasedReal(PreciseNumber, _Real):
 
         return cls(left_numbers, right_numbers, sign=sign)
 
-    def resize(self, significant: int) -> "BasedReal":
+    def resize(self: TBasedReal, significant: int) -> TBasedReal:
         """
         Resizes and returns a new `BasedReal` object to the specified precision
 
@@ -582,7 +556,7 @@ class BasedReal(PreciseNumber, _Real):
     def __trunc__(self):
         return int(float(self.truncate(0)))
 
-    def truncate(self, significant: Optional[int] = None) -> "BasedReal":
+    def truncate(self: TBasedReal, significant: Optional[int] = None) -> TBasedReal:
         """
         Truncate this BasedReal object to the specified precision
 
@@ -605,21 +579,21 @@ class BasedReal(PreciseNumber, _Real):
         right = self.right[:significant] if significant >= 0 else ()
         return type(self)(left, right, sign=self.sign)
 
-    def floor(self, significant: Optional[int] = None) -> "BasedReal":
+    def floor(self: TBasedReal, significant: Optional[int] = None) -> TBasedReal:
         resized = self.resize(significant) if significant else self
         if resized.remainder == 0 or self.sign == 1:
             return resized.truncate()
 
         return resized._set_remainder(Decimal(0.5)).__round__()
 
-    def ceil(self, significant: Optional[int] = None) -> "BasedReal":
+    def ceil(self: TBasedReal, significant: Optional[int] = None) -> TBasedReal:
         resized = self.resize(significant) if significant else self
         if resized.remainder == 0 or self.sign == -1:
             return resized.truncate()
 
         return resized._set_remainder(Decimal(0.5)).__round__()
 
-    def minimize_precision(self) -> "BasedReal":
+    def minimize_precision(self: TBasedReal) -> TBasedReal:
         """
         Removes unnecessary zeros from fractional part of this BasedReal.
 
@@ -636,7 +610,7 @@ class BasedReal(PreciseNumber, _Real):
 
         return self.truncate(self.significant - count)
 
-    def __lshift__(self, other: int) -> "BasedReal":
+    def __lshift__(self: TBasedReal, other: int) -> TBasedReal:
         """self << other
 
         :param other: Amount to shift this BasedReal
@@ -646,7 +620,7 @@ class BasedReal(PreciseNumber, _Real):
         """
         return self.shift(-other)
 
-    def __rshift__(self, other: int) -> "BasedReal":
+    def __rshift__(self: TBasedReal, other: int) -> TBasedReal:
         """self >> other
 
         :param other: Amount to shift this BasedReal
@@ -656,7 +630,7 @@ class BasedReal(PreciseNumber, _Real):
         """
         return self.shift(other)
 
-    def shift(self, i: int) -> "BasedReal":
+    def shift(self: TBasedReal, i: int) -> TBasedReal:
         """
         Shifts number to the left (-) or the right (+).
         Prefer using >> and << operators (right-shift and left-shift).
@@ -674,7 +648,7 @@ class BasedReal(PreciseNumber, _Real):
         if i == 0:
             return self
 
-        if self.base.mixed:
+        if self.mixed:
             raise NotImplementedError
 
         offset = len(self.left) if i > 0 else len(self.left) - i
@@ -688,7 +662,7 @@ class BasedReal(PreciseNumber, _Real):
         return type(self)(left, right, remainder=br_rem.remainder, sign=self.sign)
 
     @lru_cache
-    def subunit_quantity(self, i: int) -> int:
+    def subunit_quantity(self: TBasedReal, i: int) -> int:
         """Convert this sexagesimal to the integer value from the specified fractional point.
 
         >>> number = Sexagesimal("1,0;2,30")
@@ -713,10 +687,10 @@ class BasedReal(PreciseNumber, _Real):
         factor = 1
         for idx, v in enumerate(self.resize(max(0, i + 1))[i::-1]):
             res += v * factor
-            factor *= self.base[i - idx]
+            factor *= radix_at_pos(self.base, i - idx)
         return self.sign * res
 
-    def __round__(self, significant: Optional[int] = None):
+    def __round__(self: TBasedReal, significant: Optional[int] = None):
         """
         Round this BasedReal object to the specified precision.
         If no precision is specified, the rounding is performed with respect to the
@@ -742,7 +716,15 @@ class BasedReal(PreciseNumber, _Real):
                 n += type(self)(values[:1], values[1:], sign=self.sign)
         return n.truncate(significant)
 
-    def __getitem__(self, key):
+    @overload
+    def __getitem__(self, key: int) -> int:
+        ...
+
+    @overload
+    def __getitem__(self, key: slice) -> Tuple[int, ...]:
+        ...
+
+    def __getitem__(self: TBasedReal, key):
         """
         Allow to get a specific position value of this BasedReal object
         by specifying an index. The position 0 corresponds to the right-most integer position.
@@ -769,8 +751,11 @@ class BasedReal(PreciseNumber, _Real):
 
     @classmethod
     def from_float(
-        cls, floa: float, significant: int, remainder_threshold: float = 0.999999
-    ) -> "BasedReal":
+        cls: Type[TBasedReal],
+        floa: float,
+        significant: int,
+        remainder_threshold: float = 0.999999,
+    ) -> TBasedReal:
         """
         Class method to produce a new BasedReal object from a floating number
 
@@ -793,7 +778,7 @@ class BasedReal(PreciseNumber, _Real):
         factor = 1.0
         if value != 0:
             for i in range(significant):
-                factor = cls.base.right[i]
+                factor = cls._base[1][i]
                 value *= factor
                 if value - int(value) > remainder_threshold and value + 1 < factor:
                     value = int(value) + 1
@@ -813,7 +798,9 @@ class BasedReal(PreciseNumber, _Real):
         )
 
     @classmethod
-    def from_decimal(cls, dec: Decimal, significant: int) -> "BasedReal":
+    def from_decimal(
+        cls: Type[TBasedReal], dec: Decimal, significant: int
+    ) -> TBasedReal:
         """
         Class method to produce a new BasedReal object from a Decimal number
 
@@ -835,7 +822,7 @@ class BasedReal(PreciseNumber, _Real):
 
         factor = Decimal(1)
         for i in range(significant):
-            factor = cls.base.right[i]
+            factor = cls._base[1][i]
             value *= factor
             position_value = int(value)
             value -= position_value
@@ -846,7 +833,7 @@ class BasedReal(PreciseNumber, _Real):
         )
 
     @classmethod
-    def zero(cls, significant=0) -> "BasedReal":
+    def zero(cls: Type[TBasedReal], significant=0) -> TBasedReal:
         """
         Class method to produce a zero number of the specified precision
 
@@ -859,7 +846,7 @@ class BasedReal(PreciseNumber, _Real):
         return cls((0,), (0,) * significant)
 
     @classmethod
-    def one(cls, significant=0) -> "BasedReal":
+    def one(cls: Type[TBasedReal], significant=0) -> TBasedReal:
         """
         Class method to produce a unit number of the specified precision
 
@@ -873,16 +860,20 @@ class BasedReal(PreciseNumber, _Real):
 
     @classmethod
     @overload
-    def range(cls, stop: int) -> Generator["BasedReal", None, None]:
+    def range(cls: Type[TBasedReal], stop: int) -> Generator["BasedReal", None, None]:
         ...
 
     @classmethod
     @overload
-    def range(cls, start: int, stop: int, step=1) -> Generator["BasedReal", None, None]:
+    def range(
+        cls: Type[TBasedReal], start: int, stop: int, step=1
+    ) -> Generator["BasedReal", None, None]:
         ...
 
     @classmethod
-    def range(cls, *args, **kwargs) -> Generator["BasedReal", None, None]:
+    def range(
+        cls: Type[TBasedReal], *args, **kwargs
+    ) -> Generator["BasedReal", None, None]:
         """
         Range generator, equivalent to `range` builtin but yields `BasedReal` numbers.
 
@@ -892,7 +883,7 @@ class BasedReal(PreciseNumber, _Real):
             yield cls.from_int(i)
 
     @classmethod
-    def from_int(cls, value: int, significant=0) -> "BasedReal":
+    def from_int(cls: Type[TBasedReal], value: int, significant=0) -> TBasedReal:
         """
         Class method to produce a new BasedReal object from an integer number
 
@@ -907,7 +898,7 @@ class BasedReal(PreciseNumber, _Real):
         if not np.issubdtype(type(value), np.integer):
             raise TypeError(f"Argument {value} is not an int")
 
-        base = cls.base
+        base = cls._base
         sign = -1 if value < 0 else 1
         value *= sign
 
@@ -915,13 +906,13 @@ class BasedReal(PreciseNumber, _Real):
         int_factor = 1
 
         while value >= int_factor:
-            int_factor *= base.left[-1 - pos]
+            int_factor *= base[0][-1 - pos]
             pos += 1
 
         left = [0] * pos
 
         for i in range(pos):
-            int_factor //= base.left[-pos + i]
+            int_factor //= base[0][-pos + i]
             position_value = value // int_factor
             value -= position_value * int_factor
             left[i] = position_value
@@ -942,7 +933,7 @@ class BasedReal(PreciseNumber, _Real):
         value = float(abs(int(self)))
         factor = 1.0
         for i in range(self.significant):
-            factor /= self.base.right[i]
+            factor /= self.base[1][i]
             value += factor * self.right[i]
 
         value += factor * float(self.remainder)
@@ -956,15 +947,15 @@ class BasedReal(PreciseNumber, _Real):
         factor = 1
         for i in range(len(self.left)):
             value += factor * self.left[-i - 1]
-            factor *= self.base.left[-i - 1]
+            factor *= self.base[0][-i - 1]
 
         return value * self.sign
 
-    def _truediv(self, _other: PreciseNumber) -> "BasedReal":
+    def _truediv(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
 
         other = cast(BasedReal, _other)
 
-        if self.base.mixed:
+        if self.mixed:
             return self.from_float(float(self) / float(other), self.significant)
 
         max_significant = max(self.significant, other.significant)
@@ -983,17 +974,17 @@ class BasedReal(PreciseNumber, _Real):
         q_res = self.zero(max_significant)
         right = list(q_res.right)
 
-        numerator = abs(self)
-        denominator = abs(other)
+        numerator = abs(cast(BasedReal, self))
+        denominator = abs(cast(BasedReal, other))
 
         q, r = divmod(numerator, denominator)
 
         q_res += q
 
         for i in range(0, max_significant):
-            numerator = r * self.base.right[i]
+            numerator = r * self.base[1][i]
             q, r = divmod(numerator, denominator)
-            if q == self.base.right[i]:  # pragma: no cover
+            if q == self.base[1][i]:  # pragma: no cover
                 q_res += 1
                 r = self.zero()
                 break
@@ -1003,7 +994,7 @@ class BasedReal(PreciseNumber, _Real):
             q_res.left, right, remainder=r.decimal / denominator.decimal, sign=sign
         )
 
-    def _add(self, _other: PreciseNumber) -> "BasedReal":
+    def _add(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
 
         other = cast(BasedReal, _other)
 
@@ -1015,14 +1006,15 @@ class BasedReal(PreciseNumber, _Real):
         va = self.resize(maxright)
         vb = other.resize(maxright)
 
-        sign = va.sign if abs(va) > abs(vb) else vb.sign
+        sign = va.sign if abs(cast(BasedReal, va)) > abs(vb) else vb.sign
         if sign < 0:
             va = -va
             vb = -vb
 
         maxlen = max(len(va[:]), len(vb[:]))
         values = (
-            [v.sign * x for x in v[::-1]] + [0] * (maxlen - len(v[:])) for v in (va, vb)
+            [v.sign * x for x in v[::-1]] + [0] * (maxlen - len(v[:]))
+            for v in (cast(BasedReal, va), vb)
         )
         numbers: List[int] = [a + b for a, b in zip(*values)] + [0]
 
@@ -1032,7 +1024,7 @@ class BasedReal(PreciseNumber, _Real):
         numbers[0] += int(fn)
 
         for i, r in enumerate(numbers):
-            factor = self.base[maxright - i]
+            factor = radix_at_pos(self.base, maxright - i)
             if r < 0 or r >= factor:
                 numbers[i] = r % factor
                 numbers[i + 1] += 1 if r > 0 else -1
@@ -1043,7 +1035,7 @@ class BasedReal(PreciseNumber, _Real):
 
         return type(self)(left, right, remainder=abs(remainder), sign=sign)
 
-    def __add__(self, other) -> "BasedReal":
+    def __add__(self: TBasedReal, other) -> TBasedReal:
         """
         self + other
 
@@ -1058,20 +1050,20 @@ class BasedReal(PreciseNumber, _Real):
 
         return super().__add__(other)
 
-    def __radd__(self, other) -> "BasedReal":
+    def __radd__(self: TBasedReal, other) -> TBasedReal:
         """other + self"""
         return self + other
 
-    def _sub(self, _other: PreciseNumber) -> "BasedReal":
+    def _sub(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
 
         other = cast(BasedReal, _other)
         return self + -other
 
-    def __rtruediv__(self, other):
+    def __rtruediv__(self: TBasedReal, other):
         """other / self"""
         return other / float(self)
 
-    def __pow__(self, exponent):
+    def __pow__(self: TBasedReal, exponent):
         """self**exponent
         Negative numbers cannot be raised to a non-integer power
         """
@@ -1100,21 +1092,21 @@ class BasedReal(PreciseNumber, _Real):
 
         return res
 
-    def __rpow__(self, base):
+    def __rpow__(self: TBasedReal, base):
         """base ** self"""
         return self.from_float(float(base), self.significant) ** self
 
-    def __neg__(self) -> "BasedReal":
+    def __neg__(self: TBasedReal) -> TBasedReal:
         """-self"""
         return type(self)(
             self.left, self.right, remainder=self.remainder, sign=-self.sign
         )
 
-    def __pos__(self) -> "BasedReal":
+    def __pos__(self: TBasedReal) -> TBasedReal:
         """+self"""
         return self
 
-    def __abs__(self) -> "BasedReal":
+    def __abs__(self: TBasedReal) -> TBasedReal:
         """
         abs(self)
 
@@ -1127,18 +1119,16 @@ class BasedReal(PreciseNumber, _Real):
             return self
         return -self
 
-    def _mul(self, _other: PreciseNumber) -> "BasedReal":
+    def _mul(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
 
         other = cast(BasedReal, _other)
 
-        if self in (1, -1):
-            return other if self == 1 else -other
         if other in (1, -1):
             return self if other == 1 else -self
         if self == 0 or other == 0:
             return self.zero()
 
-        if self.base.mixed:
+        if self in (1, -1) or self.mixed:
             return self.from_float(float(self) * float(other), self.significant)
 
         max_right = max(self.significant, other.significant)
@@ -1150,7 +1140,7 @@ class BasedReal(PreciseNumber, _Real):
 
         res = self.from_int(res_int) >> 2 * max_right
 
-        factor = self.base.factor_at_pos(max_right)
+        factor = factor_at_pos(self.base, max_right)
         vb_rem = vb.sign * vb.remainder / factor
         va_rem = va.sign * va.remainder / factor
 
@@ -1166,14 +1156,14 @@ class BasedReal(PreciseNumber, _Real):
         return res
 
     @overload
-    def __mul__(self, other: Union[float, "BasedReal"]) -> "BasedReal":  # type: ignore
+    def __mul__(self: TBasedReal, other: Union[float, "BasedReal"]) -> TBasedReal:  # type: ignore
         ...
 
     @overload
-    def __mul__(self, other: Unit) -> "BasedQuantity":
+    def __mul__(self: TBasedReal, other: Unit) -> "BasedQuantity":
         ...
 
-    def __mul__(self, other):
+    def __mul__(self: TBasedReal, other):
         """
         self * other
 
@@ -1192,16 +1182,16 @@ class BasedReal(PreciseNumber, _Real):
 
         return super().__mul__(other)
 
-    def __rmul__(self, other):
+    def __rmul__(self: TBasedReal, other):
         """other * self"""
         return self * other
 
-    def __divmod__(self, other: Any) -> Tuple["BasedReal", "BasedReal"]:
-        """divmod(self, other)"""
+    def __divmod__(self: TBasedReal, other: Any) -> Tuple["BasedReal", "BasedReal"]:
+        """divmod(self: TBasedReal, other)"""
 
         if type(self) is type(other):
 
-            if self.base.mixed:
+            if self.mixed:
                 res = divmod(float(self), float(other))
                 return (
                     self.from_float(res[0], self.significant),
@@ -1239,31 +1229,31 @@ class BasedReal(PreciseNumber, _Real):
 
         raise NotImplementedError
 
-    def __floordiv__(self, other) -> "BasedReal":  # type: ignore
+    def __floordiv__(self: TBasedReal, other) -> TBasedReal:  # type: ignore
         """self // other"""
         return divmod(self, other)[0]
 
-    def __rfloordiv__(self, other):
+    def __rfloordiv__(self: TBasedReal, other):
         """other // self: The floor() of other/self."""
         return other // float(self)
 
-    def __mod__(self, other) -> "BasedReal":
+    def __mod__(self: TBasedReal, other) -> TBasedReal:
         """self % other"""
         return divmod(self, other)[1]
 
-    def __rmod__(self, other):
+    def __rmod__(self: TBasedReal, other):
         """other % self"""
         return other % float(self)
 
     @overload
-    def __truediv__(self, other: Number) -> "BasedReal":  # type: ignore
+    def __truediv__(self: TBasedReal, other: Number) -> TBasedReal:  # type: ignore
         ...
 
     @overload
-    def __truediv__(self, other: Unit) -> "BasedQuantity":
+    def __truediv__(self: TBasedReal, other: Unit) -> "BasedQuantity":
         ...
 
-    def __truediv__(self, other) -> "BasedReal":
+    def __truediv__(self: TBasedReal, other):
         """self / other"""
         if isinstance(other, UnitBase):
             return self * (other ** -1)
@@ -1273,7 +1263,7 @@ class BasedReal(PreciseNumber, _Real):
 
         return self / self.from_float(float(other), significant=self.significant)
 
-    def __gt__(self, other) -> bool:
+    def __gt__(self: TBasedReal, other) -> bool:
         """self > other"""
         if not isinstance(other, Number):
             return other <= self
@@ -1282,7 +1272,7 @@ class BasedReal(PreciseNumber, _Real):
         other = cast(SupportsFloat, other)
         return float(self) > float(other)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self: TBasedReal, other) -> bool:
         """self == other"""
         if not isinstance(other, SupportsFloat):
             return False
@@ -1290,7 +1280,7 @@ class BasedReal(PreciseNumber, _Real):
             return self.decimal == other.decimal
         return float(self) == float(other)
 
-    def equals(self, other: "BasedReal") -> bool:
+    def equals(self: TBasedReal, other: "BasedReal") -> bool:
         """Tests strict equivalence between this BasedReal and another
 
         >>> Sexagesimal("1,2;3").equals(Sexagesimal("1,2;3"))
@@ -1314,19 +1304,19 @@ class BasedReal(PreciseNumber, _Real):
             and self.remainder == other.remainder
         )
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self: TBasedReal, other) -> bool:
         """self != other"""
         return not self == other
 
-    def __ge__(self, other) -> bool:
+    def __ge__(self: TBasedReal, other) -> bool:
         """self >= other"""
         return self > other or self == other
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self: TBasedReal, other) -> bool:
         """self < other"""
         return not self >= other
 
-    def __le__(self, other) -> bool:
+    def __le__(self: TBasedReal, other) -> bool:
         """self <= other"""
         return not self > other
 
@@ -1343,7 +1333,7 @@ class BasedReal(PreciseNumber, _Real):
             return int(self)
         return hash((self.left, self.right, self.sign, self.remainder))
 
-    def sqrt(self, iteration: Optional[int] = None) -> "BasedReal":
+    def sqrt(self: TBasedReal, iteration: Optional[int] = None) -> TBasedReal:
         """Returns the square root, using Babylonian method
 
         :param iteration: Number of iterations, defaults to the significant number
@@ -1370,7 +1360,7 @@ class BasedReal(PreciseNumber, _Real):
 
         return res
 
-    def _set_remainder(self, remainder: Decimal) -> "BasedReal":
+    def _set_remainder(self: TBasedReal, remainder: Decimal) -> TBasedReal:
         return type(self)(self.left, self.right, sign=self.sign, remainder=remainder)
 
 
@@ -1443,15 +1433,6 @@ class BasedQuantity(Quantity):
         return type(self), True
 
 
-# here we define standard bases and automatically generate the corresponding BasedReal classes
-RadixBase([60], [60], "sexagesimal")
-RadixBase([10, 12, 30], [60], "historical", ["", "r ", "s "])
-RadixBase([10], [100], "historical_decimal")
-RadixBase([10], [60], "integer_and_sexagesimal")
-RadixBase([10], [24, 60], "temporal")
-# add new definitions here, corresponding BasedReal inherited classes will be automatically generated
-
-
 def _shift_helper(f, unit1, unit2):
     if unit2:  # pragma: no cover
         raise UnitTypeError(
@@ -1482,8 +1463,8 @@ class IllegalBaseValueError(BasedRealException, ValueError):
     Raised when a value is not in the range of the specified base.
 
     ```python
-    if not 0 <= val < radix[i]:
-        raise IllegalBaseValueError(radix, radix[i], val)
+    if not 0 <= val < radix_at_pos(radix, i):
+        raise IllegalBaseValueError(radix, radix_at_pos(radix, i), val)
     ```
     """
 
@@ -1494,7 +1475,7 @@ class IllegalBaseValueError(BasedRealException, ValueError):
         self.num = num
 
     def __str__(self):
-        return f"An invalid value for ({self.radix.name}) was found \
+        return f"An invalid value for ({self.radix.__name__}) was found \
         ('{self.num}'); should be in the range [0,{self.base}[)."
 
 

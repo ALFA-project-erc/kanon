@@ -153,19 +153,19 @@ class HColumn(Column, Truncable):
     _base_repr_ = _patch_dtype_info_name(Column._base_repr_, 0)
 
     def truncate(self, significant: Optional[int] = None) -> "HColumn":
-        return np.vectorize(lambda x: x.truncate(significant))(self)
+        return cast(HColumn, np.vectorize(lambda x: x.truncate(significant))(self))
 
     def ceil(self, significant: Optional[int] = None) -> "HColumn":
-        return np.vectorize(lambda x: x.ceil(significant))(self)
+        return cast(HColumn, np.vectorize(lambda x: x.ceil(significant))(self))
 
     def floor(self, significant: Optional[int] = None) -> "HColumn":
-        return np.vectorize(lambda x: x.floor(significant))(self)
+        return cast(HColumn, np.vectorize(lambda x: x.floor(significant))(self))
 
     def __round__(self, significant: Optional[int] = None) -> "HColumn":
-        return np.vectorize(lambda x: round(x, significant))(self)
+        return cast(HColumn, np.vectorize(lambda x: round(x, significant))(self))
 
     def resize(self, significant: int) -> "HColumn":
-        return np.vectorize(lambda x: x.resize(significant))(self)
+        return cast(HColumn, np.vectorize(lambda x: x.resize(significant))(self))
 
     @property
     def significant(self) -> Optional[int]:

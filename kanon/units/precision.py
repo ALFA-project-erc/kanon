@@ -96,7 +96,7 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import partial, wraps
 from numbers import Number
-from typing import Callable, Dict, List, Literal, Optional, Union
+from typing import Callable, Dict, List, Literal, Optional, TypeVar, Union
 
 __all__ = [
     "PrecisionMode",
@@ -139,25 +139,29 @@ def _with_context_precision(func=None, symbol=None):
     return wrapper
 
 
+TTruncable = TypeVar("TTruncable", bound="Truncable")
+TPreciseNumber = TypeVar("TPreciseNumber", bound="PreciseNumber")
+
+
 class Truncable(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def resize(self, significant: int) -> "Truncable":
+    def resize(self: TTruncable, significant: int) -> TTruncable:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def truncate(self, significant: Optional[int] = None) -> "Truncable":
+    def truncate(self: TTruncable, significant: Optional[int] = None) -> TTruncable:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def ceil(self, significant: Optional[int] = None) -> "Truncable":
+    def ceil(self: TTruncable, significant: Optional[int] = None) -> TTruncable:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def floor(self, significant: Optional[int] = None) -> "Truncable":
+    def floor(self: TTruncable, significant: Optional[int] = None) -> TTruncable:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def __round__(self, significant: Optional[int] = None) -> "Truncable":
+    def __round__(self: TTruncable, significant: Optional[int] = None) -> TTruncable:
         raise NotImplementedError
 
 
@@ -169,47 +173,47 @@ class PreciseNumber(Number, Truncable):
     def significant(self) -> int:
         raise NotImplementedError
 
-    def _get_significant(self, other: "PreciseNumber") -> int:
+    def _get_significant(self: TPreciseNumber, other: "PreciseNumber") -> int:
         return get_context()._precisionfunc(self, other)
 
     @_with_context_precision(symbol="+")
-    def __add__(self, other):
+    def __add__(self: TPreciseNumber, other):
         if f := get_context().add:
             return f(self, other)
         return self._add(other)
 
     @abc.abstractmethod
-    def _add(self, other: "PreciseNumber") -> "PreciseNumber":
+    def _add(self: TPreciseNumber, other: "PreciseNumber") -> TPreciseNumber:
         raise NotImplementedError
 
     @_with_context_precision(symbol="-")
-    def __sub__(self, other):
+    def __sub__(self: TPreciseNumber, other):
         if f := get_context().sub:
             return f(self, other)
         return self._sub(other)
 
     @abc.abstractmethod
-    def _sub(self, other: "PreciseNumber") -> "PreciseNumber":
+    def _sub(self: TPreciseNumber, other: "PreciseNumber") -> TPreciseNumber:
         raise NotImplementedError
 
     @_with_context_precision(symbol="*")
-    def __mul__(self, other):
+    def __mul__(self: TPreciseNumber, other):
         if f := get_context().mul:
             return f(self, other)
         return self._mul(other)
 
     @abc.abstractmethod
-    def _mul(self, other: "PreciseNumber") -> "PreciseNumber":
+    def _mul(self: TPreciseNumber, other: "PreciseNumber") -> TPreciseNumber:
         raise NotImplementedError
 
     @_with_context_precision(symbol="/")
-    def __truediv__(self, other):
+    def __truediv__(self: TPreciseNumber, other):
         if f := get_context().div:
             return f(self, other)
         return self._truediv(other)
 
     @abc.abstractmethod
-    def _truediv(self, other: "PreciseNumber") -> "PreciseNumber":
+    def _truediv(self: TPreciseNumber, other: "PreciseNumber") -> TPreciseNumber:
         raise NotImplementedError
 
     @abc.abstractmethod

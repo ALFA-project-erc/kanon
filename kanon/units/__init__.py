@@ -1,11 +1,17 @@
-from .radices import BasedReal, RadixBase, radix_registry
+from .definitions import (
+    Historical,
+    HistoricalDecimal,
+    IntegerAndSexagesimal,
+    Sexagesimal,
+    Temporal,
+)
+from .radices import BasedReal
 
-__all__ = ["RadixBase", "BasedReal"]
-
-# Load all common radices
-
-Sexagesimal = radix_registry["Sexagesimal"]
-Historical = radix_registry["Historical"]
-HistoricalDecimal = radix_registry["HistoricalDecimal"]
-IntegerAndSexagesimal = radix_registry["IntegerAndSexagesimal"]
-Temporal = radix_registry["Temporal"]
+__all__ = [
+    "BasedReal",
+    "Sexagesimal",
+    "Historical",
+    "HistoricalDecimal",
+    "IntegerAndSexagesimal",
+    "Temporal",
+]

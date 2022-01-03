@@ -18,6 +18,25 @@ from kanon.units.radices import (
 )
 
 
+def test_subclassing():
+    class TestSubclassOK(BasedReal, base=([1, 2], [3, 4]), separators=["a", "b"]):
+        pass
+
+    assert TestSubclassOK(1)
+
+    with pytest.raises(AssertionError):
+
+        class TestSubclassWrongBase(BasedReal, base=([-1], [1])):
+            pass
+
+    with pytest.raises(ValueError):
+
+        class TestSubclassWrongSeparators(
+            BasedReal, base=([1], [1]), separators=["a", "b"]
+        ):
+            pass
+
+
 def test_init():
     assert (
         Sexagesimal((1, 2, 31), (6,), sign=-1, remainder=Decimal("0.3")).__repr__()
