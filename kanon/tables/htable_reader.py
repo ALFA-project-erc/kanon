@@ -1,9 +1,10 @@
-from typing import Callable, Dict, List, Tuple, Union, cast
+from typing import Callable, Dict, List, Optional, Tuple, Union, cast
 
 import astropy.units as u
 import requests
 from astropy.units.core import Unit
 
+from kanon.models.meta import TableType, models
 from kanon.tables.symmetries import Symmetry
 from kanon.units import Historical, Sexagesimal
 from kanon.units.radices import BasedReal
@@ -28,6 +29,7 @@ _dishas_fields = '","'.join(
         "entry_type_of_number",
         "symmetries",
         "edited_text",
+        "table_type",
     ]
 )
 DISHAS_REQUEST_URL = f'https://dishas.obspm.fr/elastic-query\
@@ -116,6 +118,9 @@ def read_table_content(
 
     args = [arg_reader(v["value"], arg_shift) for v in values["args"]["argument1"]]
 
+    table_type: Optional[TableType] = None
+    any((table_type := v).value == int(tabc["table_type"]["id"]) for v in models)
+
     # Double argument
 
     if "argument2" in values["args"]:
@@ -165,6 +170,7 @@ def read_table_content(
             if units
             else None,
             dtype=None,
+            table_type=table_type,
             meta={
                 **tabc["edited_text"],
                 **units_info,
@@ -202,6 +208,7 @@ def read_table_content(
         dtype=[object, object],
         symmetry=symmetries,
         meta=tabc["edited_text"],
+        table_type=table_type,
     )
 
     if freeze:

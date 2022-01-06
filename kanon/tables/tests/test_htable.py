@@ -12,6 +12,10 @@ from astropy.units.core import UnitConversionError
 from hypothesis import assume
 from hypothesis.core import given
 
+from kanon.models.models import (
+    long_of_the_tropical_mean_sun,
+    mercury_equ_proportional_minutes,
+)
 from kanon.tables.htable import HTable, join_multiple
 from kanon.tables.symmetries import Symmetry
 
@@ -218,3 +222,22 @@ def test_freeze():
     tab.unfreeze()
     assert tab.loc[3]["b"] == 4
     assert tab.get(3) == 4
+
+
+def test_from_model():
+    args = list(range(5))
+    tab = HTable.from_model(long_of_the_tropical_mean_sun, args, (2,))
+    assert tab.get(0) == long_of_the_tropical_mean_sun(0, 2)
+    assert tab.get(1) == long_of_the_tropical_mean_sun(1, 2)
+    assert len(tab) == 5
+
+    tab_double = HTable.from_model(
+        mercury_equ_proportional_minutes, args, (1, 2), arguments2=args
+    )
+    assert tab_double.get(1).get(1) == mercury_equ_proportional_minutes(1, 1, 1, 2)
+    assert tab_double.get(2).get(2) == mercury_equ_proportional_minutes(2, 2, 1, 2)
+
+    assert len(tab_double) == 5
+    assert len(tab_double.get(0)) == 5
+
+    assert tab_double.table_type == mercury_equ_proportional_minutes.table_type

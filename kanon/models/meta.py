@@ -1,10 +1,12 @@
-from enum import Enum, EnumMeta, unique
+from enum import EnumMeta, IntEnum, unique
 from inspect import signature
 from typing import Dict, Protocol, Tuple
 
+from kanon.utils.types.number_types import Real
+
 
 class ModelCallable(Protocol):
-    def __call__(self, *args: float) -> float:
+    def __call__(self, *args: Real) -> Real:
         ...
 
     __name__: str
@@ -25,7 +27,7 @@ class EnumRegisterMeta(EnumMeta):
 
 
 @unique
-class TableType(Enum, metaclass=EnumRegisterMeta):
+class TableType(IntEnum, metaclass=EnumRegisterMeta):
     @classmethod
     def astro_id(cls) -> int:
         """Returns its DISHAS Astronomical Object ID

@@ -18,8 +18,9 @@ from astropy.table.operations import join
 from astropy.table.pprint import TableFormatter
 from astropy.table.table import TableAttribute
 from astropy.units import Quantity
-from astropy.units.core import Unit
+from astropy.units.core import Unit, dimensionless_unscaled
 
+from kanon.models.meta import ModelCallable, TableType
 from kanon.tables.hcolumn import HColumn, _patch_dtype_info_name
 from kanon.utils.types.number_types import Real
 
@@ -102,6 +103,10 @@ class HTable(Table):
     """Table symmetries."""
     opposite: bool = TableAttribute(default=False)
     """Defines if the table values should be of the opposite sign."""
+    table_type: Optional[TableType] = TableAttribute()
+    """Table type of the table"""
+    model: Optional[ModelCallable] = TableAttribute()
+    """Model the table follows"""
 
     _frozen: bool = False
     _cached_to_pandas: pd.DataFrame
@@ -117,6 +122,8 @@ class HTable(Table):
         **kwargs,
     ):
 
+        if model := kwargs.get("model"):
+            kwargs["table_type"] = model.table_type
         super().__init__(
             data=data, names=names, units=units, dtype=dtype, *args, **kwargs
         )
@@ -384,6 +391,85 @@ class HTable(Table):
         plt.ylabel(f"{y.name} ({y.unit})" if y.unit else y.name)
 
         return plt.plot(x, y, *args, **kwargs)
+
+    @classmethod
+    def from_model(
+        cls,
+        model: ModelCallable,
+        arguments: List[Real],
+        parameters: Tuple[Real, ...],
+        arguments2: Optional[List[Real]] = None,
+        arg1_name="Index",
+        arg2_name="Index",
+        entries_name="Entries",
+        units: Optional[List[Unit]] = None,
+    ) -> "HTable":
+        """Build a `HTable` from a model, its arguments and parameters.
+
+        :param model: Model used to build the table
+        :type model: ModelCallable
+        :param arguments: First argument
+        :type arguments: List[Real]
+        :param parameters: List of the model parameters
+        :type parameters: Tuple[Real, ...]
+        :param arguments2: Second argument
+        :type arguments2: Optional[List[Real]], optional
+        :param arg1_name: Name of the first argument, defaults to `Index`
+        :type arg1_name: Optional[str], optional
+        :param arg2_name: Name of the first argument, defaults to `Index`
+        :type arg2_name: Optional[str], optional
+        :param entries_name: Name of the first argument, defaults to `Entries`
+        :type entries_name: Optional[str], optional
+        :param units: List of units, in the order [u_arg1, u_entries] for single \
+            argument table, [u_arg1, u_arg2, u_entries] for double argument table
+        :type units: Optional[List[Unit]], optional
+        :return: New HTable following a certain model
+        :rtype: HTable
+        """
+
+        argtype = float if isinstance(arguments[0], (int, float)) else object
+        meta = {}
+        entries: Union[HTable, List[Real]]
+        if arguments2 is not None:
+            args = arguments2
+            units_info = {"unit_arg": units[0], "unit_entry": units[2]} if units else {}
+            entries = [
+                HTable(
+                    [
+                        arguments,
+                        [model(arg1, arg2, *parameters) for arg1 in arguments],
+                    ],
+                    names=(arg1_name, entries_name),
+                    index=arg1_name,
+                    dtype=[argtype] * 2,
+                )
+                for arg2 in arguments2
+            ]
+            names = (arg2_name, "Tables")
+            index = arg2_name
+            meta = {
+                **units_info,
+                "index": arg1_name,
+                "double": True,
+            }
+            dtype = None
+            units = [units[2], dimensionless_unscaled] if units else None
+        else:
+            args = arguments
+            entries = [model(arg1, *parameters) for arg1 in arguments]
+            names = (arg1_name, entries_name)
+            index = arg1_name
+            dtype = [argtype, argtype]
+            units = [units[0], units[1]] if units else None
+        return HTable(
+            [args, entries],
+            names=names,
+            index=index,
+            units=units,
+            dtype=dtype,
+            meta=meta,
+            model=model,
+        )
 
 
 def join_multiple(

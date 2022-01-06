@@ -9,6 +9,7 @@ import pytest
 from astropy.units.quantity import Quantity
 from hypothesis.core import given
 
+from kanon.models.table_types import Sun
 from kanon.tables import HTable
 from kanon.units import Sexagesimal
 
@@ -38,6 +39,8 @@ def test_read():
     assert sym.symtype == "mirror"
 
     assert "Sexagesimal" in repr(table)
+
+    assert table.table_type == Sun.equ_of_the_sun
 
     with pytest.raises(FileNotFoundError):
         HTable.read(181, format="dishas")

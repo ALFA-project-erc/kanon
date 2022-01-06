@@ -1,6 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
-
-# flake8: noqa
+from typing import Any, Dict, List, Literal, Optional, TypedDict
 
 
 class OriginalValue(TypedDict):
@@ -79,10 +77,17 @@ class ValueOriginal(SourceValueOriginal):
     symmetries: List
 
 
+class WithID(TypedDict):
+    id: str
+
+
+class TableType(WithID):
+    astronomical_object: WithID
+
+
 class TableContent(TypedDict):
     argument1_number_of_steps: int
     argument2_number_of_steps: int
-    id: int
     source_value_original: SourceValueOriginal
     value_original: ValueOriginal
     value_float: ValueFloat
@@ -105,7 +110,7 @@ class TableContent(TypedDict):
     comment: str
     mathematical_parameter: str
     parameter_sets: Dict
-    table_type: Dict
+    table_type: TableType
     created: str
     updated: str
     public: Literal[True]

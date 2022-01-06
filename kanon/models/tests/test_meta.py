@@ -28,15 +28,15 @@ def mock_models():
 
 def test_table_type(mock_models):
     class A(TableType):
-        C = "v"
+        C = 5
 
     assert A.C in models
 
 
 def test_dmodel(mock_models):
     class A(TableType):
-        C = "c"
-        R = "r"
+        C = 2
+        R = 6
 
     @dmodel(A.C, 5, 1)
     def func(x, a):
