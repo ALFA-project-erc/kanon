@@ -1,3 +1,10 @@
+0.6.0
+_____
+
+*Features*
+
+- radices : Removed `RadixBase` class, `BasedReal` implementations now declared on their own
+
 0.5.2
 _____
 
