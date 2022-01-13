@@ -47,7 +47,8 @@ def _split_df(df: pd.DataFrame, key: Real) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 def _interpolation_decorator(func):
     """
-    This decorator automatically casts the key in the correct type and returns the result
+    This decorator automatically casts the key in
+    the correct type and returns the result
     if the key is in the DataFrame
     """
 
@@ -122,7 +123,8 @@ def distributed_interpolation(
 
     if direction not in ("convex", "concave"):
         raise ValueError(
-            f"The interpolation direction must be either convex or concave, not {direction}"
+            f"The interpolation direction must \
+                be either convex or concave, not {direction}"
         )
 
     if pd.isna(df.iloc[-1][0]) or pd.isna(df.iloc[0][0]):

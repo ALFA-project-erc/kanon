@@ -44,12 +44,10 @@ except ImportError:
     sys.exit(1)
 
 # Get configuration information from setup.cfg
-from configparser import ConfigParser
+import toml
 
-conf = ConfigParser()
-
-conf.read([os.path.join(os.path.dirname(__file__), "..", "setup.cfg")])
-setup_cfg = dict(conf.items("metadata"))
+conf = toml.load([os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")])
+setup_cfg = dict({**conf["tool"]["poetry"], **conf["docs"]["metadata"]})
 
 # -- General configuration ----------------------------------------------------
 
@@ -75,16 +73,16 @@ rst_epilog += """
 # -- Project information ------------------------------------------------------
 
 # This does not *have* to match the package name, but typically does
-project = setup_cfg["real_name"]
-author = setup_cfg["author"]
-copyright = "{0}, {1}".format(datetime.datetime.now().year, setup_cfg["author"])
+project = setup_cfg["name"]
+author = setup_cfg["authors"][0]
+copyright = "{0}, {1}".format(datetime.datetime.now().year, author)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-import_module(setup_cfg["real_name"])
-package = sys.modules[setup_cfg["real_name"]]
+import_module(setup_cfg["name"])
+package = sys.modules[setup_cfg["name"]]
 
 # The short X.Y version.
 version = package.__version__.split("-", 1)[0]

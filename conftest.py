@@ -1,1 +1,1 @@
-pytest_plugins = ['hypothesis.extra.pytestplugin']
+pytest_plugins = ["hypothesis.extra.pytestplugin"]

@@ -1,1 +1,3 @@
-from . import models  # noqa
+from . import models
+
+__all__ = ("models",)

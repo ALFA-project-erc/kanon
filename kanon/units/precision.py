@@ -1,5 +1,5 @@
-"""The `precision` module is used when wanting to adjust `~kanon.units.radices.BasedReal`
-arithmetical operations behavior.
+"""The `precision` module is used when wanting to
+adjust `~kanon.units.radices.BasedReal` arithmetical operations behavior.
 All operations are made within a `PrecisionContext` rules, which indicate :
 
 - A `TruncatureMode`
@@ -9,9 +9,9 @@ All operations are made within a `PrecisionContext` rules, which indicate :
 Default precision context is set to `TruncatureMode.NONE`, `PrecisionMode.MAX`, and all
 `CustomArithmeticAlgorithm` as default.
 
-To set new precision rules you should use the `set_precision` context manager. In the example
-below, I set the precision so that the result significant number is 0 and that it should be
-truncated.
+To set new precision rules you should use the `set_precision` context manager. In
+the example below, I set the precision so that the result significant number is 0
+and that it should be truncated.
 
 >>> from kanon.units import Sexagesimal
 >>> a = Sexagesimal("1;50")
@@ -31,8 +31,8 @@ decorator specifying a unique ID :
 
     Callable[[PreciseNumber, PreciseNumber], PreciseNumber]
 
-For example, a multiplication algorithm which is essentialy equivalent to ``a * round(b,0)``
-with `TEST_MUL` as its ID:
+For example, a multiplication algorithm which is essentialy
+equivalent to ``a * round(b,0)`` with `TEST_MUL` as its ID:
 
 >>> @identify_func("TEST_MUL")
 ... def test_mul(a: PreciseNumber, b: PreciseNumber) -> PreciseNumber:
@@ -49,9 +49,9 @@ You can now use this function to make multiplications use this algorithm
 ...     b * a
 04 ; 00
 
-All operations and their associated context are stored inside the `ContextPrecision` when
-the recording flag is set to ``True``. You can either set it to ``True`` inside of a
-`set_precision` context manager, or globally turn it on with `set_recording(True)`.
+All operations and their associated context are stored inside the `ContextPrecision`
+when the recording flag is set to ``True``. You can either set it to ``True`` inside
+of a `set_precision` context manager, or globally turn it on with `set_recording(True)`.
 Records are displayed with `get_records`, and can be cleared with `clear_records`.
 
 Let's try to record our operations.
@@ -228,7 +228,8 @@ class FuncEnum(Enum):
 
 class PrecisionMode(FuncEnum):
     """Enumeration of standard precision modes available.
-    You can also use a positive integer to indicate a precision at a constant significant number.
+    You can also use a positive integer to indicate a precision at a
+    constant significant number.
     """
 
     SCI = (

@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Lint
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - 3.8
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: abatilo/actions-poetry@v2.1.4
+      - name: Config Poetry
+        run: poetry config virtualenvs.in-project true
+      - name: Set up cache
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        run: poetry install
+      - name: Test with coverage
+        run: poetry run tox -e test-cov -- --junitxml={toxinidir}/report.xml
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: report.xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+  test_notebooks:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - 3.8
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: abatilo/actions-poetry@v2.1.4
+      - name: Config Poetry
+        run: poetry config virtualenvs.in-project true
+      - name: Set up cache
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        run: poetry install --extras notebook
+      - name: Test with Pytest
+        run: poetry run tox -e test_notebooks

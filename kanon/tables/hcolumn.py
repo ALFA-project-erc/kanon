@@ -54,8 +54,8 @@ class HColumnInfo(ColumnInfo):
 
 class HColumn(Column, Truncable):
     """
-    `~astropy.table.Column` subclass with better support of `~kanon.units.radices.BasedReal`
-    values.
+    `~astropy.table.Column` subclass with better support of
+    `~kanon.units.radices.BasedReal` values.
     """
 
     info = HColumnInfo()
@@ -108,7 +108,8 @@ class HColumn(Column, Truncable):
             isinstance(v, self.basedtype) for v in array_value
         ):
             raise ValueError(
-                f"Value has not the same type {array_value.dtype} as this column {self.basedtype}"
+                f"Value has not the same type {array_value.dtype} as \
+                    this column {self.basedtype}"
             )
         return super().__setitem__(index, value)
 

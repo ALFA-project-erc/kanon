@@ -231,8 +231,8 @@ class Date:
 
 class Calendar(metaclass=abc.ABCMeta):
     """This abstract class defines calendar behaviors. You need to subclass this to
-    create a working `Calendar`. You have to define its `interpolation` method, its `_name`,
-    `_months` and maybe `_cycle`.
+    create a working `Calendar`. You have to define its `interpolation`
+    method, its `_name`, `_months` and maybe `_cycle`.
     """
 
     #: Registry of all calendars
@@ -255,7 +255,8 @@ class Calendar(metaclass=abc.ABCMeta):
         :type era: Era
         :param variant: Name of this variant, defaults to ""
         :type variant: str, optional
-        :param months_mutation: Function transforming the Calendar class `months` list, defaults to None
+        :param months_mutation: Function transforming the Calendar class `months` list\
+        , defaults to None
         :type months_mutation: Optional[Callable[[List[Month]], List[Month]]], optional
         :raises ValueError: Raised when the calendar's name has already been used.
         """
@@ -350,7 +351,8 @@ class Calendar(metaclass=abc.ABCMeta):
         mdn = self.months[month - 1].days(is_leap)
         if day > mdn or day < 1:
             raise ValueError(
-                f"The day entered ({day}) is invalid in {self.months[month-1].name} 1..{mdn}"
+                f"The day entered ({day}) is invalid \
+                    in {self.months[month-1].name} 1..{mdn}"
             )
         if year == 0:
             raise ValueError("Year cannot be zero.")

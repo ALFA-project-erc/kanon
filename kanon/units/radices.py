@@ -6,7 +6,9 @@
     >>> builtins.Sexagesimal = Sexagesimal
     >>> builtins.Historical = Historical
 
->>> class ExampleBase(BasedReal, base=([20, 5, 18], [24, 60]), separators=[" ","u ","sep "]):
+>>> class ExampleBase(
+...    BasedReal, base=([20, 5, 18], [24, 60]), separators=[" ","u ","sep "]
+... ):
 ...     pass
 ...
 >>> number = ExampleBase((8, 12, 3, 1), (23, 31))
@@ -76,9 +78,10 @@ def ndigit_for_radix(radix: int) -> int:
 def radix_at_pos(base: RadixBase, pos: int):
     """
     Return the radix at the specified position. Position 0 represents the last integer
-    position before the fractional part (i.e. the position just before the ';' in sexagesimal
-    notation, or just before the '.' in decimal notation). Positive positions represent
-    the fractional positions, negative positions represent the integer positions.
+    position before the fractional part (i.e. the position just before the ';' in
+    sexagesimal notation, or just before the '.' in decimal notation). Positive
+    positions represent the fractional positions, negative positions represent
+    the integer positions.
 
     :param base: Base
     :type base: `RadixBase`
@@ -175,7 +178,8 @@ class BasedReal(PreciseNumber, _Real):
                 self += (self.one() * self.sign) >> self.significant
             else:
                 raise ValueError(
-                    f"Illegal remainder value ({self.remainder}), should be a Decimal between [0.,1.["
+                    f"Illegal remainder value ({self.remainder}),\
+                         should be a Decimal between [0.,1.["
                 )
         for x in self[:]:
             if isinstance(x, float):
@@ -190,7 +194,8 @@ class BasedReal(PreciseNumber, _Real):
 
     def __simplify_integer_part(self) -> int:
         """
-        Remove the useless trailing zeros in the integer part and return how many were removed
+        Remove the useless trailing zeros in the integer part
+        and return how many were removed
         """
         count = 0
         for i in self.left[:-1]:
@@ -232,8 +237,9 @@ class BasedReal(PreciseNumber, _Real):
         >>> Sexagesimal(21, 1, 3)
         21,01,03 ;
 
-        :param remainder: When a computation requires more precision than the precision \
-        of this number, we store a :class:`~decimal.Decimal` remainder to keep track of it, defaults to 0.0
+        :param remainder: When a computation requires more precision than the \
+        precision of this number, we store a :class:`~decimal.Decimal` remainder \
+        to keep track of it, defaults to 0.0
         :type remainder: ~decimal.Decimal, optional
         :param sign: The sign of this number, defaults to 1
         :type sign: int, optional
@@ -326,7 +332,8 @@ class BasedReal(PreciseNumber, _Real):
     @property
     def remainder(self) -> Decimal:
         """
-        When a computation requires more significant figures than the precision of this number,
+        When a computation requires more significant figures
+        than the precision of this number,
         we store a :class:`~decimal.Decimal` remainder to keep track of it
 
         >>> Sexagesimal(1,2,3, remainder=Decimal("0.2")).remainder
@@ -409,7 +416,8 @@ class BasedReal(PreciseNumber, _Real):
     def __repr__(self) -> str:
         """
         Convert to string representation.
-        Note that this representation is rounded (with respect to the remainder attribute) not truncated
+        Note that this representation is rounded (with
+        respect to the remainder attribute) not truncated
 
         :return: String representation of this number
         """
@@ -727,7 +735,8 @@ class BasedReal(PreciseNumber, _Real):
     def __getitem__(self: TBasedReal, key):
         """
         Allow to get a specific position value of this BasedReal object
-        by specifying an index. The position 0 corresponds to the right-most integer position.
+        by specifying an index. The position 0 corresponds to the
+        right-most integer position.
         Negative positions correspond to the other integer positions, positive
         positions correspond to the fractional positions.
 
@@ -1156,7 +1165,9 @@ class BasedReal(PreciseNumber, _Real):
         return res
 
     @overload
-    def __mul__(self: TBasedReal, other: Union[float, "BasedReal"]) -> TBasedReal:  # type: ignore
+    def __mul__(  # type: ignore
+        self: TBasedReal, other: Union[float, "BasedReal"]
+    ) -> TBasedReal:
         ...
 
     @overload

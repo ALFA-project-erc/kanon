@@ -17,8 +17,10 @@ lint:
   tags:
     - docker_dio
   script:
-    - pip install tox
-    - tox -e codestyle
+    - apt update
+    - apt install git -y
+    - pip install pre-commit
+    - pre-commit run --all-files
 
 test:
   stage: test
@@ -34,11 +36,10 @@ test:
   tags:
     - docker_dio
   script:
-    - pip install .
-    - pip install .[test]
-    - mypy
-    - pytest --junitxml=report.xml -p "no:hypothesispytest" --pyargs kanon docs --cov kanon --cov-config=setup.cfg
-    - coverage xml
+    - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+    - source $HOME/.poetry/env
+    - poetry install
+    - poetry run tox -e test-cov -- --junitxml={toxinidir}/report.xml
   artifacts:
     reports:
       junit: report.xml
@@ -55,14 +56,15 @@ test_notebooks:
       - kanon/**/*
       - examples/**/*
   script:
-    - pip install tox
-    - tox -e test_notebooks
+    - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+    - source $HOME/.poetry/env
+    - poetry install --extras notebook
+    - poetry run tox -e test_notebooks
 
 deploy:testpypi:
   stage: deploy
   image: python:3.8.7
   variables:
-    TWINE_USERNAME: __token__
     TWINE_PASSWORD: $TWINE_PASSWORD_TESTPYPI
   tags:
     - docker_dio
@@ -70,22 +72,25 @@ deploy:testpypi:
   only:
     - tags
   script:
-    - pip install twine build --upgrade
-    - python -m build --sdist .
-    - twine upload --repository testpypi dist/*
+    - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+    - source $HOME/.poetry/env
+    - pip install poetry-dynamic-versioning
+    - poetry config repositories.pypitest https://test.pypi.org/legacy/
+    - poetry config pypi-token.pypitest $TWINE_PASSWORD
+    - poetry publish --repository testpypi --build
 
 deploy:pypi:
   stage: deploy
   image: python:3.8.7
   variables:
-    TWINE_USERNAME: __token__
-    TWINE_PASSWORD: $TWINE_PASSWORD_PYPI
+    POETRY_PYPI_TOKEN_PYPI: $TWINE_PASSWORD_PYPI
   tags:
     - docker_dio
   when: manual
   only:
     - tags
   script:
-    - pip install twine build --upgrade
-    - python -m build --sdist .
-    - twine upload dist/*
+    - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+    - source $HOME/.poetry/env
+    - pip install poetry-dynamic-versioning
+    - poetry publish --build

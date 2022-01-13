@@ -1,9 +1,9 @@
 """
-The `~kanon.calendars` package provides everything you need to manipulate historical dates
-with ancient calendars. All calculations on dates are based on Julian Day Numbers, starting
-the 1st January 4713 B.C. at 12:00. This module already has a few of the major historical
-calendars subclassed (see `calendars`). Once subclassed, a `Calendar` is created with an
-`~kanon.calendars.calendars.Era` to define its beginning.
+The `~kanon.calendars` package provides everything you need to manipulate historical
+dates with ancient calendars. All calculations on dates are based on Julian Day Numbers,
+starting the 1st January 4713 B.C. at 12:00. This module already has a few of the major
+historical calendars subclassed (see `calendars`). Once subclassed, a `Calendar` is
+created with an `~kanon.calendars.calendars.Era` to define its beginning.
 
 You can find all the calendars already instantiated in the `Calendar.registry` :
 
@@ -19,8 +19,9 @@ You can find all the calendars already instantiated in the `Calendar.registry` :
 |                     |                       | Julian Era             |                        |                               |
 +---------------------+-----------------------+------------------------+------------------------+-------------------------------+
 
-You can easily convert dates between all kinds of calendars. For this we use `Date` objects.
-To start, let's try to build a `Date` of the 10th March 1324 from the Julian A.D. calendar :
+You can easily convert dates between all kinds of calendars. For this we use `Date`
+objects. To start, let's try to build a `Date` of the 10th March 1324 from
+the Julian A.D. calendar :
 
 >>> julian_ad = Calendar.registry["Julian A.D."]
 >>> date = Date(julian_ad, (1324, 3, 10))
@@ -40,7 +41,7 @@ Then we can convert this date in the Arabic Civil Hijra calendar :
 
 We have succesfully converted a date expressed in one calendar into another. And we see that its
 absolute date value (expressed in Julian Day Numbers) stays the same.
-"""
+"""  # noqa: E501
 from .calendars import Calendar, Date
 
 __all__ = ("Calendar", "Date")

@@ -5,11 +5,11 @@ from .meta import dmodel
 from .table_types import (
     Jupiter,
     Mars,
+    Mathematical,
     Mercury,
     Moon,
     SphericalAstronomical,
     Sun,
-    Mathematical,
     Venus,
 )
 from .utils import DEG, RAD
@@ -211,7 +211,9 @@ def first_stationary_point_of_mercury_by_proportional_minutes(x, s0, s1, s2, e):
 
 
 @dmodel(Mercury.planetary_stations, 65, 185, 186, 187)
-def first_stationary_point_of_mercury_by_calculation_and_proportional_minutes(x, e, R, vq):
+def first_stationary_point_of_mercury_by_calculation_and_proportional_minutes(
+    x, e, R, vq
+):
     """
     First stationary point of Mercury by calculation and proportional minutes
     :param x: mean centre in degree (0<=x<360)
@@ -248,7 +250,8 @@ def first_stationary_point_of_mercury_by_calculation_and_proportional_minutes(x,
 def venus_lat_incl(x, im):
     """
     component Venus latitude due to inclination
-    :param x: nodal argument of latitude = angle between ascending node and epicycle center in degree
+    :param x: nodal argument of latitude = angle between \
+    ascending node and epicycle center in degree
     :param im: maximum inclination of the deferent on the ecliptic in degree
     :return: inclination in degree
     """
@@ -271,7 +274,8 @@ def venus_lat_deviation(x, R, jm):
 @dmodel(Venus.lat_slant, 56, 291, 293, 294)
 def venus_lat_slant_approximated(x, R, b3m, pm):
     """
-    Venus latitude slant approximated due to the slant of the epicycle at the deferent apogee
+    Venus latitude slant approximated due to the slant of the epicycle
+    at the deferent apogee
     and according ptolemy CALCULATIONS
     :param x: true argument in degree
     :param R: radius of the epicycle
@@ -286,8 +290,8 @@ def venus_lat_slant_approximated(x, R, b3m, pm):
 @dmodel(Venus.lat_slant, 57, 291, 292, 293)
 def venus_lat_slant_geometric(x, R, e, b3m):
     """
-    Venus latitude slant geometric due to the slant of the epicycle at the deferent apogee
-    and according to the Ptolemy THEORY
+    Venus latitude slant geometric due to the slant of the epicycle
+    at the deferent apogee and according to the Ptolemy THEORY
     :param x: true argument in degree
     :param R: radius of the epicycle
     :param e: eccentricity
@@ -303,7 +307,8 @@ def venus_lat_double_arg(x, y, R, im, jm, b3m, pm):
     """
     Venus total latitude double argument
     :param x: true argument in degree
-    :param y: nodal argument of latitude=angle between ascending node amd epicycle centre
+    :param y: nodal argument of latitude=angle between ascending \
+    node and epicycle centre
     :param R: radius of the epicycle
     :param im: inclination of the deferent on the ecliptic in degree
     :param jm: maximum deviation on the epicycle in degree
@@ -394,7 +399,9 @@ def first_stationary_point_of_venus_by_proportional_minutes(x, s0, s1, s2, e):
 
 
 @dmodel(Venus.planetary_stations, 72, 179, 180, 181)
-def first_stationary_point_of_venus_by_calculation_and_proportional_minutes(x, e, R, vq):
+def first_stationary_point_of_venus_by_calculation_and_proportional_minutes(
+    x, e, R, vq
+):
     """
     First stationary point of Venus by calculation and proportional minutes
     :param x: mean center in degree
@@ -621,7 +628,8 @@ def length_daylight(x, oblra, oblad, phi):
     :param oblra: obliquity of the ecliptic (ra) in degree
     :param oblad: obliquity of the ecliptic (ad) in degree
     :param phi: geographical latitude in degree
-    :return: Length of the day in DEGREE, divide by 15 to have the result in equinoctial hours
+    :return: Length of the day in DEGREE, divide by 15 to have \
+    the result in equinoctial hours
     """
     return utils.oblique_asc_0(x + 180, oblra, oblad, phi) - utils.oblique_asc_0(
         x, oblra, oblad, phi

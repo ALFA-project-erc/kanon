@@ -50,8 +50,8 @@ class Symmetry:
     :type offset: int, optional
     :param sign: Relative signs of the symmetry values from source values, defaults to 1
     :type sign: Literal[-1, 1], optional
-    :param source: Tuple representing the lower and upper bound to take the values from, \
-    defaults to the whole DataFrame
+    :param source: Tuple representing the lower and upper bound to take the values \
+    from, defaults to the whole DataFrame
     :type source: Tuple[Real, Real], optional
     :param targets: List of keys where the symmetry are pasted, defaults to the end of \
     the DataFrame

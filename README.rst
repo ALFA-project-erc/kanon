@@ -20,7 +20,7 @@
 
 --------
 
-**Kanon** is the History of Astronomy Python package and tools. Still in early development.
+**Kanon** is the History of Astronomy Python package and tools.
 
 Current Features
 ________________
@@ -43,6 +43,10 @@ ________________
 - Define new calendar types
 - Date conversions
 
+`models`
+
+- Collection of mathematical models used for all kinds of astronomical tables
+
 How to use
 __________
 
@@ -52,7 +56,7 @@ Install the package with `pip`
 
     pip install kanon
 
-For now ``kanon`` features are only available through its Python library
+Import Kanon and begin trying all its features
 
 .. code:: python
 
@@ -68,15 +72,22 @@ For now ``kanon`` features are only available through its Python library
 Development
 ___________
 
-To start developing on this project you need to install the package in editable mode
+To start developing on this project you need to install
+the package with `poetry` (`Installing Poetry <https://python-poetry.org/docs/>`)
 
 .. code:: bash
 
     git clone git@gitlab.obspm.fr:lgauffier/kanon.git
     cd kanon
-    pip install -e .
+    poetry install
 
-The changes you make in the code are reflected on your Python environment
+The changes you make in the code are reflected on your Python environment.
+
+Activate pre-commit checks :
+
+.. code:: bash
+
+    pre-commit install
 
 Tests
 _____
@@ -91,5 +102,5 @@ Run tests with tox
     # example notebooks tests
     tox -e test_notebooks
 
-    # mypy
-    tox -e mypy
+    # linting
+    pre-commit run --all-files

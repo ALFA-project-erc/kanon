@@ -27,7 +27,10 @@ def test_long_of_the_tropical_mean_sun():
 
 def test_equ_of_anomaly_mercury_at_near_dist():
     assert np.allclose(
-        [md.equ_of_anomaly_mercury_at_near_dist(x, 47, 7) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            md.equ_of_anomaly_mercury_at_near_dist(x, 47, 7)
+            for x in [0, 45, 70, 180, 270, 310]
+        ],
         [
             0.0,
             6.013722851349135,
@@ -41,7 +44,10 @@ def test_equ_of_anomaly_mercury_at_near_dist():
 
 def test_equ_of_anomaly_mercury_at_mean_dist():
     assert np.allclose(
-        [md.equ_of_anomaly_mercury_at_mean_dist(x, 7) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            md.equ_of_anomaly_mercury_at_mean_dist(x, 7)
+            for x in [0, 45, 70, 180, 270, 310]
+        ],
         [
             0.0,
             4.358023341886223,
@@ -113,7 +119,12 @@ def test_zero_equation_0():
     assert np.allclose(
         [utils.zero_equation_0(x, 7) for x in [0, 45, 70, 180, 270, 310]],
         [
-            0, 0, 0, 0, 0, 0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
         ],
     )
 
@@ -246,7 +257,10 @@ def test_equ_of_center_of_mercury():
 
 def test_equ_of_anomaly_mercury_at_great_dist():
     assert np.allclose(
-        [md.equ_of_anomaly_mercury_at_great_dist(x, 35, 2) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            md.equ_of_anomaly_mercury_at_great_dist(x, 35, 2)
+            for x in [0, 45, 70, 180, 270, 310]
+        ],
         [
             0.0,
             0.48689661908197446,
@@ -461,7 +475,10 @@ def test_venus_lat_double_arg():
 
 def test_venus_equ_anomaly_at_the_max_dist():
     assert np.allclose(
-        [md.venus_equ_anomaly_at_the_max_dist(x, 31, 35) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            md.venus_equ_anomaly_at_the_max_dist(x, 31, 35)
+            for x in [0, 45, 70, 180, 270, 310]
+        ],
         [
             0.0,
             12.068931332188297,
@@ -489,7 +506,10 @@ def test_venus_equ_anomaly_at_mean_dist():
 
 def test_venus_equ_anomaly_at_min_dist():
     assert np.allclose(
-        [md.venus_equ_anomaly_at_min_dist(x, 33, 24) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            md.venus_equ_anomaly_at_min_dist(x, 33, 24)
+            for x in [0, 45, 70, 180, 270, 310]
+        ],
         [
             0.0,
             21.104235641764333,
@@ -531,7 +551,9 @@ def test_mercury_equ_proportional_minutes():
 def test_first_stationary_point_of_mercury_by_proportional_minutes():
     assert np.allclose(
         [
-            md.first_stationary_point_of_mercury_by_proportional_minutes(x, 15, 39, 48, 4)
+            md.first_stationary_point_of_mercury_by_proportional_minutes(
+                x, 15, 39, 48, 4
+            )
             for x in [0, 45, 70, 180, 270, 310]
         ],
         [
@@ -546,11 +568,9 @@ def test_first_stationary_point_of_mercury_by_proportional_minutes():
 
 
 def test_first_stationary_point_of_mercury_by_calculation_and_proportional_minutes():
+    func = md.first_stationary_point_of_mercury_by_calculation_and_proportional_minutes
     assert np.allclose(
-        [
-            md.first_stationary_point_of_mercury_by_calculation_and_proportional_minutes(x, 3, 15, 5)
-            for x in [0, 45, 70, 180, 270, 310]
-        ],
+        [func(x, 3, 15, 5) for x in [0, 45, 70, 180, 270, 310]],
         [
             145.08550675015084,
             142.72136285175768,
@@ -564,7 +584,10 @@ def test_first_stationary_point_of_mercury_by_calculation_and_proportional_minut
 
 def test_mars_equ_anomaly_at_max_dist():
     assert np.allclose(
-        [md.mars_equ_anomaly_at_max_dist(x, 25, 48) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            md.mars_equ_anomaly_at_max_dist(x, 25, 48)
+            for x in [0, 45, 70, 180, 270, 310]
+        ],
         [
             0.0,
             15.926665349431607,
@@ -592,7 +615,10 @@ def test_mars_equ_anomaly_at_mean_dist():
 
 def test_mars_equ_anomaly_at_min_dist():
     assert np.allclose(
-        [md.mars_equ_anomaly_at_min_dist(x, 12, 15) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            md.mars_equ_anomaly_at_min_dist(x, 12, 15)
+            for x in [0, 45, 70, 180, 270, 310]
+        ],
         [
             0.0,
             10.258332179441476,
@@ -617,7 +643,9 @@ def test_mars_equ_proportional_minutes():
 def test_first_stationary_point_of_venus_by_proportional_minutes():
     assert np.allclose(
         [
-            md.first_stationary_point_of_venus_by_proportional_minutes(x, 47, 22, 37, 41)
+            md.first_stationary_point_of_venus_by_proportional_minutes(
+                x, 47, 22, 37, 41
+            )
             for x in [0, 45, 70, 180, 270, 310]
         ],
         [
@@ -634,7 +662,9 @@ def test_first_stationary_point_of_venus_by_proportional_minutes():
 def test_first_stationary_point_of_venus_by_calculation_and_proportional_minutes():
     assert np.allclose(
         [
-            md.first_stationary_point_of_venus_by_calculation_and_proportional_minutes(x, 35, 20, 42)
+            md.first_stationary_point_of_venus_by_calculation_and_proportional_minutes(
+                x, 35, 20, 42
+            )
             for x in [0, 45, 70, 180, 270, 310]
         ],
         [

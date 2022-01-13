@@ -44,7 +44,8 @@ def q_2(x, e):
 # JC FUNCTION
 def lat_inf_slant_apo_def_0(x, b3m, pm, R):
     """
-    inferior planet latitude at the deferent apogee owing to the slant of the epicycle but according
+    inferior planet latitude at the deferent apogee owing to the
+    slant of the epicycle but according
     with Ptolemy CALCULATION
     :param x: true argument in degree
     :param b3m: max of slant latitude  in degree
@@ -57,7 +58,8 @@ def lat_inf_slant_apo_def_0(x, b3m, pm, R):
 
 def lat_inf_slant_apo_def_1(x, km, rho, R):
     """
-    inferior planet latitude at the deferent apogee owing to the slant of the epicycle but according
+    inferior planet latitude at the deferent apogee owing to the slant of
+    the epicycle but according
     with Ptolemy THEORY
     :param x: true argument in degree
     :param km: max of slant  in degree
@@ -72,7 +74,8 @@ def lat_inf_slant_apo_def_1(x, km, rho, R):
 # JC FUNCTION
 def lat_inf_devia_asc_node_0(av, jm, R):
     """
-    inferior planet latitude at the ascending node owing to the deviation of the epicycle
+    inferior planet latitude at the ascending node owing to the
+    deviation of the epicycle
     :param av: true argument in degree
     :jm: deviation max in degree
     :R: radius of the epicycle
@@ -87,7 +90,8 @@ def lat_inf_incl_0(x, im):
     """
     part of inferior planets latitude owing
     to the inclination of the deferent
-    :param x: nodal argument of latitude = angle between ascending node and epicycle center
+    :param x: nodal argument of latitude = angle between ascending node and \
+        epicycle center
     :im: inclination max in degree
     """
     return im * (m.sin(RAD * x)) ** 2
@@ -414,7 +418,8 @@ def first_stationary_point_mercury_0(cm, vq, r, e):
 
 def first_stationary_point_all_planet_except_mercury_0(cm, vq, r, e):
     """
-    True argument of first stationary point of  all planet except mercury by calculation in degree
+    True argument of first stationary point of  all planet except mercury
+    by calculation in degree
     cm:mean centre in degree
     vq:velocity quotient (wa/wt)
     r:radius of epicycle

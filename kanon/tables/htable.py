@@ -48,11 +48,12 @@ class HTableFormatter(TableFormatter):
 
 
 class HTable(Table):
-    """`HTable` is a subclass of `astropy.table.Table`, made to model Historical Astronomy tables
-    representing mathematical functions. Its argument column or columns are its index, while the
-    values should be on the first column. Columns are allowed to contain all kinds of `~numbers.Real`,
-    especially `~kanon.units.radices.BasedReal` numbers. `HTable` also provides additional historical
-    features and metadata.
+    """`HTable` is a subclass of `astropy.table.Table`, made to model Historical
+    Astronomy tables representing mathematical functions. Its argument column
+    or columns are its index, while the values should be on the first column.
+     Columns are allowed to contain all kinds of `~numbers.Real`, especially
+    `~kanon.units.radices.BasedReal` numbers. `HTable` also provides additional
+    historical features and metadata.
 
     See also: https://docs.astropy.org/en/stable/table/
 
@@ -84,12 +85,14 @@ class HTable(Table):
     :type units: Optional[List[Unit]]
     :param dtype: Specify column data types.
     :type dtype: Optional[List]
-    :param symmetry: Specify a list of `~kanon.tables.Symmetry` on this table. Defaults to empty list.
+    :param symmetry: Specify a list of `~kanon.tables.Symmetry` on this table. \
+    Defaults to empty list.
     :type symmetry: Optional[List[Symmetry]]
     :param interpolate: Specify a custom interpolation method,\
     defaults to `~kanon.tables.interpolations.linear_interpolation`.
     :type interpolate: Optional[Interpolator]
-    :param opposite: Defines if the table values should be of the opposite sign. Defaults to False.
+    :param opposite: Defines if the table values should be of the opposite sign. \
+    Defaults to False.
     :type opposite: Optional[bool]
 
     """

@@ -6,7 +6,8 @@ T = TypeVar("T")
 class LoopingList(list, Generic[T]):
     """
     A class for lists looping both sides.
-    If an index is queried outside the boundaries of the list, the last element is returned.
+    If an index is queried outside the boundaries of the list,
+    the last element is returned.
 
     >>> test = LoopingList([0, 1, 2])
     >>> test
