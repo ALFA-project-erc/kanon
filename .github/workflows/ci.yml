@@ -45,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Test with coverage
-        run: poetry run tox -e test-cov -- --junitxml={toxinidir}/report.xml
+        run: poetry run pytest kanon --cov=kanon -p "no:hypothesispytest" --junitxml=report.xml
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
