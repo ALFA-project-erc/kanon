@@ -1,8 +1,8 @@
-.. image:: https://gitlab.obspm.fr/lgauffier/kanon/badges/master/pipeline.svg
-    :target: https://gitlab.obspm.fr/lgauffier/kanon/-/pipelines
+.. image:: https://github.com/legau/kanon/workflows/CI/badge.svg
+    :target: https://github.com/legau/kanon/actions
     :alt: Gitlab Pipeline Status
-.. image:: https://gitlab.obspm.fr/lgauffier/kanon/badges/master/coverage.svg
-    :target: https://gitlab.obspm.fr/lgauffier/kanon/-/commits/master
+.. image:: https://codecov.io/gh/legau/kanon/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/legau/kanon/branch/master
     :alt: Coverage
 .. image:: https://readthedocs.org/projects/kanon/badge/?version=latest
     :target: https://kanon.readthedocs.io/en/latest/?badge=latest
