@@ -241,3 +241,14 @@ def test_from_model():
     assert len(tab_double.get(0)) == 5
 
     assert tab_double.table_type == mercury_equ_proportional_minutes.table_type
+
+
+def test_shift():
+    tab = make_sample_table()
+
+    assert tab.displace("b", -1)["b"][0] == 4
+
+    shifted = tab.shift("a", 2)
+
+    assert tab["a"][0] == shifted["a"][2]
+    assert tab["a"][-1] == shifted["a"][1]
