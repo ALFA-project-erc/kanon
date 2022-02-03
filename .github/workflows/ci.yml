@@ -46,11 +46,13 @@ jobs:
         run: poetry install
       - name: Test with coverage
         run: poetry run tox -e test-cov -- --junitxml={toxinidir}/report.xml
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+      - name: Upload Test Results
         if: always()
+        uses: actions/upload-artifact@v2
         with:
-          files: report.xml
+          name: Unit Test Results ${{ matrix.python-version }}
+          path: |
+            report.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
@@ -82,3 +84,13 @@ jobs:
         run: poetry install --extras notebook
       - name: Test with Pytest
         run: poetry run tox -e test_notebooks
+        
+  event_file:
+    name: "Event File"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: Event File
+        path: ${{ github.event_path }}
