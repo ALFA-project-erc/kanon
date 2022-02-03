@@ -5,6 +5,7 @@ _____
 
 - radices : Remove `RadixBase` class, `BasedReal` implementations now declared on their own
 - tables : Implement `models` features in `HTable`, `HTable.from_model` and models attributes
+- tables : New helper functions `shift` and `displace`
 
 *Project*
 

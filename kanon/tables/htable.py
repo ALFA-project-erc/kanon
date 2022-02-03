@@ -5,6 +5,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Sequence,
     Tuple,
     TypeVar,
     Union,
@@ -243,7 +244,7 @@ class HTable(Table):
 
         return table
 
-    def set_index(self, index: Union[str, List[str]], engine=None):
+    def set_index(self, index: Union[str, Sequence[str]], engine=None):
         for c in self.colnames:
             self.remove_indices(c)
 
@@ -405,6 +406,7 @@ class HTable(Table):
         :return: New displaced table
         :rtype: HTable
         """
+
         return self.apply(column, lambda x: x + increment)
 
     def shift(self, column: str, value: int) -> "HTable":
@@ -420,11 +422,12 @@ class HTable(Table):
 
         col = self[column]
 
-        new_col = col.iloc[value:] + col.iloc[:value]
-            
         new_table = self.copy()
-        new_table[column] = new_col
-        
+        new_table.remove_indices(column)
+        new_table[column] = col.copy(data=np.concatenate([col[-value:], col[:-value]]))
+
+        new_table.set_index(self.primary_key)
+
         return new_table
 
     @classmethod
