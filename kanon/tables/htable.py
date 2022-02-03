@@ -395,6 +395,38 @@ class HTable(Table):
 
         return plt.plot(x, y, *args, **kwargs)
 
+    def displace(self, column: str, increment: Real) -> "HTable":
+        """Helper function to increment all values of `column` by `increment`
+
+        :param column: Name of the column to displace
+        :type column: str
+        :param increment: How much to increment
+        :type increment: Real
+        :return: New displaced table
+        :rtype: HTable
+        """
+        return self.apply(column, lambda x: x + increment)
+
+    def shift(self, column: str, value: int) -> "HTable":
+        """Helper function to shift a `column` by `value`
+
+        :param column: Name of the column to shift
+        :type column: str
+        :param value: How much to shift the column
+        :type value: Real
+        :return: New shifted table
+        :rtype: HTable
+        """
+
+        col = self[column]
+
+        new_col = col.iloc[value:] + col.iloc[:value]
+            
+        new_table = self.copy()
+        new_table[column] = new_col
+        
+        return new_table
+
     @classmethod
     def from_model(
         cls,

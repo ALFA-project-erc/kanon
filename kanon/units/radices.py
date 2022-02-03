@@ -253,7 +253,7 @@ class BasedReal(PreciseNumber, _Real):
         self.__right = ()
         self.__remainder = remainder
         self.__sign = sign
-        if np.all([isinstance(x, int) for x in args]):
+        if all(isinstance(x, int) for x in args):
             return cls.__new__(cls, args, (), remainder=remainder, sign=sign)
         if len(args) == 2:
             if isinstance(args[0], BasedReal):
