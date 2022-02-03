@@ -84,7 +84,7 @@ jobs:
         run: poetry install --extras notebook
       - name: Test with Pytest
         run: poetry run tox -e test_notebooks
-        
+
   event_file:
     name: "Event File"
     runs-on: ubuntu-latest
