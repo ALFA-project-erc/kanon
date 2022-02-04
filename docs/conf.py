@@ -46,7 +46,8 @@ except ImportError:
 # Get configuration information from setup.cfg
 import tomli
 
-conf = tomli.load([os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")])
+with open(os.path.join(os.path.dirname(__file__), "..", "pyproject.toml"), "rb") as f:
+    conf = tomli.load(f)
 setup_cfg = dict({**conf["tool"]["poetry"], **conf["docs"]["metadata"]})
 
 # -- General configuration ----------------------------------------------------
