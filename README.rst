@@ -1,6 +1,6 @@
 .. image:: https://github.com/legau/kanon/workflows/CI/badge.svg
     :target: https://github.com/legau/kanon/actions
-    :alt: Gitlab Pipeline Status
+    :alt: GitHub Pipeline Status
 .. image:: https://codecov.io/gh/legau/kanon/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/legau/kanon/branch/master
     :alt: Coverage
@@ -27,9 +27,8 @@ ________________
 
 `units`
 
-- Define standard positional numeral systems (`BasedReal`)
-- Working arithmetics on those numbers
-- Set your own precision contexts and algorithms on arithmetical operations
+- Define standard positional numeral systems with standard arithmetics (`BasedReal`)
+- Set your own precision contexts and algorithms on arithmetical operations (`PrecisionContext`)
 - Keep track of all operations
 
 `tables`
@@ -45,7 +44,7 @@ ________________
 
 `models`
 
-- Collection of mathematical models used for all kinds of astronomical tables
+- Collection of mathematical models used for all kinds of geocentric astronomical tables
 
 How to use
 __________
@@ -77,7 +76,7 @@ the package with `poetry` (`Installing Poetry <https://python-poetry.org/docs/>`
 
 .. code:: bash
 
-    git clone git@gitlab.obspm.fr:lgauffier/kanon.git
+    git clone https://github.com/legau/kanon.git
     cd kanon
     poetry install
 
