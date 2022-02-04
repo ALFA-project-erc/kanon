@@ -44,9 +44,9 @@ except ImportError:
     sys.exit(1)
 
 # Get configuration information from setup.cfg
-import toml
+import tomli
 
-conf = toml.load([os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")])
+conf = tomli.load([os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")])
 setup_cfg = dict({**conf["tool"]["poetry"], **conf["docs"]["metadata"]})
 
 # -- General configuration ----------------------------------------------------
