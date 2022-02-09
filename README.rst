@@ -16,6 +16,8 @@
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org
     :alt: Powered by Astropy Badge
+.. image:: https://zenodo.org/badge/344498058.svg
+   :target: https://zenodo.org/badge/latestdoi/344498058
 
 
 --------
