@@ -1262,7 +1262,9 @@ class BasedReal(PreciseNumber, _Real):
         return other % float(self)
 
     @overload
-    def __truediv__(self: TBasedReal, other: Number) -> TBasedReal:  # type: ignore
+    def __truediv__(  # type: ignore
+        self: TBasedReal, other: Union[float, "BasedReal"]
+    ) -> TBasedReal:
         ...
 
     @overload
