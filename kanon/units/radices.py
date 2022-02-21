@@ -1063,6 +1063,11 @@ class BasedReal(PreciseNumber, _Real):
         """other + self"""
         return self + other
 
+    def __sub__(self: TBasedReal, other) -> TBasedReal:
+        """self - other"""
+
+        return super().__sub__(other)
+
     def _sub(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
 
         other = cast(BasedReal, _other)
