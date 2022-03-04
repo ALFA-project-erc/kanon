@@ -1217,7 +1217,7 @@ class BasedReal(PreciseNumber, _Real):
 
     def __rmul__(self: TBasedReal, other):
         """other * self"""
-        return super().__rmul__(other)
+        return self * other
 
     def __divmod__(self: TBasedReal, other: Any) -> Tuple["BasedReal", "BasedReal"]:
         """divmod(self: TBasedReal, other)"""
