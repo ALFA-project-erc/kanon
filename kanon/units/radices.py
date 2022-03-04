@@ -28,6 +28,7 @@ from numbers import Real as _Real
 from typing import (
     Any,
     Generator,
+    Generic,
     List,
     Literal,
     Optional,
@@ -56,6 +57,7 @@ __all__ = ["BasedReal"]
 
 
 TBasedReal = TypeVar("TBasedReal", bound="BasedReal")
+TTypeBasedReal = TypeVar("TTypeBasedReal", bound="Type[BasedReal]")
 RadixBase = Tuple[LoopingList[int], LoopingList[int]]
 
 
@@ -1068,12 +1070,17 @@ class BasedReal(PreciseNumber, _Real):
 
         return super().__sub__(other)
 
+    def __rsub__(self: TBasedReal, other) -> TBasedReal:
+        """other - self"""
+
+        return super().__rsub__(other)
+
     def _sub(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
 
         other = cast(BasedReal, _other)
         return self + -other
 
-    def __rtruediv__(self: TBasedReal, other):
+    def __rtruediv__(self: TBasedReal, other) -> TBasedReal:
         """other / self"""
         return other / float(self)
 
@@ -1176,7 +1183,7 @@ class BasedReal(PreciseNumber, _Real):
         ...
 
     @overload
-    def __mul__(self: TBasedReal, other: Unit) -> "BasedQuantity":
+    def __mul__(self: TBasedReal, other: Unit) -> "BasedQuantity[TBasedReal]":
         ...
 
     def __mul__(self: TBasedReal, other):
@@ -1198,9 +1205,19 @@ class BasedReal(PreciseNumber, _Real):
 
         return super().__mul__(other)
 
+    @overload
+    def __rmul__(  # type: ignore
+        self: TBasedReal, other: Union[float, "BasedReal"]
+    ) -> TBasedReal:
+        ...
+
+    @overload
+    def __rmul__(self: TBasedReal, other: Unit) -> "BasedQuantity[TBasedReal]":
+        ...
+
     def __rmul__(self: TBasedReal, other):
         """other * self"""
-        return self * other
+        return super().__rmul__(other)
 
     def __divmod__(self: TBasedReal, other: Any) -> Tuple["BasedReal", "BasedReal"]:
         """divmod(self: TBasedReal, other)"""
@@ -1268,7 +1285,7 @@ class BasedReal(PreciseNumber, _Real):
         ...
 
     @overload
-    def __truediv__(self: TBasedReal, other: Unit) -> "BasedQuantity":
+    def __truediv__(self: TBasedReal, other: Unit) -> "BasedQuantity[TBasedReal]":
         ...
 
     def __truediv__(self: TBasedReal, other):
@@ -1382,9 +1399,9 @@ class BasedReal(PreciseNumber, _Real):
         return type(self)(self.left, self.right, sign=self.sign, remainder=remainder)
 
 
-class BasedQuantity(Quantity):
+class BasedQuantity(Quantity, Generic[TBasedReal]):
 
-    value: BasedReal
+    value: TBasedReal
 
     def __new__(cls, value, unit, **kwargs):
         if (
@@ -1402,24 +1419,24 @@ class BasedQuantity(Quantity):
         self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
         return self
 
-    def __mul__(self, other) -> "BasedQuantity":  # pragma: no cover
+    def __mul__(self, other) -> "BasedQuantity[TBasedReal]":  # pragma: no cover
         return super().__mul__(other)
 
-    def __add__(self, other) -> "BasedQuantity":  # pragma: no cover
+    def __add__(self, other) -> "BasedQuantity[TBasedReal]":  # pragma: no cover
         return super().__add__(other)
 
-    def __sub__(self, other) -> "BasedQuantity":  # pragma: no cover
+    def __sub__(self, other) -> "BasedQuantity[TBasedReal]":  # pragma: no cover
         return super().__sub__(other)
 
-    def __truediv__(self, other) -> "BasedQuantity":  # pragma: no cover
+    def __truediv__(self, other) -> "BasedQuantity[TBasedReal]":  # pragma: no cover
         return super().__truediv__(other)
 
-    def __lshift__(self, other) -> "BasedQuantity":
+    def __lshift__(self, other) -> "BasedQuantity[TBasedReal]":
         if isinstance(other, Number):
             return super(Quantity, self).__lshift__(other)
         return super().__lshift__(other)
 
-    def __rshift__(self, other) -> "BasedQuantity":
+    def __rshift__(self, other) -> "BasedQuantity[TBasedReal]":
         if isinstance(other, Number):
             return super(Quantity, self).__rshift__(other)
         return super().__rshift__(other)
@@ -1441,10 +1458,12 @@ class BasedQuantity(Quantity):
             return _new_func
         return vect(self)
 
-    def __round__(self, significant: Optional[int] = None) -> "BasedQuantity":
+    def __round__(
+        self, significant: Optional[int] = None
+    ) -> "BasedQuantity[TBasedReal]":
         return self.__getattr__("__round__")(significant)
 
-    def __abs__(self) -> "BasedQuantity":  # pragma: no cover
+    def __abs__(self) -> "BasedQuantity[TBasedReal]":  # pragma: no cover
         return self.__getattr__("__abs__")()
 
     def __quantity_subclass__(self, _):
