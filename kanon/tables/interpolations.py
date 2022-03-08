@@ -45,7 +45,7 @@ def _split_df(df: pd.DataFrame, key: Real) -> Tuple[pd.DataFrame, pd.DataFrame]:
     return lower, upper
 
 
-def _interpolation_decorator(func):
+def _interpolation_decorator(func: Callable) -> Callable[[pd.DataFrame, Real], Real]:
     """
     This decorator automatically casts the key in
     the correct type and returns the result

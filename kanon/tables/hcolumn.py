@@ -1,6 +1,6 @@
 import importlib
 from functools import wraps
-from typing import Callable, Optional, Type, cast
+from typing import Callable, Generic, Optional, Type, cast
 
 import numpy as np
 from astropy.table import Column
@@ -8,6 +8,7 @@ from astropy.table.column import ColumnInfo
 
 from kanon.units import BasedReal
 from kanon.units.precision import Truncable
+from kanon.units.radices import TTypeBasedReal
 
 __all__ = ["HColumn", "HColumnInfo"]
 
@@ -52,7 +53,7 @@ class HColumnInfo(ColumnInfo):
         return self._parent_cls(length=length, **attrs)
 
 
-class HColumn(Column, Truncable):
+class HColumn(Column, Truncable, Generic[TTypeBasedReal]):
     """
     `~astropy.table.Column` subclass with better support of
     `~kanon.units.radices.BasedReal` values.
@@ -60,7 +61,7 @@ class HColumn(Column, Truncable):
 
     info = HColumnInfo()
 
-    _basedtype: Optional[Type[BasedReal]] = None
+    _basedtype: Optional[TTypeBasedReal] = None
 
     def __new__(
         cls,
@@ -75,7 +76,7 @@ class HColumn(Column, Truncable):
         meta=None,
         copy=False,
         copy_indices=True,
-        basedtype: Optional[Type[BasedReal]] = None,
+        basedtype: Optional[TTypeBasedReal] = None,
     ):
 
         if data is None and basedtype:
@@ -153,19 +154,19 @@ class HColumn(Column, Truncable):
 
     _base_repr_ = _patch_dtype_info_name(Column._base_repr_, 0)
 
-    def truncate(self, significant: Optional[int] = None) -> "HColumn":
+    def truncate(self, significant: Optional[int] = None) -> "HColumn[TTypeBasedReal]":
         return cast(HColumn, np.vectorize(lambda x: x.truncate(significant))(self))
 
-    def ceil(self, significant: Optional[int] = None) -> "HColumn":
+    def ceil(self, significant: Optional[int] = None) -> "HColumn[TTypeBasedReal]":
         return cast(HColumn, np.vectorize(lambda x: x.ceil(significant))(self))
 
-    def floor(self, significant: Optional[int] = None) -> "HColumn":
+    def floor(self, significant: Optional[int] = None) -> "HColumn[TTypeBasedReal]":
         return cast(HColumn, np.vectorize(lambda x: x.floor(significant))(self))
 
-    def __round__(self, significant: Optional[int] = None) -> "HColumn":
+    def __round__(self, significant: Optional[int] = None) -> "HColumn[TTypeBasedReal]":
         return cast(HColumn, np.vectorize(lambda x: round(x, significant))(self))
 
-    def resize(self, significant: int) -> "HColumn":
+    def resize(self, significant: int) -> "HColumn[TTypeBasedReal]":
         return cast(HColumn, np.vectorize(lambda x: x.resize(significant))(self))
 
     @property
