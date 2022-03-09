@@ -43,9 +43,10 @@ def read_sexag_array(array: List[str], shift: int) -> BasedReal:
 
 def read_intsexag_array(array: List[str], _: int) -> BasedReal:
     integer = int(array[0])
+    sign = -1 if integer < 0 else 1
     if len(array) == 1:
         return Sexagesimal.from_int(integer)
-    return integer + (read_sexag_array(array[1:], 0) >> len(array) - 1)
+    return integer + sign * (read_sexag_array(array[1:], 0) >> len(array) - 1)
 
 
 def read_historical(array: List[str], shift: int) -> BasedReal:

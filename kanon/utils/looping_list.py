@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Generic, List, SupportsIndex, TypeVar, overload
 
 T = TypeVar("T")
 
@@ -18,6 +18,14 @@ class LoopingList(list, Generic[T]):
     0
 
     """
+
+    @overload
+    def __getitem__(self, __i: SupportsIndex) -> T:
+        ...
+
+    @overload
+    def __getitem__(self, __s: slice) -> List[T]:
+        ...
 
     def __getitem__(self, key):
         if key >= len(self):
