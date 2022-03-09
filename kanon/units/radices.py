@@ -499,6 +499,8 @@ class BasedReal(PreciseNumber, _Real):
         if len(left) > 0:
             rleft = left[::-1]
             for i in range(len(left)):
+                if len(rleft.strip()) == 1:
+                    break
                 separator = cls._integer_separators[-i - 1].strip().lower()
                 if separator != "":
                     split = rleft.split(separator, 1)
@@ -506,13 +508,11 @@ class BasedReal(PreciseNumber, _Real):
                         rem = split[0]
                         break
                     value, rem = split
-                else:  # pragma: no cover
+                else:
                     value = rleft[0]
                     rem = rleft[1:]
                 left_numbers.insert(0, int(value[::-1]))
                 rleft = rem.strip()
-                if len(rleft) == 1:
-                    break
             left_numbers.insert(0, int(rleft[::-1]))
 
         return cls(left_numbers, right_numbers, sign=sign)
@@ -831,7 +831,6 @@ class BasedReal(PreciseNumber, _Real):
 
         right = [0] * significant
 
-        factor = Decimal(1)
         for i in range(significant):
             factor = cls._base[1][i]
             value *= factor
