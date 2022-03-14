@@ -1,7 +1,7 @@
 import math as m
 
 RAD = m.pi / 180
-DEG = 1 / RAD
+DEG = 180 / m.pi
 
 
 # # # # # # # # # # # #

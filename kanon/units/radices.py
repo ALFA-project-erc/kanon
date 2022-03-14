@@ -19,7 +19,6 @@
 
 """
 
-import math
 from decimal import Decimal
 from fractions import Fraction
 from functools import cached_property, lru_cache
@@ -1247,7 +1246,7 @@ class BasedReal(PreciseNumber, _Real):
                     self.from_int(mod) >> max_significant,
                 )
 
-            fdiv = math.floor(self.decimal / other.decimal)
+            fdiv = np.floor(self.decimal / other.decimal)
             if fdiv == self.decimal / other.decimal:
                 mod = Decimal(0)
             else:
@@ -1383,9 +1382,9 @@ class BasedReal(PreciseNumber, _Real):
             iteration = self._get_significant(self)
 
         if self >= 1:
-            res = self.from_int(int(math.sqrt(float(self))))
+            res = self.from_int(int(np.sqrt(float(self))))
         else:
-            res = self.from_float(math.sqrt(float(self)), self.significant)
+            res = self.from_float(np.sqrt(float(self)), self.significant)
             iteration = 0
 
         for _ in range(iteration):

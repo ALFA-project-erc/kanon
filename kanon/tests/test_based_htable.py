@@ -1,4 +1,3 @@
-import math
 from math import isclose
 from typing import Tuple
 
@@ -112,10 +111,7 @@ def test_loc_slice(tab: HTable):
 sin_table = HTable(
     [
         list(Sexagesimal.range(91)),
-        [
-            round(Sexagesimal.from_float(math.sin(x * math.pi / 180), 3))
-            for x in range(91)
-        ],
+        [round(Sexagesimal.from_float(np.sin(x * np.pi / 180), 3)) for x in range(91)],
     ],
     names=("Arg", "Val"),
     index="Arg",

@@ -30,7 +30,7 @@ def get_nb(name: str, params: Dict[str, Any]) -> NotebookNode:
         ({"year": 1327, "month": 7, "day": 3}, "1,47;18,48"),
         ({"year": 1691, "month": 9, "day": 9}, "2,55;31,33"),
         ({"year": 998, "month": 10, "day": 2}, "03,13;25,33"),
-        ({"year": 1998, "month": 2, "day": 10}, "05,34;29,06"),
+        ({"year": 1998, "month": 2, "day": 10}, "05,34;03,35"),
     ],
 )
 def test_sun_true_position(params, result):
