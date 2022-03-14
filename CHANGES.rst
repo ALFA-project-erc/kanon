@@ -1,3 +1,11 @@
+0.6.1
+_____
+
+*Bug Fixes*
+
+- typing : Fix several wrongly typed components
+- tables : Fix `IntegerAndSexagesimal` parsing in `HTable.read`
+
 0.6.0
 _____
 
@@ -7,9 +15,9 @@ _____
 - tables : Implement `models` features in `HTable`, `HTable.from_model` and models attributes
 - tables : New helper functions `shift` and `displace`
 
-*Project*
+*General*
 
-- Poetry usage
+- build : Poetry now used
 
 0.5.2
 _____

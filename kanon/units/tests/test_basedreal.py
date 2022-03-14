@@ -5,6 +5,7 @@ from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 
 import hypothesis
+import numpy as np
 import pytest
 from hypothesis import strategies as st
 from hypothesis.core import given
@@ -285,7 +286,7 @@ def test_sqrt():
 
 @given(st.from_type(Sexagesimal).filter(lambda x: x > 0))
 def test_sqrt_hypo(n):
-    assert m.isclose(float(n.sqrt(5)), m.sqrt(float(n)))
+    assert m.isclose(float(n.sqrt(5)), np.sqrt(float(n)))
 
 
 @given(
