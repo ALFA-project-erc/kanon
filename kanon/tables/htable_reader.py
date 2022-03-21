@@ -196,12 +196,12 @@ def read_table_content(
         symmetry = Symmetry(data["symtype"], data["offset"], sign=data["sign"])
 
         if source_data := data["source"]:
-            source = tuple(arg_reader(v, arg_shift) for v in source_data)
+            source = tuple(arg_reader(v) for v in source_data)
             assert len(source) == 2
             symmetry.source = cast(Tuple[Real, Real], source)
 
         if target_data := data["target"]:
-            symmetry.targets = [arg_reader(v, arg_shift) for v in target_data]
+            symmetry.targets = [arg_reader(v) for v in target_data]
 
         return symmetry
 
