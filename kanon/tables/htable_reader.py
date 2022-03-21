@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional, Tuple, Union, cast
+from typing import Dict, List, Literal, Optional, Protocol, Tuple, Union, cast
 
 import astropy.units as u
 import requests
@@ -35,35 +35,38 @@ _dishas_fields = '","'.join(
 DISHAS_REQUEST_URL = f'https://dishas.obspm.fr/elastic-query\
 ?index=table_content&hits=true&id={{}}&source=["{_dishas_fields}"]'
 
-
-def read_sexag_array(array: List[str], shift: int) -> BasedReal:
-    sign = -1 if array[0][0] == "-" else 1
-    return Sexagesimal(*(abs(int(v)) for v in array), sign=sign) >> shift
+Sign = Literal[-1, 1]
 
 
-def read_intsexag_array(array: List[str], _: int) -> BasedReal:
-    integer = int(array[0])
-    sign = -1 if integer < 0 else 1
-    if len(array) == 1:
+def read_sexag_array(values: List[int], shift: int, sign: Sign = 1) -> BasedReal:
+    return Sexagesimal(*values, sign=sign) >> shift
+
+
+def read_intsexag_array(values: List[int], shift: int, sign: Sign = 1) -> BasedReal:
+    integer = values[0]
+    if len(values) == 1:
         return Sexagesimal.from_int(integer)
-    return integer + sign * (read_sexag_array(array[1:], 0) >> len(array) - 1)
+    return sign * (integer + read_sexag_array(values[1:], len(values) - 1))
 
 
-def read_historical(array: List[str], shift: int) -> BasedReal:
-    integer = int(array[0])
+def read_historical(values: List[int], shift: int, sign: Sign = 1) -> BasedReal:
+    integer = values[0]
     # Special case for non true Historical in DISHAS with 2 values
-    if len(array) == 2 and shift == 0:
-        return integer * 30 + Sexagesimal(array[1])
+    if len(values) == 2 and shift == 0:
+        return integer * 30 + Sexagesimal(values[1])
 
-    sign = -1 if array[0][0] == "-" else 1
-    values = tuple(abs(int(x)) for x in array)
     intpart = Historical(*values[: -shift or None])
     floatpart = Sexagesimal((), values[-shift or len(values) :])
 
     return sign * (floatpart + int(intpart))
 
 
-number_reader: Dict[NumberType, Callable[[List[str], int], Real]] = {
+class NumberReader(Protocol):
+    def __call__(self, values: List[int], shift: int, sign: Sign = 1) -> Real:
+        ...
+
+
+number_reader: Dict[NumberType, NumberReader] = {
     "sexagesimal": read_sexag_array,
     "floating sexagesimal": read_sexag_array,
     "integer and sexagesimal": read_intsexag_array,
@@ -106,37 +109,42 @@ def read_table_content(
 
     arg_unit = tabc["argument1_number_unit"]
     arg_shift = int(tabc["argument1_significant_fractional_place"])
-    arg_reader = number_reader.get(tabc["argument1_type_of_number"], lambda x, _: x)
 
     entry_unit = tabc["entry_number_unit"]
     entry_shift = int(tabc["entry_significant_fractional_place"])
 
-    def entry_reader(val):
-        reader = number_reader.get(tabc["entry_type_of_number"], lambda x, _: x)
-        if "**" in val:
-            return reader(["0"], entry_shift)
-        return reader(val, entry_shift)
+    argsvalues = values["args"]
 
-    args = [arg_reader(v["value"], arg_shift) for v in values["args"]["argument1"]]
+    def reader(ntype: NumberType, shift: int):
+        nreader = number_reader.get(ntype, lambda x, *_: x)
+
+        def fn(val: List[str]):
+            if "**" in val:
+                return nreader([0], shift)
+            sign: Sign = -1 if val[0][0] == "-" else 1
+            return nreader([abs(int(v)) for v in val], shift, sign)
+
+        return fn
+
+    entry_reader = reader(tabc["entry_type_of_number"], entry_shift)
+    arg_reader = reader(tabc["argument1_type_of_number"], arg_shift)
+
+    args = [arg_reader(v["value"]) for v in argsvalues["argument1"]]
 
     table_type: Optional[TableType] = None
     any((table_type := v).value == int(tabc["table_type"]["id"]) for v in models)
 
     # Double argument
 
-    if "argument2" in values["args"]:
-        len1 = len(values["args"]["argument1"])
-        len2 = len(values["args"]["argument2"])
+    if "argument2" in argsvalues:
+        len1 = len(argsvalues["argument1"])
+        len2 = len(argsvalues["argument2"])
 
         arg2_unit = tabc["argument2_number_unit"]
         arg2_shift = int(tabc["argument2_significant_fractional_place"])
-        arg2_reader = number_reader.get(
-            tabc["argument2_type_of_number"], lambda x, _: x
-        )
+        arg2_reader = reader(tabc["argument2_type_of_number"], arg2_shift)
 
-        args2 = [
-            arg2_reader(v["value"], arg2_shift) for v in values["args"]["argument2"]
-        ]
+        args2 = [arg2_reader(v["value"]) for v in argsvalues["argument2"]]
 
         tables = [
             HTable(

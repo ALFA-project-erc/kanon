@@ -1,3 +1,10 @@
+0.6.2
+_____
+
+*Bug Fixes*
+
+- tables : Fix `IntegerAndSexagesimal` sign parsing in `HTable.read`
+
 0.6.1
 _____
 
