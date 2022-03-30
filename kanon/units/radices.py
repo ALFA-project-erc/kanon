@@ -26,10 +26,10 @@ from numbers import Number
 from numbers import Real as _Real
 from typing import (
     Any,
+    Dict,
     Generator,
     Generic,
     List,
-    Literal,
     Optional,
     Sequence,
     SupportsFloat,
@@ -47,8 +47,9 @@ from astropy.units.quantity import Quantity
 from astropy.units.quantity_helper.converters import UFUNC_HELPERS
 from astropy.units.quantity_helper.helpers import _d
 
+from kanon.utils import Sign
 from kanon.utils.list_to_tuple import list_to_tuple
-from kanon.utils.looping_list import LoopingList
+from kanon.utils.looping_list import LoopingSList
 
 from .precision import PreciseNumber, PrecisionMode, TruncatureMode, set_precision
 
@@ -57,7 +58,9 @@ __all__ = ["BasedReal"]
 
 TBasedReal = TypeVar("TBasedReal", bound="BasedReal")
 TTypeBasedReal = TypeVar("TTypeBasedReal", bound="Type[BasedReal]")
-RadixBase = Tuple[LoopingList[int], LoopingList[int]]
+RadixBase = Tuple[LoopingSList[int], LoopingSList[int]]
+
+_NORMAL_BASES: Dict[LoopingSList[int], Type["BasedReal"]] = {}
 
 
 def ndigit_for_radix(radix: int) -> int:
@@ -130,14 +133,17 @@ class BasedReal(PreciseNumber, _Real):
 
     _base: RadixBase
     """Base of this BasedReal, (integer part, fractional part)"""
-    _integer_separators: LoopingList[str]
+    _integer_separators: LoopingSList[str]
     """List of string separators, used for displaying the integer part of the number"""
-    _mixed: bool
-    """Is this class with a mixed base"""
+    __mixed: bool
+    """Is the base used mixed"""
+    __normal_base: Optional[Type["BasedReal"]] = None
+    """If the base is mixed and the fractional part is of one element, \
+        uses a normal base to perform arithmetics operations"""
     __left: Tuple[int, ...]
     __right: Tuple[int, ...]
     __remainder: Decimal
-    __sign: Literal[-1, 1]
+    __sign: Sign
     __slots__ = (
         "_base",
         "_integer_separators",
@@ -145,6 +151,7 @@ class BasedReal(PreciseNumber, _Real):
         "__right",
         "__remainder",
         "__sign",
+        "__mixed",
     )
 
     def __init_subclass__(
@@ -156,16 +163,30 @@ class BasedReal(PreciseNumber, _Real):
         assert left and right
         assert all(isinstance(x, int) and x > 0 for x in left)
         assert all(isinstance(x, int) and x > 0 for x in right)
-        cls._base = (LoopingList(left), LoopingList(right))
+        cls._base = (LoopingSList(left), LoopingSList(right))
         if separators is not None:
             if len(separators) != len(left):
                 raise ValueError
-            cls._integer_separators = LoopingList(separators)
+            cls._integer_separators = LoopingSList(separators)
         else:
-            cls._integer_separators = LoopingList(
+            cls._integer_separators = LoopingSList(
                 ["," if x != 10 else "" for x in left]
             )
-        cls._mixed = any(x != left[0] for x in tuple(left) + tuple(right))
+        right_loop = cls._base[1]
+        cls.__mixed = any(x != cls._base[0][0] for x in cls._base[0] + right_loop)
+        if cls.__mixed:
+            if len(right_loop) > 1:
+                if not (normal_base := _NORMAL_BASES.get(right_loop)):
+                    normal_base = type(
+                        f"normal{right_loop[0]}",
+                        (BasedReal,),
+                        {},
+                        base=([right_loop[0]],) * 2,
+                    )
+                    _NORMAL_BASES[right_loop] = normal_base
+                cls.__normal_base = normal_base
+        else:
+            _NORMAL_BASES[right_loop] = cls
         return super().__init_subclass__()
 
     def __check_range(self):
@@ -260,17 +281,29 @@ class BasedReal(PreciseNumber, _Real):
             if isinstance(args[0], BasedReal):
                 if isinstance(args[0], cls):
                     return args[0].resize(args[1])
+                if args[0]._base[1] == cls._base[1]:
+                    return cls.__new__(cls, args[0]).resize(args[1])
                 return cls.from_decimal(args[0].decimal, args[1])
             if isinstance(args[0], tuple) and isinstance(args[1], tuple):
                 self.__left = args[0]
                 self.__right = args[1]
             else:
-                raise ValueError("Incorrect parameters at BasedReal creation")
+                raise ValueError("Incorrect parameters for BasedReal")
         elif len(args) == 1:
             if isinstance(args[0], str):
                 return cls._from_string(args[0])
+            if isinstance(args[0], BasedReal):
+                if cls._base[1] == args[0].base[1]:
+                    return cls.from_int(int(args[0])) + cls.__new__(
+                        cls,
+                        (0,),
+                        args[0].right,
+                        remainder=args[0].remainder,
+                        sign=args[0].sign,
+                    )
             raise ValueError(
-                "Please specify a number of significant positions"
+                "Please specify a number of significant positions for "
+                "numbers with incompatible fractional bases"
                 if isinstance(args[0], BasedReal)
                 else "Incorrect parameters at BasedReal creation"
             )
@@ -320,7 +353,7 @@ class BasedReal(PreciseNumber, _Real):
         Base of this BasedReal, (integer part, fractional part)
 
         >>> Sexagesimal(1).base
-        ([..., 60, ...], [..., 60, ...])
+        ((..., 60, ...), (..., 60, ...))
 
         :rtype: `RadixBase`
         """
@@ -328,7 +361,7 @@ class BasedReal(PreciseNumber, _Real):
 
     @property
     def mixed(self) -> bool:
-        return self._mixed
+        return self.__mixed
 
     @property
     def remainder(self) -> Decimal:
@@ -346,14 +379,14 @@ class BasedReal(PreciseNumber, _Real):
         return self.__remainder
 
     @property
-    def sign(self) -> Literal[-1, 1]:
+    def sign(self) -> Sign:
         """
         Sign of this `BasedReal`
 
         >>> Sexagesimal(1,2,3, sign=-1).sign
         -1
 
-        :rtype: Literal[-1, 1]
+        :rtype: Sign
         """
         return self.__sign
 
@@ -964,9 +997,6 @@ class BasedReal(PreciseNumber, _Real):
 
         other = cast(BasedReal, _other)
 
-        if self.mixed:
-            return self.from_float(float(self) / float(other), self.significant)
-
         max_significant = max(self.significant, other.significant)
 
         if self == 0:
@@ -977,6 +1007,11 @@ class BasedReal(PreciseNumber, _Real):
             return -self
         elif other == 0:
             raise ZeroDivisionError
+
+        if self.mixed:
+            if normal_base := self.__normal_base:
+                return type(self)(normal_base(self)) / other
+            return self.from_float(float(self) / float(other), self.significant)
 
         sign = self.sign * other.sign
 
@@ -1147,7 +1182,12 @@ class BasedReal(PreciseNumber, _Real):
         if self == 0 or other == 0:
             return self.zero()
 
-        if self in (1, -1) or self.mixed:
+        if self in (1, -1):
+            return type(self)(other if self == 1 else -other, self.significant)
+
+        if self.mixed:
+            if normal_base := self.__normal_base:
+                return type(self)(normal_base(self)) * other
             return self.from_float(float(self) * float(other), self.significant)
 
         max_right = max(self.significant, other.significant)

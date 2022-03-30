@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Literal, Optional, TypedDict
 
+from kanon.utils import Sign
+
 
 class OriginalValue(TypedDict):
     value: List[str]
@@ -46,7 +48,7 @@ class Template(TypedDict):
 class DSymmetry(TypedDict):
     symtype: SymmetryType
     offset: int
-    sign: Literal[-1, 1]
+    sign: Sign
     source: Optional[List[List[str]]]
     target: Optional[List[List[str]]]
 

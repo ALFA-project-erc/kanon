@@ -11,24 +11,23 @@ from hypothesis.core import given
 from kanon.models.table_types import Sun
 from kanon.tables import HTable
 from kanon.units import Sexagesimal
+from kanon.units.definitions import IntegerAndSexagesimal
 
 
 def test_read():
     table: HTable = HTable.read("180", format="dishas")
 
     assert table["Mean Argument of the Sun"].unit is u.degree
-    assert table["Mean Argument of the Sun"].basedtype is Sexagesimal
+    assert table["Mean Argument of the Sun"].basedtype is IntegerAndSexagesimal
     assert table["Entries"].significant == 2
 
     assert table.values_equal(HTable.read(180))
 
-    assert table.loc[Sexagesimal(1)] == table[0]
+    assert table.loc[1] == table[0]
 
-    assert table.loc[Sexagesimal(3)]["Entries"].equals(Sexagesimal("-00 ; 06,27"))
+    assert table.loc[3]["Entries"].equals(Sexagesimal("-00 ; 06,27"))
 
-    assert table.loc[Sexagesimal(3)]["Entries"].equals(
-        table.get(Sexagesimal(3), with_unit=False)
-    )
+    assert table.loc[3]["Entries"].equals(table.get(Sexagesimal(3), with_unit=False))
 
     assert len(table.symmetry) == 1
     sym = table.symmetry[0]

@@ -1,3 +1,11 @@
+0.6.3
+_____
+
+*Features*
+
+- tables : `HTable.read` creates tables with matching `BasedReal`
+- radices : Mixed base `BasedReal` with normal fractional base now use a proxy for arithmetics
+
 0.6.2
 _____
 

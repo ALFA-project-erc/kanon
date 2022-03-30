@@ -4,6 +4,7 @@ from typing import List, Literal, Optional, Tuple
 import pandas as pd
 from pandas import DataFrame
 
+from kanon.utils import Sign
 from kanon.utils.types.number_types import Real
 
 __all__ = ["Symmetry", "OutOfBoundsOriginError", "OverlappingSymmetryError"]
@@ -49,7 +50,7 @@ class Symmetry:
     :param offset: Offset to add to the symmetry values, defaults to 0
     :type offset: int, optional
     :param sign: Relative signs of the symmetry values from source values, defaults to 1
-    :type sign: Literal[-1, 1], optional
+    :type sign: Sign, optional
     :param source: Tuple representing the lower and upper bound to take the values \
     from, defaults to the whole DataFrame
     :type source: Tuple[Real, Real], optional
@@ -60,7 +61,7 @@ class Symmetry:
 
     symtype: Literal["periodic", "mirror"]
     offset: int = 0
-    sign: Literal[-1, 1] = 1
+    sign: Sign = 1
     source: Optional[Tuple[Real, Real]] = None
     targets: Optional[List[Real]] = None
 

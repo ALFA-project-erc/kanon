@@ -140,3 +140,12 @@ def test_time_convert():
         float_to_hm(2)
 
     assert "Incorrect" in str(err)
+
+
+def test_test():
+    from astropy.units import arcsecond
+
+    from kanon.tables import HTable
+
+    tab = HTable.read(214)
+    tab["Entries"] = tab["Entries"].to(arcsecond)
