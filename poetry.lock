@@ -27,7 +27,7 @@ python-versions = "*"
 
 [[package]]
 name = "astropy"
-version = "5.0.1"
+version = "5.0.4"
 description = "Astronomy and astrophysics core library"
 category = "main"
 optional = false
@@ -40,11 +40,11 @@ pyerfa = ">=2.0"
 PyYAML = ">=3.13"
 
 [package.extras]
-all = ["scipy (>=1.3)", "matplotlib (>=3.1,!=3.4.0)", "certifi", "dask", "h5py", "pyarrow (>=5.0.0)", "beautifulsoup4", "html5lib", "bleach", "pandas", "sortedcontainers", "pytz", "jplephem", "mpmath", "asdf (>=2.6)", "bottleneck", "ipython (>=4.2)", "pytest", "typing-extensions"]
-docs = ["sphinx (<4)", "sphinx-astropy (>=1.6)", "pytest", "scipy (>=1.3)", "matplotlib (>=3.1,!=3.4.0)", "sphinx-changelog (>=1.1.0)"]
+all = ["scipy (>=1.3)", "matplotlib (>=3.1,!=3.4.0)", "certifi", "dask", "h5py", "pyarrow (>=5.0.0)", "beautifulsoup4", "html5lib", "bleach", "pandas", "sortedcontainers", "pytz", "jplephem", "mpmath", "asdf (>=2.9.2)", "bottleneck", "ipython (>=4.2)", "pytest (>=7.0)", "typing-extensions (>=3.10.0.1)"]
+docs = ["sphinx (<4)", "sphinx-astropy (>=1.6)", "pytest (>=7.0)", "scipy (>=1.3)", "matplotlib (>=3.1,!=3.4.0)", "sphinx-changelog (>=1.1.0)", "Jinja2 (<3.1)"]
 recommended = ["scipy (>=1.3)", "matplotlib (>=3.1,!=3.4.0)"]
-test = ["pytest-astropy (>=0.9)", "pytest-astropy-header (!=0.2.0)", "pytest-xdist"]
-test_all = ["pytest-astropy (>=0.9)", "pytest-xdist", "objgraph", "ipython (>=4.2)", "coverage", "skyfield (>=1.20)", "sgp4 (>=2.3)"]
+test = ["pytest (>=7.0)", "pytest-doctestplus (>=0.12)", "pytest-astropy-header (>=0.2.1)", "pytest-astropy (>=0.9)", "pytest-xdist"]
+test_all = ["pytest (>=7.0)", "pytest-doctestplus (>=0.12)", "pytest-astropy-header (>=0.2.1)", "pytest-astropy (>=0.9)", "pytest-xdist", "objgraph", "ipython (>=4.2)", "coverage", "skyfield (>=1.20)", "sgp4 (>=2.3)"]
 
 [[package]]
 name = "astropy-sphinx-theme"
@@ -1749,24 +1749,24 @@ appnope = [
     {file = "appnope-0.1.2.tar.gz", hash = "sha256:dd83cd4b5b460958838f6eb3000c660b1f9caf2a5b1de4264e941512f603258a"},
 ]
 astropy = [
-    {file = "astropy-5.0.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c915403b0e694175f175f34a635b46f3259eaf94557b24842c08c663946758a9"},
-    {file = "astropy-5.0.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:07cab2374777d6b4c709ee171e52933a780e285db6698f4f496288c89510144a"},
-    {file = "astropy-5.0.1-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:c298dd4e7103f75a98e5b2433c93488c911ec68619b04c402317819e611903d6"},
-    {file = "astropy-5.0.1-cp310-cp310-win32.whl", hash = "sha256:ea0e71fa652fd14261dc5cef2f7e4abdcc3b7e1eab5a9d7eebf28bcf0c8251e4"},
-    {file = "astropy-5.0.1-cp310-cp310-win_amd64.whl", hash = "sha256:63db27dabe255793a55744d5babb492f5b209b946ffdd26cb6665e3b5b8dfdfa"},
-    {file = "astropy-5.0.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:c524da78a3846caa30a19b0b4dff9761d7cbeeb11003a4d503279bf012eed39d"},
-    {file = "astropy-5.0.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:dac9fc9ac0927b51e6088c43ea2673a7ca6cd02bb09c3c3d79e58610a062e5c8"},
-    {file = "astropy-5.0.1-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:5a2e97bc9be17d5a334e9ea613ae58a9ab56d6a2dd7d03a61f03d964a671f1c4"},
-    {file = "astropy-5.0.1-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:284b8410d8fc235e628c21d90c242192b5ccb537a57f2b1248baad2fb42af716"},
-    {file = "astropy-5.0.1-cp38-cp38-win32.whl", hash = "sha256:6807af2514989baec92f7475018f9b75a4bd626684172a4267f2713f0218d02e"},
-    {file = "astropy-5.0.1-cp38-cp38-win_amd64.whl", hash = "sha256:e5b0dcb41157b0e2487e3349fbaf38a7ff44c9aa7797c211fe9c8b24a701b8ed"},
-    {file = "astropy-5.0.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:699782974f8f3bdfd768a6cb0df07e22726d0d22edbe3f13002431ef284a79b1"},
-    {file = "astropy-5.0.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:3d404c33b1a3503eaafa59acd02622ce525c1fe61e219311a00e5d0c193a66c2"},
-    {file = "astropy-5.0.1-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:73c81c7e834f1903720c753643d6a9b4ae1c642e46c4a96dab16728279343275"},
-    {file = "astropy-5.0.1-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:df3d0c09834bfa96029ff8c6d155b631610f55d66a8432f23e87568c7dc39957"},
-    {file = "astropy-5.0.1-cp39-cp39-win32.whl", hash = "sha256:ef03ad6fa11ef331b27ffe94686c799858a54a4897e922a81ae2762c60e28c84"},
-    {file = "astropy-5.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:fbd1bff159374b4419c2fa869d5b591b8f955a63bd69b7542cdd88f717a42626"},
-    {file = "astropy-5.0.1.tar.gz", hash = "sha256:6382cde6a205aa0b16a0d5e61c0c0131ebd4f0174d6c73e2964f4bee132a9027"},
+    {file = "astropy-5.0.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:89690dc5a0b81be16cc2db2a565f9a5b01901cb29124e9c96a60b8115359d425"},
+    {file = "astropy-5.0.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:37f8a52a091f9f652e1389453eab727e1546153b6bfe29e88c3095ba2abc97e1"},
+    {file = "astropy-5.0.4-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:64e6fbd475f7ddf79b8a11017c5ef06e8a067d0ceb1385f1bfb9c6b6f6d15734"},
+    {file = "astropy-5.0.4-cp310-cp310-win32.whl", hash = "sha256:90be582e150b42a32ea166d3d622e42a489ec354890dcdefcbd6f1e6013f7fa5"},
+    {file = "astropy-5.0.4-cp310-cp310-win_amd64.whl", hash = "sha256:304e83dfb7235e2aa3d889b6b90a5b8032acaa887be01d77cd74a2856e6c5eef"},
+    {file = "astropy-5.0.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:87416b21419f7718b6ceeaa5df31550ecd3b93937af77e5df1743f4cf4d5deba"},
+    {file = "astropy-5.0.4-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:60dbda630ad1ba552c387f54898e733a09f0a8482eb1e855f222ec1e93445639"},
+    {file = "astropy-5.0.4-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:c8ff2e6a3d58e26b9950d39a4496ab4092982a1c83b551c05309776eb585804f"},
+    {file = "astropy-5.0.4-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:3ba320708b175ff87d9bbaba43104a98dfd8f2764b5e0ae40a86e27f25046fad"},
+    {file = "astropy-5.0.4-cp38-cp38-win32.whl", hash = "sha256:b3a97c8aec1b6e84f17710c004b9b3bc3dff8d036736c051b882f63e1c79fe25"},
+    {file = "astropy-5.0.4-cp38-cp38-win_amd64.whl", hash = "sha256:9c584d41a8bc3446aa7dc24102dfdf6247d488dbecd1f1dc433ed2c5f8101279"},
+    {file = "astropy-5.0.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:6f69a07773d5114c83152aa6bd20d88858534960c45d211312e65f5e1ad14f60"},
+    {file = "astropy-5.0.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:50d8c58a232b34cb969186418b4b6314a22f25dc8a7ac6ea306f115316b07932"},
+    {file = "astropy-5.0.4-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:fdcf04de88946068a1abbb4ea8664dee8b7cd221ca547d00cf10fc9db76de3ce"},
+    {file = "astropy-5.0.4-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:18c916417803273bfb6cfc56c7d9dca37fefa9d05c259d29346d3040e51184a6"},
+    {file = "astropy-5.0.4-cp39-cp39-win32.whl", hash = "sha256:3a23ca012799969deebe1e64b72c3095c90e6861d8a2e8c989382b333d418aca"},
+    {file = "astropy-5.0.4-cp39-cp39-win_amd64.whl", hash = "sha256:d2b2e1f23f5cf91a9067028ec09d8d4daf67c2027707563c47e10ed9009fefd5"},
+    {file = "astropy-5.0.4.tar.gz", hash = "sha256:001184f1a9c3f526a363883ce28efb9cbf076df3d151ca3e131509a248f0dfb9"},
 ]
 astropy-sphinx-theme = [
     {file = "astropy-sphinx-theme-1.1.tar.gz", hash = "sha256:ee1dafa0cf4d109455f7a0d19da4cdd608ad24d380ed2eb8090bb945a3d286f9"},
