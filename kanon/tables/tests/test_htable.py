@@ -263,5 +263,5 @@ def test_double():
 
     df = tab.to_pandas()
 
-    assert len(df) == 7
-    assert len(df.loc[0]) == 5
+    assert len(df) == 5
+    assert len(df.loc[0]) == 7
