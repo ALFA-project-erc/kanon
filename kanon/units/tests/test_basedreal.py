@@ -151,9 +151,9 @@ def test_misc():
 
     assert 5 / s == 1
 
-    assert s ** -1 == 1 / 5
-    assert s ** 1 == s
-    assert 1 ** s == 1
+    assert s**-1 == 1 / 5
+    assert s**1 == s
+    assert 1**s == 1
     assert Sexagesimal(0) ** 1 == 0
 
     with pytest.raises(ValueError):

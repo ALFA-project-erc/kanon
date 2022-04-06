@@ -100,7 +100,7 @@ def equ_of_center_of_mercury(x, e):
     :param e: eccentricity
     :return:  centre equation in degree (negative on [0,180º])
     """
-    s = m.sqrt(60 ** 2 - (e * (m.sin(x * RAD) + m.sin(2 * x * RAD))) ** 2) + e * (
+    s = m.sqrt(60**2 - (e * (m.sin(x * RAD) + m.sin(2 * x * RAD))) ** 2) + e * (
         m.cos(x * RAD) + m.cos(2 * x * RAD)
     )
 
@@ -148,7 +148,7 @@ def equ_of_anomaly_mercury_at_near_dist(x, e, R):
     :param R: radius of the epicycle
     :return:
     """
-    rho = m.sqrt(60 ** 2 - 180 * e + 3 * e ** 2)
+    rho = m.sqrt(60**2 - 180 * e + 3 * e**2)
     return utils.planet_anomaly_0(x, R, rho)
 
 
@@ -434,7 +434,7 @@ def moon_anomaly_equ(x, y, e, R):
     """
 
     rho = utils.product_cosine_0(y, e) + m.sqrt(
-        60 ** 2 - (utils.product_sine_0(y, e)) ** 2
+        60**2 - (utils.product_sine_0(y, e)) ** 2
     )
     return -utils.planet_anomaly_0(x, R, rho)
 
@@ -448,7 +448,7 @@ def moon_center_equ(x, e):
     :return: moon center equation in degree
     """
     rho = utils.product_cosine_0(x, e) + m.sqrt(
-        60 ** 2 - (utils.product_sine_0(x, e)) ** 2
+        60**2 - (utils.product_sine_0(x, e)) ** 2
     )
     return utils.planet_anomaly_0(x, e, rho)
 
