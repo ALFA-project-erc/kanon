@@ -148,6 +148,15 @@ class HTable(Table):
         if self._frozen:
             return self._cached_to_pandas
         self._check_index(index)
+
+        if self.is_double:
+            idx = self[self.primary_key[0]]
+            st = self.get(idx[0])
+            subtables = [self.get(x)[st.values_column] for x in idx]
+            columns = st[st.primary_key[0]]
+
+            return pd.DataFrame(subtables, columns=columns, index=idx).transpose()
+
         df = super().to_pandas(index=index, use_nullable_int=use_nullable_int)
         if symmetry:
             for sym in self.symmetry:

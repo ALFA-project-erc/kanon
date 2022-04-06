@@ -252,3 +252,16 @@ def test_shift():
 
     assert tab["a"][0] == shifted["a"][2]
     assert tab["a"][-1] == shifted["a"][1]
+
+
+def test_double():
+    args = list(range(5))
+
+    tab = HTable.from_model(
+        mercury_equ_proportional_minutes, args, (1, 2), arguments2=args + [6, 7]
+    )
+
+    df = tab.to_pandas()
+
+    assert len(df) == 7
+    assert len(df.loc[0]) == 5
