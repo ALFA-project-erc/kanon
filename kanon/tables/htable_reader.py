@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Protocol, Tuple, Union, cast
+from typing import Dict, List, Optional, Protocol, Tuple, Union, cast
 
 import astropy.units as u
 import requests
@@ -7,7 +7,8 @@ from astropy.units.core import Unit
 from kanon.models.meta import TableType, models
 from kanon.tables.symmetries import Symmetry
 from kanon.units import Historical, Sexagesimal
-from kanon.units.radices import BasedReal
+from kanon.units.definitions import IntegerAndSexagesimal
+from kanon.utils import Sign
 from kanon.utils.types.dishas import DSymmetry, NumberType, TableContent, UnitType
 from kanon.utils.types.number_types import Real
 
@@ -35,30 +36,26 @@ _dishas_fields = '","'.join(
 DISHAS_REQUEST_URL = f'https://dishas.obspm.fr/elastic-query\
 ?index=table_content&hits=true&id={{}}&source=["{_dishas_fields}"]'
 
-Sign = Literal[-1, 1]
 
-
-def read_sexag_array(values: List[int], shift: int, sign: Sign = 1) -> BasedReal:
+def read_sexag_array(values: List[int], shift: int, sign: Sign = 1) -> Sexagesimal:
     return Sexagesimal(*values, sign=sign) >> shift
 
 
-def read_intsexag_array(values: List[int], shift: int, sign: Sign = 1) -> BasedReal:
-    integer = values[0]
-    if len(values) == 1:
-        return Sexagesimal.from_int(integer)
-    return sign * (integer + read_sexag_array(values[1:], len(values) - 1))
+def read_intsexag_array(
+    values: List[int], shift: int, sign: Sign = 1
+) -> IntegerAndSexagesimal:
+    return sign * (values[0] + IntegerAndSexagesimal((), values[1:]))
 
 
-def read_historical(values: List[int], shift: int, sign: Sign = 1) -> BasedReal:
+def read_historical(values: List[int], shift: int, sign: Sign = 1) -> Historical:
     integer = values[0]
     # Special case for non true Historical in DISHAS with 2 values
     if len(values) == 2 and shift == 0:
-        return integer * 30 + Sexagesimal(values[1])
+        return Historical(integer * 30 + Sexagesimal(values[1]))
 
-    intpart = Historical(*values[: -shift or None])
-    floatpart = Sexagesimal((), values[-shift or len(values) :])
-
-    return sign * (floatpart + int(intpart))
+    return Historical(
+        values[: -shift or None], values[-shift or len(values) :], sign=sign
+    )
 
 
 class NumberReader(Protocol):

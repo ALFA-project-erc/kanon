@@ -4,8 +4,7 @@
             "argument1": [
                 {
                     "value": [
-                        "01",
-                        "00"
+                        "01"
                     ],
                     "comment": "",
                     "suggested": false,

@@ -1,4 +1,3 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
+from typing import Literal
 
-# This sub-module is destined for common non-package specific utility
-# functions.
+Sign = Literal[-1, 1]
