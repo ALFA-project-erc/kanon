@@ -20,7 +20,7 @@ from kanon.units.radices import (
 
 
 def test_subclassing():
-    class TestSubclassOK(BasedReal, base=([1, 2], [3, 4]), separators=["a", "b"]):
+    class TestSubclassOK(BasedReal, base=([3, 2], [3, 4]), separators=["a", "b"]):
         pass
 
     assert TestSubclassOK(1)
@@ -33,8 +33,13 @@ def test_subclassing():
     with pytest.raises(ValueError):
 
         class TestSubclassWrongSeparators(
-            BasedReal, base=([1], [1]), separators=["a", "b"]
+            BasedReal, base=([2], [2]), separators=["a", "b"]
         ):
+            pass
+
+    with pytest.raises(AssertionError):
+
+        class TestSubclass1Base(BasedReal, base=([1], [3])):
             pass
 
 
@@ -87,6 +92,12 @@ def test_init():
     # From BasedReal
 
     assert Sexagesimal(Historical("3;15"), 1).equals(Sexagesimal("3;15"))
+
+    class MNumber(BasedReal, base=([5, 2], [3, 4])):
+        pass
+
+    n = MNumber.from_float(234.6777, 0)
+    assert Sexagesimal(n, 3) == Sexagesimal.from_float(float(n), 3)
 
     # From multiple ints
     with pytest.raises(ValueError):
@@ -310,6 +321,16 @@ def test_mixed_misc():
     assert Historical.from_int(60) == Historical("2s0")
     assert divmod(Historical(5), Historical("1s26;3")) == (0, 5)
     assert round(Historical(5, remainder=Decimal(0.6))) == 6
+    assert Historical.from_int(60) / 2 == 30
+    assert Historical.from_int(60) * 2 == 120
+
+    class MNumber(BasedReal, base=([5, 2], [3, 4])):
+        pass
+
+    n = MNumber.from_float(100.6, 3)
+
+    assert n * 2 == 201.2
+    assert n / 2 == 50.3
 
 
 @given(st.from_type(Historical), st.from_type(Historical))

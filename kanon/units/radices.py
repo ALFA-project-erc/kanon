@@ -161,8 +161,8 @@ class BasedReal(PreciseNumber, _Real):
     ) -> None:
         left, right = base
         assert left and right
-        assert all(isinstance(x, int) and x > 0 for x in left)
-        assert all(isinstance(x, int) and x > 0 for x in right)
+        assert all(isinstance(x, int) and x > 1 for x in left)
+        assert all(isinstance(x, int) and x > 1 for x in right)
         cls._base = (LoopingSList(left), LoopingSList(right))
         if separators is not None:
             if len(separators) != len(left):
@@ -175,16 +175,16 @@ class BasedReal(PreciseNumber, _Real):
         right_loop = cls._base[1]
         cls.__mixed = any(x != cls._base[0][0] for x in cls._base[0] + right_loop)
         if cls.__mixed:
-            if len(right_loop) > 1:
-                if not (normal_base := _NORMAL_BASES.get(right_loop)):
-                    normal_base = type(
-                        f"normal{right_loop[0]}",
-                        (BasedReal,),
-                        {},
-                        base=([right_loop[0]],) * 2,
-                    )
-                    _NORMAL_BASES[right_loop] = normal_base
-                cls.__normal_base = normal_base
+            normal_base = _NORMAL_BASES.get(right_loop)
+            if len(right_loop) == 1 and not normal_base:
+                normal_base = type(
+                    f"normal{right_loop[0]}",
+                    (BasedReal,),
+                    {},
+                    base=([right_loop[0]],) * 2,
+                )
+                _NORMAL_BASES[right_loop] = normal_base
+            cls.__normal_base = normal_base
         else:
             _NORMAL_BASES[right_loop] = cls
         return super().__init_subclass__()
@@ -1010,7 +1010,7 @@ class BasedReal(PreciseNumber, _Real):
 
         if self.mixed:
             if normal_base := self.__normal_base:
-                return type(self)(normal_base(self)) / other
+                return type(self)(normal_base(self) / other)
             return self.from_float(float(self) / float(other), self.significant)
 
         sign = self.sign * other.sign
@@ -1187,7 +1187,7 @@ class BasedReal(PreciseNumber, _Real):
 
         if self.mixed:
             if normal_base := self.__normal_base:
-                return type(self)(normal_base(self)) * other
+                return type(self)(normal_base(self) * other)
             return self.from_float(float(self) * float(other), self.significant)
 
         max_right = max(self.significant, other.significant)
