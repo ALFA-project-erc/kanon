@@ -31,7 +31,7 @@ def q_2(x, e):
     return -DEG * m.atan(
         2
         * product_sine_0(x, e)
-        / (m.sqrt(60 ** 2 - (product_sine_0(x, e)) ** 2) + e * m.cos(x * RAD))
+        / (m.sqrt(60**2 - (product_sine_0(x, e)) ** 2) + e * m.cos(x * RAD))
     )
 
 
@@ -249,7 +249,7 @@ def D_0(av, jm, R):
     :param jm: max deviation in degree
     :param R: radius of the epicycle
     """
-    return m.sqrt(60 ** 2 + 120 * R * m.cos(RAD * jm) * m.cos(RAD * av) + R ** 2)
+    return m.sqrt(60**2 + 120 * R * m.cos(RAD * jm) * m.cos(RAD * av) + R**2)
 
 
 def D_1(rho, av, R):
@@ -259,7 +259,7 @@ def D_1(rho, av, R):
     :param rho: distance earth-epicycle center
     :param R: radius of the epicycle
     """
-    return m.sqrt(rho ** 2 + 2 * rho * R * m.cos(RAD * av) + R ** 2)
+    return m.sqrt(rho**2 + 2 * rho * R * m.cos(RAD * av) + R**2)
 
 
 def q_0(x, e):
@@ -276,7 +276,7 @@ def rho_0(cm, s, e):
     distance Earth-Epicycle centre  for mercury
     cm in degree
     """
-    return m.sqrt(s ** 2 + e ** 2 + 2 * e * s * m.cos(RAD * cm))
+    return m.sqrt(s**2 + e**2 + 2 * e * s * m.cos(RAD * cm))
 
 
 def rho_1(cm, e):
@@ -286,8 +286,8 @@ def rho_1(cm, e):
     e:eccentricity
     return: distance
     """
-    base = m.sqrt(60 ** 2 - (e * m.sin(RAD * cm)) ** 2) + e * m.cos(RAD * cm)
-    return m.sqrt(base ** 2 + (2 * e * m.sin(RAD * cm)) ** 2)
+    base = m.sqrt(60**2 - (e * m.sin(RAD * cm)) ** 2) + e * m.cos(RAD * cm)
+    return m.sqrt(base**2 + (2 * e * m.sin(RAD * cm)) ** 2)
 
 
 def rho_2(cm, e):
@@ -306,7 +306,7 @@ def s_m_0(cm, e):
     cm mean centre in degree
     e eccentricity
     """
-    s1 = m.sqrt(60 ** 2 - e ** 2 * (m.sin(RAD * cm) + m.sin(RAD * 2 * cm)) ** 2)
+    s1 = m.sqrt(60**2 - e**2 * (m.sin(RAD * cm) + m.sin(RAD * 2 * cm)) ** 2)
     return s1 + e * (m.cos(RAD * cm) + m.cos(RAD * 2 * cm))
 
 
@@ -500,4 +500,4 @@ def sum_double(x, y, param_0):
     :param param_0:
     :return:
     """
-    return (x + y ** 2) * param_0
+    return (x + y**2) * param_0

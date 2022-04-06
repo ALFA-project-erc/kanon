@@ -1289,7 +1289,7 @@ class BasedReal(PreciseNumber, _Real):
     def __truediv__(self: TBasedReal, other):
         """self / other"""
         if isinstance(other, UnitBase):
-            return self * (other ** -1)
+            return self * (other**-1)
 
         if type(self) is type(other):
             return super().__truediv__(other)
