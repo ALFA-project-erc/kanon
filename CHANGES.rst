@@ -13,6 +13,10 @@ _____
 
 - tables : Fix `IntegerAndSexagesimal` sign parsing in `HTable.read`
 
+*Features*
+
+- tables : Add `to_pandas` support for double argument `HTable`
+
 0.6.1
 _____
 
