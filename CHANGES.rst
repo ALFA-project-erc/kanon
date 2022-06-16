@@ -1,3 +1,10 @@
+0.6.4
+_____
+
+*Features*
+
+- tables : `HTable.read` supports `Temporal`
+
 0.6.3
 _____
 
