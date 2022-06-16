@@ -7,7 +7,7 @@ from astropy.units.core import Unit
 from kanon.models.meta import TableType, models
 from kanon.tables.symmetries import Symmetry
 from kanon.units import Historical, Sexagesimal
-from kanon.units.definitions import IntegerAndSexagesimal
+from kanon.units.definitions import IntegerAndSexagesimal, Temporal
 from kanon.utils import Sign
 from kanon.utils.types.dishas import DSymmetry, NumberType, TableContent, UnitType
 from kanon.utils.types.number_types import Real
@@ -58,6 +58,10 @@ def read_historical(values: List[int], shift: int, sign: Sign = 1) -> Historical
     )
 
 
+def read_temporal(values: List[int], shift: int, sign: Sign = 1) -> Temporal:
+    return sign * (values[0] + Temporal((), values[1:]))
+
+
 class NumberReader(Protocol):
     def __call__(self, values: List[int], shift: int, sign: Sign = 1) -> Real:
         ...
@@ -68,6 +72,7 @@ number_reader: Dict[NumberType, NumberReader] = {
     "floating sexagesimal": read_sexag_array,
     "integer and sexagesimal": read_intsexag_array,
     "historical": read_historical,
+    "temporal": read_temporal,
 }
 
 unit_reader: Dict[UnitType, Unit] = {

@@ -11,7 +11,11 @@ class OriginalValue(TypedDict):
 
 
 NumberType = Literal[
-    "sexagesimal", "floating sexagesimal", "integer and sexagesimal", "historical"
+    "sexagesimal",
+    "floating sexagesimal",
+    "integer and sexagesimal",
+    "historical",
+    "temporal",
 ]
 SymmetryType = Literal["mirror", "periodic"]
 SymmetryOperation = Literal["opposite", "identity", "addition", "substraction"]
