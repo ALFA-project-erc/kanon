@@ -1682,7 +1682,7 @@ test = ["pre-commit", "pytest"]
 
 [[package]]
 name = "types-requests"
-version = "2.27.27"
+version = "2.28.0"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1773,7 +1773,7 @@ notebook = ["ipython", "ipykernel", "papermill", "nbformat"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "1fe034789b4e00e96577c6c006511858a53b754aab91b9aba3d78d3d2fa9b8eb"
+content-hash = "d830df63b6cfebfd900ac7e9abf42795c95a1602f9b0778494f51270c4fb0820"
 
 [metadata.files]
 alabaster = [
@@ -2886,8 +2886,8 @@ traitlets = [
     {file = "traitlets-5.2.1.post0.tar.gz", hash = "sha256:70815ecb20ec619d1af28910ade523383be13754283aef90528eb3d47b77c5db"},
 ]
 types-requests = [
-    {file = "types-requests-2.27.27.tar.gz", hash = "sha256:d618d9809fa32f514cf17cea8460814da671c56366fb1c908accca8bf183112b"},
-    {file = "types_requests-2.27.27-py3-none-any.whl", hash = "sha256:6d8463ffe1f6edcf2e5361740a6140e7a16d427c267d83c7c1d3d1298f4e67c5"},
+    {file = "types-requests-2.28.0.tar.gz", hash = "sha256:9863d16dfbb3fa55dcda64fa3b989e76e8859033b26c1e1623e30465cfe294d3"},
+    {file = "types_requests-2.28.0-py3-none-any.whl", hash = "sha256:85383b4ef0535f639c3f06c5bbb6494bbf59570c4cd88bbcf540f0b2ac1b49ab"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.14.tar.gz", hash = "sha256:2a2578e4b36341ccd240b00fccda9826988ff0589a44ba4a664bbd69ef348d27"},
