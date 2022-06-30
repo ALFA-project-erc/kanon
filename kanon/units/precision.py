@@ -179,7 +179,8 @@ class PreciseNumber(Number, Truncable):
     @_with_context_precision(symbol="+")
     def __add__(self: TPreciseNumber, other):
         if f := get_context().add:
-            return f(self, other)
+            with set_precision(**asdict(PrecisionContext())):
+                return f(self, other)
         return self._add(other)
 
     @abc.abstractmethod
@@ -189,7 +190,8 @@ class PreciseNumber(Number, Truncable):
     @_with_context_precision(symbol="-")
     def __sub__(self: TPreciseNumber, other):
         if f := get_context().sub:
-            return f(self, other)
+            with set_precision(**asdict(PrecisionContext())):
+                return f(self, other)
         return self._sub(other)
 
     @abc.abstractmethod
@@ -199,7 +201,8 @@ class PreciseNumber(Number, Truncable):
     @_with_context_precision(symbol="*")
     def __mul__(self: TPreciseNumber, other):
         if f := get_context().mul:
-            return f(self, other)
+            with set_precision(**asdict(PrecisionContext())):
+                return f(self, other)
         return self._mul(other)
 
     @abc.abstractmethod
@@ -209,7 +212,8 @@ class PreciseNumber(Number, Truncable):
     @_with_context_precision(symbol="/")
     def __truediv__(self: TPreciseNumber, other):
         if f := get_context().div:
-            return f(self, other)
+            with set_precision(**asdict(PrecisionContext())):
+                return f(self, other)
         return self._truediv(other)
 
     @abc.abstractmethod
@@ -425,6 +429,7 @@ def set_precision(
     sub: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
     mul: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
     div: Union[CustomArithmeticAlgorithm, Literal[False]] = False,
+    **kwargs,
 ):
     """Mutates the current `PrecisionContext` with the specified rules."""
     ctx = get_context()

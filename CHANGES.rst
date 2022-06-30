@@ -1,3 +1,10 @@
+0.6.5
+_____
+
+*Bug Fixes*
+
+- radices : Fix `BasedReal.resize` sometimes not working on mixed radix `BasedReal`
+
 0.6.4
 _____
 
