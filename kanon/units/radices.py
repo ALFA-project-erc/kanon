@@ -582,14 +582,17 @@ class BasedReal(PreciseNumber, _Real):
                 sign=self.sign,
             )
         if significant >= 0:
-            remainder = type(self)(
-                (), self.right[significant:], remainder=self.remainder
-            )
+            remainder = Decimal(0)
+            factor = Decimal(1)
+            for idx, number in enumerate(self.right[significant:]):
+                factor *= Decimal(self.base[1][significant + idx])
+                remainder += Decimal(number) / factor
+            remainder += self.remainder / factor
 
             return type(self)(
                 self.left,
                 self.right[:significant],
-                remainder=remainder.decimal,
+                remainder=remainder,
                 sign=self.sign,
             )
 

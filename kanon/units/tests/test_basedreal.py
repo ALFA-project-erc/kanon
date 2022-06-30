@@ -11,6 +11,7 @@ from hypothesis import strategies as st
 from hypothesis.core import given
 
 from kanon.units import BasedReal, Historical, Sexagesimal
+from kanon.units.definitions import Temporal
 from kanon.units.radices import (
     EmptyStringException,
     IllegalBaseValueError,
@@ -183,6 +184,9 @@ def test_misc():
     assert 5 // Sexagesimal(2) == 2
 
     assert divmod(Sexagesimal(5), 3) == divmod(5, 3)
+
+    assert Temporal("1;2,44,44,44,44").resize(2).truncate() == Temporal("1;2,44")
+    assert Temporal("1;2,44,44,44,44").resize(0).truncate() == 1
 
 
 def test_shift():

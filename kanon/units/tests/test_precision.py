@@ -147,7 +147,7 @@ class TestPrecision:
 
         with set_precision(add=add, sub=sub, div=div, mul=mul):
             assert Sexagesimal(1) + Sexagesimal(1) == 3
-            assert Sexagesimal(1) - Sexagesimal(1) == 0
+            assert Sexagesimal(1) - Sexagesimal(1) == -1
             assert Sexagesimal(1) * Sexagesimal(1) == 2
             assert Sexagesimal(1) / Sexagesimal(1) == 5
 
@@ -214,6 +214,10 @@ class TestPrecision:
         with pytest.raises(TypeError):
             func(Sexagesimal(1), Sexagesimal(2))
         assert func(1, 2) == 1
+
+    def test_test(self):
+        with set_precision(tmode=TruncatureMode.ROUND, pmode=1):
+            assert Sexagesimal("1;50") + Sexagesimal("2;5,30") == Sexagesimal("3;56")
 
     @classmethod
     def teardown_class(cls):
