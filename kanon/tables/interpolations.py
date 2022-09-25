@@ -75,9 +75,9 @@ def linear_interpolation(df: pd.DataFrame, key: Real) -> Real:
     lower, upper = _split_df(df, key)
 
     if len(lower) == 0:
-        (_, a), (_, b) = upper.iloc[:2].T.iteritems()
+        (_, a), (_, b) = upper.iloc[:2].T.items()
     elif len(upper) == 0:
-        (_, a), (_, b) = lower.iloc[-2:].T.iteritems()
+        (_, a), (_, b) = lower.iloc[-2:].T.items()
     else:
         a = lower.iloc[-1]
         b = upper.iloc[0]

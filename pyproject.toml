@@ -47,9 +47,9 @@ sphinx-rtd-theme = {version = "^1.0.0", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"
-flake8 = "^4.0.1"
+flake8 = "^5.0.4"
 isort = "^5.10.1"
-mypy = "^0.960"
+mypy = "^0.971"
 pre-commit = "^2.16.0"
 pytest-astropy = "^0.10.0"
 requests-mock = "^1.9.3"
@@ -64,7 +64,7 @@ notebook = ["ipython", "ipykernel", "papermill", "nbformat"]
 enable = true
 
 [build-system]
-build-backend = "poetry.core.masonry.api"
+build-backend = "poetry_dynamic_versioning.backend"
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
 
 [tool.pytest.ini_options]
