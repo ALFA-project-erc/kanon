@@ -676,3 +676,17 @@ def test_first_stationary_point_of_venus_by_calculation_and_proportional_minutes
             104.32514702820028,
         ],
     )
+
+
+def test_solar_velocities():
+    assert np.allclose(
+        [md.solar_velocities(x, 28, 27, 37) for x in [0, 45, 70, 180, 270, 310]],
+        [
+            27.515750578477878,
+            27.51904115208171,
+            27.51375143739651,
+            27.46565182584682,
+            27.475821832373523,
+            27.495721688114934,
+        ],
+    )

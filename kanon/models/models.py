@@ -76,6 +76,24 @@ def equ_of_times_for_mean_sun(x, obl, e, ap, epo, hdeg):
     return hdeg * (x + epo - utils.right_asc_0(x + q, obl))
 
 
+@dmodel(Sun.solar_velocities, 78, 126, 127, 128)
+def solar_velocities(x, vmax, vmin, inter):
+    """
+    Solar velocities
+    :param x:
+    :param vmax: Maximum value
+    :param vmin: Minimum value
+    :param inter: Interval
+    :return:
+    """
+    e = 60 * (vmax - vmin) / (vmax + vmin)
+    ws = 2 * vmin * vmax / (vmax + vmin)
+    delta = inter * ws
+    qcour = utils.q_0(x, e)
+    qfoll = utils.q_0(x + delta, e)
+    return ws + (qfoll - qcour) / inter
+
+
 # # # # # # # # # # #
 #      MERCURY      #
 # # # # # # # # # # #
