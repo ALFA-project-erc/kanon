@@ -124,7 +124,7 @@ def planet_double_arg_mercury(x, y, e, R):
     p = utils.planet_anomaly_0(y, R, rh)
     q = utils.q_1(x, e)
 
-    return q + p
+    return q + p + 0
 
 
 @dmodel(Mercury.equ_anomaly_at_max_dist, 39, 106, 107)
