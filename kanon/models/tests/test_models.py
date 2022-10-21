@@ -678,15 +678,38 @@ def test_first_stationary_point_of_venus_by_calculation_and_proportional_minutes
     )
 
 
+def test_venus_mean_motion_anomaly():
+    assert np.allclose(
+        [md.venus_mean_motion_anomaly(x, 7) for x in [0, 45, 70, 180, 270, 310]],
+        [0, 2160, 3360, 8640, 12960, 14880],
+    )
+
+
 def test_solar_velocities():
     assert np.allclose(
-        [md.solar_velocities(x, 28, 27, 37) for x in [0, 45, 70, 180, 270, 310]],
+        [md.solar_velocities(x, 5, 3, 30) for x in [0, 45, 70, 180, 270, 310]],
         [
-            27.515750578477878,
-            27.51904115208171,
-            27.51375143739651,
-            27.46565182584682,
-            27.475821832373523,
-            27.495721688114934,
+            3.27242267222591,
+            3.7983910636025437,
+            4.184809193648739,
+            4.146793204545516,
+            3.13398892741611,
+            3.062893555256546,
+        ],
+    )
+
+
+def test_venus_total_equ_double_arg():
+    assert np.allclose(
+        [
+            md.venus_total_equ_double_arg(x, y, 50, 6)
+            for x, y in [(0, 0), (0, 45), (45, 45), (180, 45), (90, 270)]
+        ],
+        [
+            0.0,
+            2.1268218653307294,
+            -38.013990199330486,
+            16.58790008892617,
+            -74.91069808507258,
         ],
     )

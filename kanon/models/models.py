@@ -33,7 +33,7 @@ def equ_of_the_sun(x: float, e: float) -> float:
 @dmodel(Sun.mean_motion_solar_tropical_long, 34, 34)
 def long_of_the_tropical_mean_sun(x, val):
     """
-    Longitude of the  tropical mean sun
+    Longitude of the tropical mean sun
     :param x: value in day
     :param val: value for 1 day
     :return:
@@ -79,12 +79,12 @@ def equ_of_times_for_mean_sun(x, obl, e, ap, epo, hdeg):
 @dmodel(Sun.solar_velocities, 78, 126, 127, 128)
 def solar_velocities(x, vmax, vmin, inter):
     """
-    Solar velocities
-    :param x:
-    :param vmax: Maximum value
-    :param vmin: Minimum value
-    :param inter: Interval
-    :return:
+    solar velocities
+    :param x:mean argument in degrees
+    :param vmax: maximum of value of velocity in degrees by time unit
+    :param vmin: minimum value of velocity in degrees by time unit
+    :param inter: step in days in which is reckoned the velocity
+    :return: velocity in degrees by time unit
     """
     e = 60 * (vmax - vmin) / (vmax + vmin)
     ws = 2 * vmin * vmax / (vmax + vmin)
@@ -142,7 +142,7 @@ def planet_double_arg_mercury(x, y, e, R):
     p = utils.planet_anomaly_0(y, R, rh)
     q = utils.q_1(x, e)
 
-    return q + p + 0
+    return q + p
 
 
 @dmodel(Mercury.equ_anomaly_at_max_dist, 39, 106, 107)
@@ -262,6 +262,32 @@ def first_stationary_point_of_mercury_by_calculation_and_proportional_minutes(
 # # # # # # # # # # #
 #       VENUS       #
 # # # # # # # # # # #
+
+
+@dmodel(Venus.mean_motion_anomaly, 76, 47)
+def venus_mean_motion_anomaly(x, am):
+    """
+    venus mean motion anomaly
+    :param x: time in days
+    :param am: Value for 1 day
+    :return: motion in degrees
+    """
+    return x * am
+
+
+@dmodel(Venus.total_equ_double_arg_table, 79, 121, 122)
+def venus_total_equ_double_arg(x, y, e, r):
+    """
+    Venus total equation double argument
+    :param x: mean center in degrees(cm)
+    :param y: true argument in degrees (av)
+    :param e: Eccentricity
+    :param r: Radius of the epicycle
+    :return:
+    """
+    q = utils.q_2(x, e)
+    p = utils.planet_anomaly_0(y, r, utils.rho_1(x, e))
+    return p + q
 
 
 @dmodel(Venus.lat_incl, 54, 288)
