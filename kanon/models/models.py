@@ -24,7 +24,7 @@ def equ_of_the_sun(x: float, e: float) -> float:
     """
     Sun equation
     :param x:
-    :param: solar eccentricity
+    :param e: solar eccentricity
     :return:
     """
     return DEG * m.atan(utils.product_sine_0(x, e) / (60 + e * m.cos(x * RAD)))

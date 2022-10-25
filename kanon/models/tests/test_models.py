@@ -681,7 +681,7 @@ def test_first_stationary_point_of_venus_by_calculation_and_proportional_minutes
 def test_venus_mean_motion_anomaly():
     assert np.allclose(
         [md.venus_mean_motion_anomaly(x, 7) for x in [0, 45, 70, 180, 270, 310]],
-        [0, 2160, 3360, 8640, 12960, 14880],
+        [0, 315, 490, 1260, 1890, 2170],
     )
 
 
