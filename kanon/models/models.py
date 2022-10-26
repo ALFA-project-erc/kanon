@@ -24,7 +24,7 @@ def equ_of_the_sun(x: float, e: float) -> float:
     """
     Sun equation
     :param x:
-    :param: solar eccentricity
+    :param e: solar eccentricity
     :return:
     """
     return DEG * m.atan(utils.product_sine_0(x, e) / (60 + e * m.cos(x * RAD)))
@@ -33,7 +33,7 @@ def equ_of_the_sun(x: float, e: float) -> float:
 @dmodel(Sun.mean_motion_solar_tropical_long, 34, 34)
 def long_of_the_tropical_mean_sun(x, val):
     """
-    Longitude of the  tropical mean sun
+    Longitude of the tropical mean sun
     :param x: value in day
     :param val: value for 1 day
     :return:
@@ -74,6 +74,24 @@ def equ_of_times_for_mean_sun(x, obl, e, ap, epo, hdeg):
     q = utils.q_0(x - ap, e)
 
     return hdeg * (x + epo - utils.right_asc_0(x + q, obl))
+
+
+@dmodel(Sun.solar_velocities, 78, 126, 127, 128)
+def solar_velocities(x, vmax, vmin, inter):
+    """
+    solar velocities
+    :param x:mean argument in degrees
+    :param vmax: maximum of value of velocity in degrees by time unit
+    :param vmin: minimum value of velocity in degrees by time unit
+    :param inter: step in days in which is reckoned the velocity
+    :return: velocity in degrees by time unit
+    """
+    e = 60 * (vmax - vmin) / (vmax + vmin)
+    ws = 2 * vmin * vmax / (vmax + vmin)
+    delta = inter * ws
+    qcour = utils.q_0(x, e)
+    qfoll = utils.q_0(x + delta, e)
+    return ws + (qfoll - qcour) / inter
 
 
 # # # # # # # # # # #
@@ -244,6 +262,32 @@ def first_stationary_point_of_mercury_by_calculation_and_proportional_minutes(
 # # # # # # # # # # #
 #       VENUS       #
 # # # # # # # # # # #
+
+
+@dmodel(Venus.mean_motion_anomaly, 76, 47)
+def venus_mean_motion_anomaly(x, am):
+    """
+    venus mean motion anomaly
+    :param x: time in days
+    :param am: Value for 1 day
+    :return: motion in degrees
+    """
+    return x * am
+
+
+@dmodel(Venus.total_equ_double_arg_table, 79, 121, 122)
+def venus_total_equ_double_arg(x, y, e, r):
+    """
+    Venus total equation double argument
+    :param x: mean center in degrees(cm)
+    :param y: true argument in degrees (av)
+    :param e: Eccentricity
+    :param r: Radius of the epicycle
+    :return:
+    """
+    q = utils.q_2(x, e)
+    p = utils.planet_anomaly_0(y, r, utils.rho_1(x, e))
+    return p + q
 
 
 @dmodel(Venus.lat_incl, 54, 288)
