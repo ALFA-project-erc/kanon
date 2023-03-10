@@ -91,7 +91,6 @@ def read_table_dishas(
     entries_name="Entries",
     freeze=False,
 ) -> HTable:
-
     qid = int(requested_id)
 
     res: TableContent = requests.get(
@@ -106,7 +105,6 @@ def read_table_dishas(
 def read_table_content(
     tabc: TableContent, symmetry=True, units=True, entries_name="Entries", freeze=False
 ):
-
     values = tabc["source_value_original"]
 
     arg_unit = tabc["argument1_number_unit"]

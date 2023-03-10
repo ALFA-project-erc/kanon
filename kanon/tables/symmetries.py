@@ -73,7 +73,6 @@ class Symmetry:
                 raise ValueError
 
     def __call__(self, df: DataFrame):
-
         if len(df) == 0:
             return df
 
@@ -91,7 +90,6 @@ class Symmetry:
             return self.sign * x + self.offset
 
         if not self.targets:
-
             if self.symtype == "mirror":
                 symdf.index = symdf.index.map(lambda x: 2 * symdf.index[-1] - x)
                 symdf = symdf[:-1][::-1]

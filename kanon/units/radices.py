@@ -708,7 +708,8 @@ class BasedReal(PreciseNumber, _Real):
 
     @lru_cache
     def subunit_quantity(self: TBasedReal, i: int) -> int:
-        """Convert this sexagesimal to the integer value from the specified fractional point.
+        """Convert this sexagesimal to the integer value from the
+        specified fractional point.
 
         >>> number = Sexagesimal("1,0;2,30")
 
@@ -997,7 +998,6 @@ class BasedReal(PreciseNumber, _Real):
         return value * self.sign
 
     def _truediv(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
-
         other = cast(BasedReal, _other)
 
         max_significant = max(self.significant, other.significant)
@@ -1042,7 +1042,6 @@ class BasedReal(PreciseNumber, _Real):
         )
 
     def _add(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
-
         other = cast(BasedReal, _other)
 
         if self.decimal == -other.decimal:
@@ -1112,7 +1111,6 @@ class BasedReal(PreciseNumber, _Real):
         return super().__rsub__(other)
 
     def _sub(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
-
         other = cast(BasedReal, _other)
         return self + -other
 
@@ -1177,7 +1175,6 @@ class BasedReal(PreciseNumber, _Real):
         return -self
 
     def _mul(self: TBasedReal, _other: PreciseNumber) -> TBasedReal:
-
         other = cast(BasedReal, _other)
 
         if other in (1, -1):
@@ -1264,7 +1261,6 @@ class BasedReal(PreciseNumber, _Real):
         """divmod(self: TBasedReal, other)"""
 
         if type(self) is type(other):
-
             if self.mixed:
                 res = divmod(float(self), float(other))
                 return (
@@ -1441,7 +1437,6 @@ class BasedReal(PreciseNumber, _Real):
 
 
 class BasedQuantity(Quantity, Generic[TBasedReal]):
-
     value: TBasedReal
 
     def __new__(cls, value, unit, **kwargs):

@@ -8,7 +8,6 @@ from kanon.units import Historical, Sexagesimal
 
 class TestHColumn:
     def test_init(self):
-
         col = HColumn([1, 2, 3])
 
         assert col.significant is None

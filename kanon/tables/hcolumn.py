@@ -78,7 +78,6 @@ class HColumn(Column, Truncable, Generic[TTypeBasedReal]):
         copy_indices=True,
         basedtype: Optional[TTypeBasedReal] = None,
     ):
-
         if data is None and basedtype:
             data = np.zeros((length,) + shape, dtype="O")
             data = np.vectorize(basedtype.from_int)(data)

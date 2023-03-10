@@ -288,7 +288,6 @@ def test_mod_integers(x, y):
 
 
 def test_sqrt():
-
     assert Sexagesimal(9).sqrt().equals(Sexagesimal(3))
 
     assert Sexagesimal(0).sqrt() == 0

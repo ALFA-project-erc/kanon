@@ -31,7 +31,6 @@ class TestPrecision:
         del cls.context["stack"]
 
     def test_context(self):
-
         current_ctx = get_context()
         ctx = PrecisionContext(1, TruncatureMode.CEIL, None, None, None, None)
         set_context(ctx)

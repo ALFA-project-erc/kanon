@@ -33,7 +33,6 @@ Interpolator = Callable[[pd.DataFrame, Real], Real]
 
 
 def _split_df(df: pd.DataFrame, key: Real) -> Tuple[pd.DataFrame, pd.DataFrame]:
-
     df = df.rename_axis("x")
     df = df.rename(columns={list(df.columns)[0]: "y"})
 
@@ -115,7 +114,8 @@ def quadratic_interpolation(df: pd.DataFrame, key: Real) -> Real:
 def distributed_interpolation(
     df: pd.DataFrame, direction: Literal["convex", "concave"]
 ):
-    """Applies distributed interpolation on a `DataFrame` with a regularly stepped index.
+    """Applies distributed interpolation on a `DataFrame` with a
+    regularly stepped index.
     Interpolates on every unknown values (`numpy.nan` or `pandas.NA`).
     """
 
@@ -131,7 +131,6 @@ def distributed_interpolation(
         raise ValueError("The DataFrame must start and end with non nan values")
 
     if based_values := df.iloc[0].dtypes == "object":
-
         based_type = type(df.iloc[0][0])
 
         based_idx = df[~df.isna().any(axis=1)].index
@@ -160,7 +159,6 @@ def distributed_interpolation(
             )
 
     else:
-
         index_diff = df.index.to_series().diff().iloc[1:].to_numpy()
         step = index_diff[0]
 

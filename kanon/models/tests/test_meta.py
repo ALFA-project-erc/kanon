@@ -11,7 +11,6 @@ from kanon.models.meta import (
 
 @pytest.fixture
 def mock_models():
-
     _models = models.copy()
     __reg = _registered_ids.copy()
 

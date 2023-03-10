@@ -44,7 +44,6 @@ class GenericTableAttribute(TableAttribute, Generic[T]):
 
 
 class HTableFormatter(TableFormatter):
-
     _pformat_col = _patch_dtype_info_name(TableFormatter._pformat_col, 1)
 
 
@@ -125,7 +124,6 @@ class HTable(Table):
         *args,
         **kwargs,
     ):
-
         if model := kwargs.get("model"):
             kwargs["table_type"] = model.table_type
         super().__init__(
@@ -359,7 +357,8 @@ class HTable(Table):
     def diff(
         self, n=1, prepend: List = [], append: List = [], new_name: Optional[str] = None
     ) -> "HTable":
-        """Applies `np.diff` on this table's column values to calculate the n-th difference.
+        """Applies `np.diff` on this table's column values to calculate the n-th
+        difference.
         By default, it will prepend the first value.
 
         :return: HTable with n-th difference values.
