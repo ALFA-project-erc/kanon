@@ -46,11 +46,11 @@ sphinx-astropy = {version = "^1.7.0", optional = true}
 sphinx-rtd-theme = {version = "^1.0.0", optional = true}
 
 [tool.poetry.dev-dependencies]
-black = "^22.3"
-flake8 = "^5.0.4"
-isort = "^5.10.1"
-mypy = "^0.971"
-pre-commit = "^2.16.0"
+black = "*"
+flake8 = "*"
+isort = "*"
+mypy = "*"
+pre-commit = "*"
 pytest-astropy = "^0.10.0"
 requests-mock = "^1.9.3"
 tox = "^3.24.5"

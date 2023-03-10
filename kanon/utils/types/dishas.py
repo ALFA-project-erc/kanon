@@ -42,7 +42,6 @@ class TemplateEntries(TypedDict):
 
 
 class Template(TypedDict):
-
     table_type: str
     readonly: bool
     args: List[TemplateArgs]

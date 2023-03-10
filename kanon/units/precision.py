@@ -120,7 +120,6 @@ def _with_context_precision(func=None, symbol=None):
 
     @wraps(func)
     def wrapper(*args, **kwargs) -> "Truncable":
-
         with set_precision(recording=False):
             value: "Truncable" = func(*args, **kwargs)
 

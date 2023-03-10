@@ -27,7 +27,6 @@ def make_sample_table(index="a"):
 
 
 def test_init():
-
     table = HTable(sample)
     assert table[2]["b"] == 12
 
