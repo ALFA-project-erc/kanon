@@ -1,6 +1,7 @@
 from kanon.tables.htable_reader import (
     read_historical,
     read_intsexag_array,
+    read_table_dishas,
     read_temporal,
 )
 from kanon.units import Historical, IntegerAndSexagesimal
@@ -25,3 +26,8 @@ def test_read_intsexag():
 def test_read_temporal():
     assert read_temporal([28, 18, 2, 6], 3, 1) == Temporal("28 ; 18,02,06")
     assert read_temporal([253, 18, 2, 6], 3, -1) == Temporal("-253 ; 18,02,06")
+
+
+def test_get_number_of_cells():
+    table = read_table_dishas(193)
+    assert 9 == table["Entries"].cells
