@@ -28,6 +28,7 @@ _dishas_fields = '","'.join(
         "entry_significant_fractional_place",
         "entry_number_unit",
         "entry_type_of_number",
+        "entry_number_of_cell",
         "symmetries",
         "edited_text",
         "table_type",
@@ -112,6 +113,8 @@ def read_table_content(
 
     entry_unit = tabc["entry_number_unit"]
     entry_shift = int(tabc["entry_significant_fractional_place"])
+
+    entry_cells = int(tabc["entry_number_of_cell"])
 
     argsvalues = values["args"]
 
@@ -219,6 +222,8 @@ def read_table_content(
         meta=tabc["edited_text"],
         table_type=table_type,
     )
+
+    table[entries_name].cells = entry_cells
 
     if freeze:
         table.freeze()

@@ -485,6 +485,7 @@
     "entry_type_of_number": "sexagesimal",
     "entry_number_unit": "degree",
     "entry_significant_fractional_place": "2",
+    "entry_number_of_cell": "1",
     "argument1_name": "Mean Argument of the Sun",
     "argument1_type_of_number": "integer and sexagesimal",
     "argument1_number_unit": "degree",
