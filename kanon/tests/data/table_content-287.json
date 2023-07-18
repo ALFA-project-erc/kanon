@@ -1,6 +1,7 @@
 {
     "entry_significant_fractional_place": "2",
     "entry_type_of_number": "integer and sexagesimal",
+    "entry_number_of_cell": "0",
     "argument1_type_of_number": "historical",
     "argument2_significant_fractional_place": "0",
     "source_value_original": {
