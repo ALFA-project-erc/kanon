@@ -50,7 +50,7 @@ jobs:
         run: poetry run -- tox -e test-cov -- --junitxml={toxinidir}/report.xml
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Unit Test Results ${{ matrix.python-version }}
           path: |
@@ -81,6 +81,7 @@ jobs:
         run: poetry config virtualenvs.in-project true
       - name: Set up cache
         uses: actions/cache@v4
+        with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
@@ -93,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Event File
         path: ${{ github.event_path }}
