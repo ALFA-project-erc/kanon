@@ -239,7 +239,7 @@ files = [
     {file = "attrs-22.2.0-py3-none-any.whl", hash = "sha256:29e95c7f6778868dbd49170f98f8818f78f3dc5e0e37c0b1f474e3561b240836"},
     {file = "attrs-22.2.0.tar.gz", hash = "sha256:c9227bfc2f01993c03f68db37d1d15c9690188323c067c641f1a35ca58185f99"},
 ]
-markers = {main = "extra == \"notebook\" or extra == \"docs\""}
+markers = {main = "extra == \"docs\" or extra == \"notebook\""}
 
 [package.extras]
 cov = ["attrs[tests]", "coverage-enable-subprocess", "coverage[toml] (>=5.3)"]
@@ -1269,9 +1269,9 @@ testing = ["Django (<3.1)", "attrs", "colorama", "docopt", "pytest (<7.0.0)"]
 name = "jinja2"
 version = "3.1.6"
 description = "A very fast and expressive template engine."
-optional = false
+optional = true
 python-versions = ">=3.7"
-groups = ["main", "dev"]
+groups = ["main"]
 markers = "extra == \"docs\""
 files = [
     {file = "jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"},
@@ -1449,9 +1449,9 @@ files = [
 name = "MarkupSafe"
 version = "2.1.2"
 description = "Safely add untrusted strings to HTML/XML markup."
-optional = false
+optional = true
 python-versions = ">=3.7"
-groups = ["main", "dev"]
+groups = ["main"]
 markers = "extra == \"docs\""
 files = [
     {file = "MarkupSafe-2.1.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:665a36ae6f8f20a4676b53224e33d456a6f5a72657d9c83c2aa00765072f31f7"},
@@ -2262,14 +2262,14 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "3.1.1"
+version = "3.5.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "pre_commit-3.1.1-py2.py3-none-any.whl", hash = "sha256:b80254e60668e1dd1f5c03a1c9e0413941d61f568a57d745add265945f65bfe8"},
-    {file = "pre_commit-3.1.1.tar.gz", hash = "sha256:d63e6537f9252d99f65755ae5b79c989b462d511ebbc481b561db6a297e1e865"},
+    {file = "pre_commit-3.5.0-py2.py3-none-any.whl", hash = "sha256:841dc9aef25daba9a0238cd27984041fa0467b4199fc4852e27950664919f660"},
+    {file = "pre_commit-3.5.0.tar.gz", hash = "sha256:5804465c675b659b0862f07907f96295d490822a450c4c40e747d0b1c6ebcb32"},
 ]
 
 [package.dependencies]
@@ -3365,9 +3365,10 @@ markers = {main = "extra == \"docs\" and python_version <= \"3.10\"", dev = "pyt
 name = "tornado"
 version = "6.4.2"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"docs\" or extra == \"notebook\""
 files = [
     {file = "tornado-6.4.2-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:e828cce1123e9e44ae2a50a9de3055497ab1d0aeb440c5ac23064d9e44880da1"},
     {file = "tornado-6.4.2-cp38-abi3-macosx_10_9_x86_64.whl", hash = "sha256:072ce12ada169c5b00b7d92a99ba089447ccc993ea2143c9ede887e0937aa803"},
