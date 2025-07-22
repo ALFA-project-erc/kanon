@@ -3155,24 +3155,24 @@ sphinx = ">=3"
 
 [[package]]
 name = "sphinx-rtd-theme"
-version = "1.2.0"
+version = "3.0.2"
 description = "Read the Docs theme for Sphinx"
 optional = true
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
+python-versions = ">=3.8"
 groups = ["main"]
 markers = "extra == \"docs\""
 files = [
-    {file = "sphinx_rtd_theme-1.2.0-py2.py3-none-any.whl", hash = "sha256:f823f7e71890abe0ac6aaa6013361ea2696fc8d3e1fa798f463e82bdb77eeff2"},
-    {file = "sphinx_rtd_theme-1.2.0.tar.gz", hash = "sha256:a0d8bd1a2ed52e0b338cbe19c4b2eef3c5e7a048769753dac6a9f059c7b641b8"},
+    {file = "sphinx_rtd_theme-3.0.2-py2.py3-none-any.whl", hash = "sha256:422ccc750c3a3a311de4ae327e82affdaf59eb695ba4936538552f3b00f4ee13"},
+    {file = "sphinx_rtd_theme-3.0.2.tar.gz", hash = "sha256:b7457bc25dda723b20b086a670b9953c859eab60a2a03ee8eb2bb23e176e5f85"},
 ]
 
 [package.dependencies]
-docutils = "<0.19"
-sphinx = ">=1.6,<7"
-sphinxcontrib-jquery = {version = ">=2.0.0,<3.0.0 || >3.0.0", markers = "python_version > \"3\""}
+docutils = ">0.18,<0.22"
+sphinx = ">=6,<9"
+sphinxcontrib-jquery = ">=4,<5"
 
 [package.extras]
-dev = ["bump2version", "sphinxcontrib-httpdomain", "transifex-client", "wheel"]
+dev = ["bump2version", "transifex-client", "twine", "wheel"]
 
 [[package]]
 name = "sphinxcontrib-applehelp"
@@ -3226,20 +3226,20 @@ lint = ["docutils-stubs", "flake8", "mypy"]
 test = ["html5lib", "pytest"]
 
 [[package]]
-name = "sphinxcontrib.jquery"
-version = "2.0.0"
+name = "sphinxcontrib-jquery"
+version = "4.1"
 description = "Extension to include jQuery on newer Sphinx releases"
 optional = true
 python-versions = ">=2.7"
 groups = ["main"]
 markers = "extra == \"docs\""
 files = [
-    {file = "sphinxcontrib-jquery-2.0.0.tar.gz", hash = "sha256:8fb65f6dba84bf7bcd1aea1f02ab3955ac34611d838bcc95d4983b805b234daa"},
-    {file = "sphinxcontrib_jquery-2.0.0-py3-none-any.whl", hash = "sha256:ed47fa425c338ffebe3c37e1cdb56e30eb806116b85f01055b158c7057fdb995"},
+    {file = "sphinxcontrib-jquery-4.1.tar.gz", hash = "sha256:1620739f04e36a2c779f1a131a2dfd49b2fd07351bf1968ced074365933abc7a"},
+    {file = "sphinxcontrib_jquery-4.1-py2.py3-none-any.whl", hash = "sha256:f936030d7d0147dd026a4f2b5a57343d233f1fc7b363f68b3d4f1cb0993878ae"},
 ]
 
 [package.dependencies]
-setuptools = "*"
+Sphinx = ">=1.8"
 
 [[package]]
 name = "sphinxcontrib-jsmath"
@@ -3664,4 +3664,4 @@ notebook = ["ipykernel", "ipython", "nbformat", "papermill"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "9b6d4630836f782a6ba5adbb4cded180d0b17dfcb0ab5d0f892b5e5ebb6b08ed"
+content-hash = "cfdda8931efa169372e82c9bcc0ea9464d8c2d916790de466441ab04c9a7e471"
