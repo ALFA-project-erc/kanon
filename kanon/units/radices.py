@@ -42,7 +42,8 @@ from typing import (
 )
 
 import numpy as np
-from astropy.units.core import Unit, UnitBase, UnitTypeError
+from astropy.units import UnitTypeError
+from astropy.units.core import Unit, UnitBase
 from astropy.units.quantity import Quantity
 from astropy.units.quantity_helper.converters import UFUNC_HELPERS
 from astropy.units.quantity_helper.helpers import _d
@@ -200,8 +201,8 @@ class BasedReal(PreciseNumber, _Real):
                 self += (self.one() * self.sign) >> self.significant
             else:
                 raise ValueError(
-                    f"Illegal remainder value ({self.remainder}),\
-                         should be a Decimal between [0.,1.["
+                    f"Illegal remainder value ({self.remainder}), \
+                         should be a Decimal between [0., 1.["
                 )
         for x in self[:]:
             if isinstance(x, float):
@@ -477,7 +478,7 @@ class BasedReal(PreciseNumber, _Real):
                 res += ","
 
         if self.remainder:
-            res += f" |r{self.remainder:3.1f}"
+            res += f" |r{self.remainder: 3.1f}"
 
         return res
 
@@ -1549,7 +1550,7 @@ class IllegalBaseValueError(BasedRealException, ValueError):
 
     def __str__(self):
         return f"An invalid value for ({self.radix.__name__}) was found \
-        ('{self.num}'); should be in the range [0,{self.base}[)."
+        ('{self.num}'), should be in the range [0, {self.base}[)."
 
 
 class IllegalFloatError(BasedRealException, TypeError):
