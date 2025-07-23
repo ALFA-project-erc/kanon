@@ -93,7 +93,7 @@ class HColumn(Column, Truncable, Generic[TTypeBasedReal]):
             unit=unit,
             format=format,
             meta=meta,
-            copy=copy,
+            copy=copy if copy is True else None,
             copy_indices=copy_indices,
         )
 
