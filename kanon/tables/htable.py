@@ -37,6 +37,8 @@ __all__ = ["HTable"]
 
 T = TypeVar("T")
 
+np.set_printoptions(legacy="1.25")
+
 
 class GenericTableAttribute(TableAttribute, Generic[T]):
     def __get__(self, instance, owner) -> T:
@@ -57,9 +59,8 @@ class HTable(Table):
 
     See also: https://docs.astropy.org/en/stable/table/
 
-    #TODO DocTestFailure
-    # >>> table = HTable({"args": [1,2,3], "values": [5.1,3.9,4.3]}, index="args")
-    # >>> table
+    >>> table = HTable({"args": [1,2,3], "values": [5.1,3.9,4.3]}, index="args")
+    >>> table
     <HTable length=3>
     args  values
     int64 float64
@@ -67,15 +68,15 @@ class HTable(Table):
         1     5.1
         2     3.9
         3     4.3
-    #TODO DocTestFailure
-    # >>> table.loc[2]
+
+    >>> table.loc[2]
     <Row index=1>
     args  values
     int64 float64
     ----- -------
         2     3.9
-    #TODO DocTestFailure
-    # >>> table.loc[2]["values"]
+
+    >>> table.loc[2]["values"]
     3.9
 
     :param data: Data to initialize table.
@@ -135,6 +136,10 @@ class HTable(Table):
 
         if index:
             self.set_index(index)
+
+    def __repr__(self):
+        s = super().__repr__()
+        return s.replace("\n ", "\n", 1)
 
     def _check_index(self, index=None):
         if not self.indices and not index:
