@@ -100,7 +100,7 @@ class Symmetry:
                 )
 
             if self.sign == -1 or self.offset:
-                symdf = symdf.applymap(apply)
+                symdf = symdf.map(apply)
 
             df = pd.concat([df, symdf])
         else:
@@ -115,7 +115,7 @@ class Symmetry:
                     tdf.index = tdf.index.map(lambda x: t + x - tdf.index[0])
 
                 if self.sign == -1 or self.offset:
-                    tdf = tdf.applymap(apply)
+                    tdf = tdf.map(apply)
 
                 if len(df.index.intersection(tdf.index)) > 0:
                     raise OverlappingSymmetryError
