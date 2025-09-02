@@ -928,13 +928,13 @@ files = [
 
 [[package]]
 name = "executing"
-version = "2.2.0"
+version = "2.2.1"
 description = "Get the currently executing AST node of a frame, and other information"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "executing-2.2.0-py2.py3-none-any.whl", hash = "sha256:11387150cad388d62750327a53d3339fad4888b39a6fe233c3afbb54ecffd3aa"},
-    {file = "executing-2.2.0.tar.gz", hash = "sha256:5d108c028108fe2551d1a7b2e8b713341e2cb4fc0aa7dcf966fa4327a5226755"},
+    {file = "executing-2.2.1-py2.py3-none-any.whl", hash = "sha256:760643d3452b4d777d295bb167ccc74c64a81df23fb5e08eff250c425a4b2017"},
+    {file = "executing-2.2.1.tar.gz", hash = "sha256:3632cc370565f6648cc328b32435bd120a1e4ebb20c77e3fdde9a13cd1e533c4"},
 ]
 
 [package.extras]
@@ -1176,13 +1176,13 @@ files = [
 
 [[package]]
 name = "hypothesis"
-version = "6.138.11"
+version = "6.138.13"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "hypothesis-6.138.11-py3-none-any.whl", hash = "sha256:2802eb8d82a5985048eee12d4dfae048531964468f8ced6e3a6043b92516660e"},
-    {file = "hypothesis-6.138.11.tar.gz", hash = "sha256:d88a677d30340fded63bcb7cb087d3306fdc3d0e4dff0fca1dff76df5f60066a"},
+    {file = "hypothesis-6.138.13-py3-none-any.whl", hash = "sha256:09f1130deb08e5d12fb3b59b55c113fd79debaaab9b224ffac17be8341de4326"},
+    {file = "hypothesis-6.138.13.tar.gz", hash = "sha256:2bea91629b8b3bb103a5b51442b1037cede3aae26e56ec063c52b9d5d8eaf70b"},
 ]
 
 [package.dependencies]
