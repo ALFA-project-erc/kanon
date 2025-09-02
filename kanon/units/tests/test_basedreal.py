@@ -1,6 +1,7 @@
 import math as m
 import operator as op
-from decimal import Decimal
+import warnings
+from decimal import Decimal  # , InvalidOperation
 from fractions import Fraction
 
 import hypothesis
@@ -246,25 +247,25 @@ def biop_testing(x: BasedReal, y: BasedReal, operator):
         raise e
 
 
-# TODO does not pass
-# @given(st.from_type(Sexagesimal), st.from_type(Sexagesimal))
-# def test_operations_with_remainders(x, y):
-#     fx = float(x)
-#
-#     assert float(-x) == -fx
-#     assert float(+x) == fx
-#     assert abs(x) == abs(fx)
-#
-#     with warnings.catch_warnings():
-#         warnings.simplefilter("ignore")
-#         for o in (op.mul, op.add, op.sub):
-#             biop_testing(x, y, o)
-#
-#     if y != 0:
-#         try:
-#             biop_testing(x, y, op.truediv)
-#         except InvalidOperation:
-#             pass
+@given(st.from_type(Sexagesimal), st.from_type(Sexagesimal))
+def test_operations_with_remainders(x, y):
+    fx = float(x)
+
+    assert float(-x) == -fx
+    assert float(+x) == fx
+    assert abs(x) == abs(fx)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for o in (op.mul, op.add, op.sub):
+            biop_testing(x, y, o)
+
+    # TODO does not pass
+    # if y != 0:
+    #     try:
+    #         biop_testing(x, y, op.truediv)
+    #     except InvalidOperation:
+    #         pass
 
 
 @given(st.from_type(Sexagesimal), st.from_type(Sexagesimal))
