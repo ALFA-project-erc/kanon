@@ -23,6 +23,7 @@ from astropy.units.core import Unit, dimensionless_unscaled
 
 from kanon.models.meta import ModelCallable, TableType
 from kanon.tables.hcolumn import HColumn, _patch_dtype_info_name
+from kanon.units.radices import BasedQuantity, BasedReal
 from kanon.utils.types.number_types import Real
 
 from .interpolations import (
@@ -233,7 +234,18 @@ class HTable(Table):
         else:
             val = key
 
-        return self.interpolate(df, val) * unit
+        if with_unit:
+            unit = self.columns[self.values_column].unit or 1
+            if isinstance(
+                self.interpolate(df, val), (int, float, np.integer, np.floating)
+            ):
+                return Quantity(self.interpolate(df, val), unit)
+            elif isinstance(self.interpolate(df, val), BasedReal):
+                return BasedQuantity(self.interpolate(df, val), unit)
+            else:
+                return Quantity(self.interpolate(df, val), unit)
+        else:
+            return self.interpolate(df, val)
 
     def apply(
         self, column: str, func: Callable, new_name: Optional[str] = None

@@ -252,9 +252,8 @@ class BasedReal(PreciseNumber, _Real):
 
         - a `BasedReal` with a significant number of digits,
 
-        #TODO doctestfailure
-        # >>> Sexagesimal(Sexagesimal("-2,31;12,30"), 1)
-        -02,31 ; 12 |r0.5
+        >>> Sexagesimal(Sexagesimal("-2,31;12,30"), 1)
+        -02,31 ; 12 |r 0.5
 
         - multiple `int` representing an integral number in current `base`
 
@@ -1231,9 +1230,8 @@ class BasedReal(PreciseNumber, _Real):
         """
         self * other
 
-        #TODO doctestfailure
-        # >>> Sexagesimal('01, 12; 04, 17') * Sexagesimal('7; 45, 55')
-        09,19 ; 39,15 |r0.7
+        >>> Sexagesimal('01, 12; 04, 17') * Sexagesimal('7; 45, 55')
+        09,19 ; 39,15 |r 0.7
         """
 
         if isinstance(other, UnitBase):
@@ -1451,6 +1449,20 @@ class BasedQuantity(Quantity, Generic[TBasedReal]):
         ):
             return Quantity(value, unit, **kwargs)
 
+        elif isinstance(value, BasedReal):
+            self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
+            self._is_single = True
+            return self
+
+        elif isinstance(value, (list, tuple, np.ndarray)) and all(
+            isinstance(v, BasedReal) for v in value
+        ):
+            self = super().__new__(
+                cls, np.array(value, dtype=object), unit=unit, dtype=object, **kwargs
+            )
+            self._is_single = False
+            return self
+
         def _len(_):
             del type(value).__len__
             return 0
@@ -1458,6 +1470,28 @@ class BasedQuantity(Quantity, Generic[TBasedReal]):
         type(value).__len__ = _len
         self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
         return self
+
+    def __array__(self, *args, **kwargs):
+        if getattr(self, "_is_single", False):
+            return np.array(self.value, dtype=object)
+        return super().__array__(*args, **kwargs)
+
+    def __repr__(self):
+        if getattr(self, "_is_single", False):
+            return f"{self.value} {self.unit}"
+        return super().__repr__()
+
+    def __neg__(self):
+        if getattr(self, "_is_single", False):
+            return BasedQuantity(-self.value, self.unit)
+        return BasedQuantity([-v for v in self.value], self.unit)
+
+    def __eq__(self, other):
+        if isinstance(other, BasedQuantity):
+            return self.value == other.value and self.unit == other.unit
+        if isinstance(other, Quantity):
+            return self.value == other.value and self.unit == other.unit
+        return False
 
     def __mul__(self, other) -> "BasedQuantity[TBasedReal]":  # pragma: no cover
         return super().__mul__(other)

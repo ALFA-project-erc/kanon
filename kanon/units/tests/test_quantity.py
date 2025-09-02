@@ -16,12 +16,11 @@ class TestQuantity:
         q = Sexagesimal(1) * degree
         assert isinstance(q, BasedQuantity)
         assert q.unit == degree
-        # TODO does not pass due to 'numpy.ndarray' object has no attribute 'equals'
-        # assert q.value.equals(Sexagesimal(1))
+        assert q.value.equals(Sexagesimal(1))
         q = Sexagesimal(1) / degree
         assert isinstance(q, BasedQuantity)
         assert q.unit == 1 / degree
-        # assert q.value.equals(Sexagesimal(1))
+        assert q.value.equals(Sexagesimal(1))
 
         assert type(BasedQuantity(1, degree)) is Quantity
 
@@ -33,23 +32,21 @@ class TestQuantity:
         with pytest.raises(AttributeError):
             q.does_not_exist()
 
-        # TODO does not pass 'int' object has no attribute 'truncate' or 'left'
-        # assert q.truncate(2).value.equals(q.value.truncate(2))
-        # assert q.left == (1,)
+        assert q.truncate(2).value.equals(q.value.truncate(2))
+        assert q.left == (1,)
 
-        # assert round(q, 2).value.equals(round(q.value, 2))
+        assert round(q, 2).value.equals(round(q.value, 2))
 
     @pytest.mark.filterwarnings("ignore")
     def test_shifting(self):
         q = Sexagesimal("1;0,1,31") * degree
 
-        # TODO does not pass 'numpy.ndarray' object has no attribute 'equals'
-        # assert (q << 2).value.equals(q.value << 2)
-        # assert (q >> 2).value.equals(q.value >> 2)
+        assert (q << 2).value.equals(q.value << 2)
+        assert (q >> 2).value.equals(q.value >> 2)
 
         arcmq = q << 1 * arcminute
         assert arcmq.unit == arcminute
-        # assert arcmq.value.equals(Sexagesimal("1,0;1,31,0"))
+        assert arcmq.value.equals(Sexagesimal("1,0;1,31,0"))
 
         with pytest.raises(TypeError):
             q >> 1 * arcminute
