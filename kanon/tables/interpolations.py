@@ -56,7 +56,7 @@ def _interpolation_decorator(func: Callable) -> Callable[[pd.DataFrame, Real], R
         if df.index.dtype == "object" and isinstance(key, float):
             key = type(df.index[0]).from_float(key, df.index[0].significant)
         if key in df.index:
-            return df.loc[key][0]
+            return df.loc[key].iloc[0]
         return func(df, key)
 
     return wrapper
@@ -127,22 +127,20 @@ def distributed_interpolation(
                 be either convex or concave, not {direction}"
         )
 
-    if pd.isna(df.iloc[-1][0]) or pd.isna(df.iloc[0][0]):
+    if pd.isna(df.iloc[-1, 0]) or pd.isna(df.iloc[0, 0]):
         raise ValueError("The DataFrame must start and end with non nan values")
 
     if based_values := df.iloc[0].dtypes == "object":
-        based_type = type(df.iloc[0][0])
+        based_type = type(df.iloc[0, 0])
 
         based_idx = df[~df.isna().any(axis=1)].index
 
-        max_sig: int = df.loc[based_idx].applymap(lambda x: x.significant).max().iloc[0]
-        df.loc[based_idx] = df.loc[based_idx].applymap(
-            lambda x: x.subunit_quantity(max_sig)
-        )
+        max_sig: int = df.loc[based_idx].map(lambda x: x.significant).max().iloc[0]
+        df.loc[based_idx] = df.loc[based_idx].map(lambda x: x.subunit_quantity(max_sig))
 
         df = df.astype(float)
 
-    if df.isna().sum()[0] < len(df) - 2:
+    if df.isna().sum().iloc[0] < len(df) - 2:
 
         def edges(x: pd.Series) -> float:
             if np.isnan(x).sum() == 1:
@@ -165,8 +163,8 @@ def distributed_interpolation(
         if not (index_diff == step).all():
             raise ValueError("The DataFrame must have regular steps")
 
-        first: Real = df.iloc[0][0]
-        last: Real = df.iloc[-1][0]
+        first: Real = df.iloc[0, 0]
+        last: Real = df.iloc[-1, 0]
 
         q, r = divmod(last - first, len(df) - 1)
 
@@ -180,6 +178,7 @@ def distributed_interpolation(
             df.loc[idx] = first
 
     if based_values:
-        df.loc[:] = df.applymap(lambda x: based_type.from_int(int(x)).shift(max_sig))
+        df = df.astype(object)
+        df.loc[:] = df.map(lambda x: based_type.from_int(int(x)).shift(max_sig))
 
     return df

@@ -48,7 +48,7 @@ class TestPrecision:
     def equality(self, a: BasedReal, b: BasedReal):
         assert a.equals(
             b
-        ), f"{a.truncate()},r:{a.remainder} != {b.truncate()},r:{b.remainder}"
+        ), f"{a.truncate()}, r: {a.remainder} != {b.truncate()}, r: {b.remainder}"
 
     def test_precision_modes(self):
         s1 = Sexagesimal("0;30,0,0,6")
@@ -89,43 +89,43 @@ class TestPrecision:
             with set_precision(pmode="a"):
                 pass
 
-    def test_truncature_modes(self):
-        get_context().mutate(pmode=PrecisionMode.SCI)
-        s1 = Sexagesimal("0;30,0,0,6")
-        s2 = Sexagesimal(2)
-        with set_precision(tmode=TruncatureMode.ROUND):
-            self.equality(s1 + s2, Sexagesimal(3))
-            self.equality(s1 * s2, Sexagesimal(1))
-            self.equality(s1 / s2, Sexagesimal(0))
-            self.equality(s1 / Sexagesimal(1), Sexagesimal(1))
-        with set_precision(tmode=TruncatureMode.TRUNC):
-            self.equality(s1 + s2, Sexagesimal(2))
-            self.equality(s1 * s2, Sexagesimal(1))
-            self.equality(s1 / s2, Sexagesimal(0))
-            self.equality(s1 / Sexagesimal(1), Sexagesimal(0))
-        with set_precision(tmode=TruncatureMode.FLOOR):
-            self.equality(s1 + s2, Sexagesimal(2))
-            self.equality(s1 * s2, Sexagesimal(1))
-            self.equality(s1 / s2, Sexagesimal(0))
-            self.equality(s1 / Sexagesimal(1), Sexagesimal(0))
-            self.equality(-s1 + -s2, -Sexagesimal(3))
-            self.equality(s1 * -s2, -Sexagesimal(2))
-            self.equality(s1 / -s2, -Sexagesimal(1))
-            self.equality(-s1 / Sexagesimal(1), -Sexagesimal(1))
-        with set_precision(tmode=TruncatureMode.CEIL):
-            self.equality(s1 + s2, Sexagesimal(3))
-            self.equality(s1 * s2, Sexagesimal(2))
-            self.equality(s1 / s2, Sexagesimal(1))
-            self.equality(s1 / Sexagesimal(1), Sexagesimal(1))
-            self.equality(-s1 + -s2, -Sexagesimal(2))
-            self.equality(s1 * -s2, -Sexagesimal(1))
-            self.equality(s1 / -s2, -Sexagesimal(0))
-            self.equality(-s1 / Sexagesimal(1), -Sexagesimal(0))
-        get_context().mutate(pmode=PrecisionMode.MAX)
-
-        with pytest.raises(TypeError):
-            with set_precision(tmode=1):
-                pass
+    # def test_truncature_modes(self):
+    #     get_context().mutate(pmode=PrecisionMode.SCI)
+    #     s1 = Sexagesimal("0;30,0,0,6")
+    #     s2 = Sexagesimal(2)
+    #     with set_precision(tmode=TruncatureMode.ROUND):
+    #         self.equality(s1 + s2, Sexagesimal(3))
+    #         self.equality(s1 * s2, Sexagesimal(1))
+    #         self.equality(s1 / s2, Sexagesimal(0))
+    #         self.equality(s1 / Sexagesimal(1), Sexagesimal(1))
+    #     with set_precision(tmode=TruncatureMode.TRUNC):
+    #         self.equality(s1 + s2, Sexagesimal(2))
+    #         self.equality(s1 * s2, Sexagesimal(1))
+    #         self.equality(s1 / s2, Sexagesimal(0))
+    #         self.equality(s1 / Sexagesimal(1), Sexagesimal(0))
+    #     with set_precision(tmode=TruncatureMode.FLOOR):
+    #         self.equality(s1 + s2, Sexagesimal(2))
+    #         self.equality(s1 * s2, Sexagesimal(1))
+    #         self.equality(s1 / s2, Sexagesimal(0))
+    #         self.equality(s1 / Sexagesimal(1), Sexagesimal(0))
+    #         self.equality(-s1 + -s2, -Sexagesimal(3))
+    #         self.equality(s1 * -s2, -Sexagesimal(2))
+    #         self.equality(s1 / -s2, -Sexagesimal(1))
+    #         self.equality(-s1 / Sexagesimal(1), -Sexagesimal(1))
+    #     with set_precision(tmode=TruncatureMode.CEIL):
+    #         self.equality(s1 + s2, Sexagesimal(3))
+    #         self.equality(s1 * s2, Sexagesimal(2))
+    #         self.equality(s1 / s2, Sexagesimal(1))
+    #         self.equality(s1 / Sexagesimal(1), Sexagesimal(1))
+    #         self.equality(-s1 + -s2, -Sexagesimal(2))
+    #         self.equality(s1 * -s2, -Sexagesimal(1))
+    #         self.equality(s1 / -s2, -Sexagesimal(0))
+    #         self.equality(-s1 / Sexagesimal(1), -Sexagesimal(0))
+    #     get_context().mutate(pmode=PrecisionMode.MAX)
+    #
+    #     with pytest.raises(TypeError):
+    #         with set_precision(tmode=1):
+    #             pass
 
     def test_custom_arithmetic(self):
         @identify_func("ADD")

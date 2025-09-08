@@ -42,7 +42,8 @@ from typing import (
 )
 
 import numpy as np
-from astropy.units.core import Unit, UnitBase, UnitTypeError
+from astropy.units import UnitTypeError
+from astropy.units.core import Unit, UnitBase
 from astropy.units.quantity import Quantity
 from astropy.units.quantity_helper.converters import UFUNC_HELPERS
 from astropy.units.quantity_helper.helpers import _d
@@ -200,8 +201,8 @@ class BasedReal(PreciseNumber, _Real):
                 self += (self.one() * self.sign) >> self.significant
             else:
                 raise ValueError(
-                    f"Illegal remainder value ({self.remainder}),\
-                         should be a Decimal between [0.,1.["
+                    f"Illegal remainder value ({self.remainder}), \
+                         should be a Decimal between [0., 1.["
                 )
         for x in self[:]:
             if isinstance(x, float):
@@ -252,7 +253,7 @@ class BasedReal(PreciseNumber, _Real):
         - a `BasedReal` with a significant number of digits,
 
         >>> Sexagesimal(Sexagesimal("-2,31;12,30"), 1)
-        -02,31 ; 12 |r0.5
+        -02,31 ; 12 |r 0.5
 
         - multiple `int` representing an integral number in current `base`
 
@@ -477,7 +478,7 @@ class BasedReal(PreciseNumber, _Real):
                 res += ","
 
         if self.remainder:
-            res += f" |r{self.remainder:3.1f}"
+            res += f" |r{self.remainder: 3.1f}"
 
         return res
 
@@ -1156,6 +1157,7 @@ class BasedReal(PreciseNumber, _Real):
         return type(self)(
             self.left, self.right, remainder=self.remainder, sign=-self.sign
         )
+        # return type(self).from_float(-float(self), self.significant)
 
     def __pos__(self: TBasedReal) -> TBasedReal:
         """+self"""
@@ -1229,7 +1231,7 @@ class BasedReal(PreciseNumber, _Real):
         self * other
 
         >>> Sexagesimal('01, 12; 04, 17') * Sexagesimal('7; 45, 55')
-        09,19 ; 39,15 |r0.7
+        09,19 ; 39,15 |r 0.7
         """
 
         if isinstance(other, UnitBase):
@@ -1447,6 +1449,20 @@ class BasedQuantity(Quantity, Generic[TBasedReal]):
         ):
             return Quantity(value, unit, **kwargs)
 
+        elif isinstance(value, BasedReal):
+            self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
+            self._is_single = True
+            return self
+
+        elif isinstance(value, (list, tuple, np.ndarray)) and all(
+            isinstance(v, BasedReal) for v in value
+        ):
+            self = super().__new__(
+                cls, np.array(value, dtype=object), unit=unit, dtype=object, **kwargs
+            )
+            self._is_single = False
+            return self
+
         def _len(_):
             del type(value).__len__
             return 0
@@ -1454,6 +1470,28 @@ class BasedQuantity(Quantity, Generic[TBasedReal]):
         type(value).__len__ = _len
         self = super().__new__(cls, value, unit=unit, dtype=object, **kwargs)
         return self
+
+    def __array__(self, *args, **kwargs):
+        if getattr(self, "_is_single", False):
+            return np.array(self.value, dtype=object)
+        return super().__array__(*args, **kwargs)
+
+    def __repr__(self):
+        if getattr(self, "_is_single", False):
+            return f"{self.value} {self.unit}"
+        return super().__repr__()
+
+    def __neg__(self):
+        if getattr(self, "_is_single", False):
+            return BasedQuantity(-self.value, self.unit)
+        return BasedQuantity([-v for v in self.value], self.unit)
+
+    def __eq__(self, other):
+        if isinstance(other, BasedQuantity):
+            return self.value == other.value and self.unit == other.unit
+        if isinstance(other, Quantity):
+            return self.value == other.value and self.unit == other.unit
+        return False
 
     def __mul__(self, other) -> "BasedQuantity[TBasedReal]":  # pragma: no cover
         return super().__mul__(other)
@@ -1549,7 +1587,7 @@ class IllegalBaseValueError(BasedRealException, ValueError):
 
     def __str__(self):
         return f"An invalid value for ({self.radix.__name__}) was found \
-        ('{self.num}'); should be in the range [0,{self.base}[)."
+        ('{self.num}'), should be in the range [0, {self.base}[)."
 
 
 class IllegalFloatError(BasedRealException, TypeError):

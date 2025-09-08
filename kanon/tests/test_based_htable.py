@@ -95,7 +95,6 @@ def test_quantity(tab: HTable):
     tab["B"].unit = u.degree
 
     value = tab.get(tab["A"][0])
-
     assert isinstance(value, Quantity)
     assert value.unit is u.degree
     assert isinstance(value.value, Sexagesimal)

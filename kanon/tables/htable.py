@@ -23,6 +23,7 @@ from astropy.units.core import Unit, dimensionless_unscaled
 
 from kanon.models.meta import ModelCallable, TableType
 from kanon.tables.hcolumn import HColumn, _patch_dtype_info_name
+from kanon.units.radices import BasedQuantity, BasedReal
 from kanon.utils.types.number_types import Real
 
 from .interpolations import (
@@ -36,6 +37,8 @@ __all__ = ["HTable"]
 
 
 T = TypeVar("T")
+
+np.set_printoptions(legacy="1.25")
 
 
 class GenericTableAttribute(TableAttribute, Generic[T]):
@@ -66,12 +69,14 @@ class HTable(Table):
         1     5.1
         2     3.9
         3     4.3
+
     >>> table.loc[2]
     <Row index=1>
     args  values
     int64 float64
     ----- -------
         2     3.9
+
     >>> table.loc[2]["values"]
     3.9
 
@@ -132,6 +137,10 @@ class HTable(Table):
 
         if index:
             self.set_index(index)
+
+    def __repr__(self):
+        s = super().__repr__()
+        return s.replace("\n ", "\n", 1)
 
     def _check_index(self, index=None):
         if not self.indices and not index:
@@ -225,7 +234,18 @@ class HTable(Table):
         else:
             val = key
 
-        return self.interpolate(df, val) * unit
+        if with_unit:
+            unit = self.columns[self.values_column].unit or 1
+            if isinstance(
+                self.interpolate(df, val), (int, float, np.integer, np.floating)
+            ):
+                return Quantity(self.interpolate(df, val), unit)
+            elif isinstance(self.interpolate(df, val), BasedReal):
+                return BasedQuantity(self.interpolate(df, val), unit)
+            else:
+                return Quantity(self.interpolate(df, val), unit)
+        else:
+            return self.interpolate(df, val)
 
     def apply(
         self, column: str, func: Callable, new_name: Optional[str] = None
