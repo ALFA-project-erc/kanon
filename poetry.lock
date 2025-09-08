@@ -1846,23 +1846,23 @@ test = ["pep440", "pre-commit", "pytest", "testpath"]
 
 [[package]]
 name = "nbsphinx"
-version = "0.8.12"
+version = "0.9.7"
 description = "Jupyter Notebook Tools for Sphinx"
 optional = true
 python-versions = ">=3.6"
 groups = ["main"]
 markers = "extra == \"docs\""
 files = [
-    {file = "nbsphinx-0.8.12-py3-none-any.whl", hash = "sha256:c15b681c7fce287000856f91fe1edac50d29f7b0c15bbc746fbe55c8eb84750b"},
-    {file = "nbsphinx-0.8.12.tar.gz", hash = "sha256:76570416cdecbeb21dbf5c3d6aa204ced6c1dd7ebef4077b5c21b8c6ece9533f"},
+    {file = "nbsphinx-0.9.7-py3-none-any.whl", hash = "sha256:7292c3767fea29e405c60743eee5393682a83982ab202ff98f5eb2db02629da8"},
+    {file = "nbsphinx-0.9.7.tar.gz", hash = "sha256:abd298a686d55fa894ef697c51d44f24e53aa312dadae38e82920f250a5456fe"},
 ]
 
 [package.dependencies]
-docutils = "*"
+docutils = ">=0.18.1"
 jinja2 = "*"
-nbconvert = "!=5.4"
+nbconvert = ">=5.3,<5.4 || >5.4"
 nbformat = "*"
-sphinx = ">=1.8"
+sphinx = ">=1.8,<8.2"
 traitlets = ">=5"
 
 [[package]]
@@ -3661,4 +3661,4 @@ notebook = ["ipykernel", "ipython", "nbformat", "papermill"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "cfdda8931efa169372e82c9bcc0ea9464d8c2d916790de466441ab04c9a7e471"
+content-hash = "a32a3f8c39156d688b07c48e65d1c348a4775d870bce51b06955ed4eb3d07aeb"
