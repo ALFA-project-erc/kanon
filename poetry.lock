@@ -2296,9 +2296,10 @@ wcwidth = "*"
 name = "psutil"
 version = "5.9.4"
 description = "Cross-platform lib for process and system monitoring in Python."
-optional = false
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-groups = ["main", "dev"]
+groups = ["main"]
+markers = "extra == \"docs\" or extra == \"notebook\""
 files = [
     {file = "psutil-5.9.4-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:c1ca331af862803a42677c120aff8a814a804e09832f166f226bfd22b56feee8"},
     {file = "psutil-5.9.4-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:68908971daf802203f3d37e78d3f8831b6d1014864d7a85937941bb35f09aefe"},
@@ -2315,7 +2316,6 @@ files = [
     {file = "psutil-5.9.4-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:6001c809253a29599bc0dfd5179d9f8a5779f9dffea1da0f13c53ee568115e1e"},
     {file = "psutil-5.9.4.tar.gz", hash = "sha256:3d7f9739eb435d4b1338944abe23f49584bde5395f27487d2ee25ad9a8774a62"},
 ]
-markers = {main = "extra == \"docs\" or extra == \"notebook\""}
 
 [package.extras]
 test = ["enum34 ; python_version <= \"3.4\"", "ipaddress ; python_version < \"3.0\"", "mock ; python_version < \"3.0\"", "pywin32 ; sys_platform == \"win32\"", "wmi ; sys_platform == \"win32\""]
@@ -2559,28 +2559,27 @@ test = ["astropy"]
 
 [[package]]
 name = "pytest-astropy"
-version = "0.10.0"
+version = "0.11.0"
 description = "Meta-package containing dependencies for testing"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
 files = [
-    {file = "pytest-astropy-0.10.0.tar.gz", hash = "sha256:85e3c66ceede4ce668f473b3cf377fcb2aa3c48e24f28aaa377ae86004cce211"},
-    {file = "pytest_astropy-0.10.0-py3-none-any.whl", hash = "sha256:0b046ddeaa9e61356bd121d91f86e8b745f00b8f7cec41fc9d9502770bf17926"},
+    {file = "pytest-astropy-0.11.0.tar.gz", hash = "sha256:4eaeaa99ed91163ed8f9aac132c70a81f25bc4c12f3cd54dba329fc26c6739b5"},
+    {file = "pytest_astropy-0.11.0-py3-none-any.whl", hash = "sha256:5b9404cfa85bd815af86da78bd7d50d451419021bff27b127418886f85ae9ffa"},
 ]
 
 [package.dependencies]
 attrs = ">=19.2.0"
 hypothesis = ">=5.1"
 pytest = ">=4.6"
-pytest-arraydiff = ">=0.1"
-pytest-astropy-header = ">=0.1.2"
+pytest-arraydiff = ">=0.5"
+pytest-astropy-header = ">=0.2.2"
 pytest-cov = ">=2.3.1"
-pytest-doctestplus = ">=0.11.0"
-pytest-filter-subpackage = ">=0.1"
+pytest-doctestplus = ">=1.0.0"
+pytest-filter-subpackage = ">=0.1.2"
 pytest-mock = ">=2.0"
-pytest-openfiles = ">=0.3.1"
-pytest-remotedata = ">=0.3.1"
+pytest-remotedata = ">=0.4.1"
 
 [[package]]
 name = "pytest-astropy-header"
@@ -2621,24 +2620,43 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtuale
 
 [[package]]
 name = "pytest-doctestplus"
-version = "0.12.1"
+version = "1.3.0"
 description = "Pytest plugin with advanced doctest features."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "pytest-doctestplus-0.12.1.tar.gz", hash = "sha256:7a979e4be99d9116e07ac066c5f00d45f387677d7d779f3bef30c6ffa8c79181"},
-    {file = "pytest_doctestplus-0.12.1-py3-none-any.whl", hash = "sha256:1046bac8dad27c3abcf370edf8f353b7f5d748d537296d481b0cad2cbb306052"},
+    {file = "pytest_doctestplus-1.3.0-py3-none-any.whl", hash = "sha256:4a7385d3e678881bb960e9200aa0db62ee32d575b3fa10d6735e8f1542c638f8"},
+    {file = "pytest_doctestplus-1.3.0.tar.gz", hash = "sha256:709ad23ea98da9a835ace0a4365c85371c376e000f2860f30de6df3a6f00728a"},
 ]
-markers = {main = "extra == \"docs\""}
+markers = {main = "python_version < \"3.10\" and extra == \"docs\"", dev = "python_version < \"3.10\""}
 
 [package.dependencies]
 packaging = ">=17.0"
 pytest = ">=4.6"
-setuptools = ">=30.3.0"
 
 [package.extras]
-test = ["numpy", "pytest-remotedata (>=0.3.2)", "sphinx"]
+test = ["numpy", "pytest-remotedata (>=0.3.2)", "setuptools (>=30.3.0)", "sphinx"]
+
+[[package]]
+name = "pytest-doctestplus"
+version = "1.4.0"
+description = "Pytest plugin with advanced doctest features."
+optional = false
+python-versions = ">=3.9"
+groups = ["main", "dev"]
+files = [
+    {file = "pytest_doctestplus-1.4.0-py3-none-any.whl", hash = "sha256:cfbae130ec90d4a2831819bbbfd097121b8e55f1e4d20a47ea992e4eaad2539a"},
+    {file = "pytest_doctestplus-1.4.0.tar.gz", hash = "sha256:df83832b1d11288572df2ee4c7cccdb421d812b8038a658bb514c9c62bdbd626"},
+]
+markers = {main = "python_version >= \"3.10\" and extra == \"docs\"", dev = "python_version >= \"3.10\""}
+
+[package.dependencies]
+packaging = ">=17.0"
+pytest = ">=4.6"
+
+[package.extras]
+test = ["numpy", "pytest-remotedata (>=0.3.2)", "setuptools (>=30.3.0)", "sphinx"]
 
 [[package]]
 name = "pytest-filter-subpackage"
@@ -2677,31 +2695,15 @@ pytest = ">=5.0"
 dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
-name = "pytest-openfiles"
-version = "0.5.0"
-description = "Pytest plugin for detecting inadvertent open file handles"
-optional = false
-python-versions = ">=3.6"
-groups = ["dev"]
-files = [
-    {file = "pytest-openfiles-0.5.0.tar.gz", hash = "sha256:179c2911d8aee3441fee051aba08e0d9b4dab61b829ae4811906d5c49a3b0a58"},
-    {file = "pytest_openfiles-0.5.0-py3-none-any.whl", hash = "sha256:b02389b5666d552e236ccf8d4e971abe97b320653ee77316de23db181dbe4f3a"},
-]
-
-[package.dependencies]
-psutil = "*"
-pytest = ">=4.6"
-
-[[package]]
 name = "pytest-remotedata"
-version = "0.4.0"
+version = "0.4.1"
 description = "Pytest plugin for controlling remote data access."
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
 files = [
-    {file = "pytest-remotedata-0.4.0.tar.gz", hash = "sha256:be21c558e34d7c11b0f6aeb50956c09520bffcd02b7fce9c6f8e8531a401a1c8"},
-    {file = "pytest_remotedata-0.4.0-py3-none-any.whl", hash = "sha256:48ebd360d24bc670cfeca43fff62c1866251af9cfe53f2662f225f74b3496357"},
+    {file = "pytest-remotedata-0.4.1.tar.gz", hash = "sha256:05c08bf638cdd1ed66eb01738a1647c3c714737c3ec3abe009d2c1f793b4bb59"},
+    {file = "pytest_remotedata-0.4.1-py3-none-any.whl", hash = "sha256:4e840bd8733091c2a84e52528ee2c2a98aa2d4a26376ba20448f211bccd30a35"},
 ]
 
 [package.dependencies]
@@ -3661,4 +3663,4 @@ notebook = ["ipykernel", "ipython", "nbformat", "papermill"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "cfdda8931efa169372e82c9bcc0ea9464d8c2d916790de466441ab04c9a7e471"
+content-hash = "cb261368f2ad1b682c9eeea536df09cb53babef0ab4a4ad7960f428465bec95d"
